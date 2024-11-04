@@ -19,6 +19,7 @@
 		F7AF2C3F2C595A88003831AC /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F7AF2C3E2C595A88003831AC /* Assets.xcassets */; };
 		F7AF2C422C595A88003831AC /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F7AF2C402C595A88003831AC /* LaunchScreen.storyboard */; };
 		F7D1EBB32CD83D8000DD2085 /* TrackerTypeSelectionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7D1EBB22CD83D8000DD2085 /* TrackerTypeSelectionViewController.swift */; };
+		F7D1EBB52CD96D2F00DD2085 /* TrackerCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7D1EBB42CD96D2F00DD2085 /* TrackerCell.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -36,6 +37,7 @@
 		F7AF2C412C595A88003831AC /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		F7AF2C432C595A88003831AC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		F7D1EBB22CD83D8000DD2085 /* TrackerTypeSelectionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerTypeSelectionViewController.swift; sourceTree = "<group>"; };
+		F7D1EBB42CD96D2F00DD2085 /* TrackerCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerCell.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -97,6 +99,7 @@
 				F77F91682C67F0F400E14393 /* TabBarViewController.swift */,
 				F77F916C2C68042100E14393 /* StatisticViewController.swift */,
 				F7D1EBB22CD83D8000DD2085 /* TrackerTypeSelectionViewController.swift */,
+				F7D1EBB42CD96D2F00DD2085 /* TrackerCell.swift */,
 			);
 			path = Tracker;
 			sourceTree = "<group>";
@@ -176,6 +179,7 @@
 				F71236792CD1A9C40041A336 /* TrackerCategory.swift in Sources */,
 				F72274562C677056004C0971 /* TrackersViewController.swift in Sources */,
 				F7AF2C362C595A86003831AC /* AppDelegate.swift in Sources */,
+				F7D1EBB52CD96D2F00DD2085 /* TrackerCell.swift in Sources */,
 				F712367B2CD1A9D40041A336 /* TrackerRecord.swift in Sources */,
 				F7D1EBB32CD83D8000DD2085 /* TrackerTypeSelectionViewController.swift in Sources */,
 				F77F91692C67F0F400E14393 /* TabBarViewController.swift in Sources */,

@@ -50,6 +50,16 @@ class TrackersViewController: UIViewController {
         return label
     }()
     
+    private let collectionView: UICollectionView = {
+        let layout = UICollectionViewFlowLayout()
+        layout.minimumLineSpacing = 16
+        layout.minimumInteritemSpacing = 16
+        layout.scrollDirection = .vertical
+        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        collectionView.translatesAutoresizingMaskIntoConstraints = false
+        return collectionView
+    }()
+    
     var categories: [TrackerCategory] = []
     var completedTrackers: [TrackerRecord] = []
     
@@ -59,6 +69,7 @@ class TrackersViewController: UIViewController {
         view.backgroundColor = ProjectColors.white
         
         setupNavigationBar()
+        setupCollectionView()
         setupLayout()
     }
     
@@ -73,11 +84,18 @@ class TrackersViewController: UIViewController {
         navigationItem.rightBarButtonItem = datePickerItem
     }
     
+    private func setupCollectionView() {
+        collectionView.dataSource = self
+        collectionView.delegate = self
+        collectionView.register(TrackerCell.self, forCellWithReuseIdentifier: TrackerCell.identifier)
+        view.addSubview(collectionView)
+    }
+    
     @objc private func addButtonTapped() {
         let trackerTypeSelectionVC = TrackerTypeSelectionViewController()
         trackerTypeSelectionVC.modalPresentationStyle = .pageSheet
         present(trackerTypeSelectionVC, animated: true, completion: nil)
-        }
+    }
     
     private func setupLayout() {
         view.addSubview(titleLabel)
@@ -96,6 +114,12 @@ class TrackersViewController: UIViewController {
             searchBar.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
             searchBar.heightAnchor.constraint(equalToConstant: 36),
             
+            // collectionView constraints
+            collectionView.topAnchor.constraint(equalTo: searchBar.bottomAnchor, constant: 20),
+            collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 0),
+            collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: 0),
+            collectionView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+            
             // placeholderImageView constraints
             placeholderImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             placeholderImageView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
@@ -106,5 +130,34 @@ class TrackersViewController: UIViewController {
             placeholderLabel.topAnchor.constraint(equalTo: placeholderImageView.bottomAnchor, constant: 8),
             placeholderLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor)
         ])
+    }
+}
+
+extension TrackersViewController: UICollectionViewDataSource {
+    
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return categories.flatMap { $0.trackers }.count
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: TrackerCell.identifier, for: indexPath) as? TrackerCell else {
+            return UICollectionViewCell()
+        }
+        
+        let tracker = categories.flatMap { $0.trackers }[indexPath.item]
+        cell.configure(with: tracker)
+        
+        return cell
+    }
+}
+
+extension TrackersViewController: UICollectionViewDelegateFlowLayout {
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        let pad: CGFloat = 25
+        let width = collectionView.bounds.width - pad
+        let cellWidth = width / -6
+        
+        return CGSize(width: cellWidth, height: 120)
     }
 }
