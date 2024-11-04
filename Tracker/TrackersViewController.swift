@@ -50,6 +50,9 @@ class TrackersViewController: UIViewController {
         return label
     }()
     
+    var categories: [TrackerCategory] = []
+    var completedTrackers: [TrackerRecord] = []
+    
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -71,9 +74,10 @@ class TrackersViewController: UIViewController {
     }
     
     @objc private func addButtonTapped() {
-        // TO DO
-        print("Add button tapped")
-    }
+        let trackerTypeSelectionVC = TrackerTypeSelectionViewController()
+        trackerTypeSelectionVC.modalPresentationStyle = .pageSheet
+        present(trackerTypeSelectionVC, animated: true, completion: nil)
+        }
     
     private func setupLayout() {
         view.addSubview(titleLabel)
