@@ -12,7 +12,7 @@ final class TrackerTypeSelectionViewController: UIViewController {
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.text = "Создание трекера"
-        label.font = .systemFont(ofSize: 16)
+        label.font = .systemFont(ofSize: 16, weight: .medium)
         label.tintColor = ProjectColors.black
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -23,7 +23,7 @@ final class TrackerTypeSelectionViewController: UIViewController {
         button.setTitle("Привычка", for: .normal)
         button.backgroundColor = ProjectColors.black
         button.setTitleColor(ProjectColors.white, for: .normal)
-        button.titleLabel?.font = UIFont.systemFont(ofSize: 16)
+        button.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         button.layer.cornerRadius = 16
         button.translatesAutoresizingMaskIntoConstraints = false
         button.addTarget(self, action: #selector(habbitButtonTapped), for: .touchUpInside)
@@ -35,7 +35,7 @@ final class TrackerTypeSelectionViewController: UIViewController {
         button.setTitle("Нерегулярное событие", for: .normal)
         button.backgroundColor = ProjectColors.black
         button.setTitleColor(ProjectColors.white, for: .normal)
-        button.titleLabel?.font = UIFont.systemFont(ofSize: 16)
+        button.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         button.layer.cornerRadius = 16
         button.translatesAutoresizingMaskIntoConstraints = false
         button.addTarget(self, action: #selector(irregularEventButtonTapped), for: .touchUpInside)
@@ -55,6 +55,7 @@ final class TrackerTypeSelectionViewController: UIViewController {
         view.addSubview(irregularEventButton)
         
         NSLayoutConstraint.activate([
+            
             // tileLabel constraints
             titleLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
             titleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
@@ -69,17 +70,21 @@ final class TrackerTypeSelectionViewController: UIViewController {
             irregularEventButton.topAnchor.constraint(equalTo: habbitButton.bottomAnchor, constant: 16),
             irregularEventButton.leadingAnchor.constraint(equalTo: habbitButton.leadingAnchor),
             irregularEventButton.trailingAnchor.constraint(equalTo: habbitButton.trailingAnchor),
-            irregularEventButton.heightAnchor.constraint(equalToConstant: 60)
+            irregularEventButton.heightAnchor.constraint(equalTo: habbitButton.heightAnchor)
         ])
     }
     
     @objc private func habbitButtonTapped() {
-        // TO DO
+        let habitVC = HabitViewController()
+        habitVC.modalPresentationStyle = .pageSheet
+        present(habitVC, animated: true, completion: nil)
         print("Переход на экран создания Привычки")
     }
     
     @objc private func irregularEventButtonTapped() {
-        // TO DO
+        let irregularEventVC = IrregularEventViewController()
+        irregularEventVC.modalPresentationStyle = .pageSheet
+        present(irregularEventVC, animated: true, completion: nil)
         print("Переход на экран создания Нерегулярного события")
     }
 }

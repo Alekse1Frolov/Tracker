@@ -17,6 +17,13 @@ class TrackersViewController: UIViewController {
         return label
     }()
     
+    private let addButton: UIButton = {
+        let button = UIButton.systemButton(with: UIImage(named: "PlusButton") ?? UIImage(), target: nil, action: nil)
+        button.tintColor = ProjectColors.black
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
+    
     private let datePicker: UIDatePicker = {
         let datePicker = UIDatePicker()
         datePicker.datePickerMode = .date
@@ -28,8 +35,23 @@ class TrackersViewController: UIViewController {
     private let searchBar: UISearchBar = {
         let searchBar = UISearchBar()
         searchBar.placeholder = "Поиск"
-        searchBar.translatesAutoresizingMaskIntoConstraints = false
+        searchBar.layer.cornerRadius = 8
+        searchBar.layer.masksToBounds = true
         searchBar.backgroundImage = UIImage()
+        searchBar.translatesAutoresizingMaskIntoConstraints = false
+        
+        let textField = searchBar.searchTextField
+        textField.translatesAutoresizingMaskIntoConstraints = false
+        
+        NSLayoutConstraint.activate([
+            textField.leadingAnchor.constraint(equalTo: searchBar.leadingAnchor),
+            textField.trailingAnchor.constraint(equalTo: searchBar.trailingAnchor),
+            textField.topAnchor.constraint(equalTo: searchBar.topAnchor),
+            textField.bottomAnchor.constraint(equalTo: searchBar.bottomAnchor)
+        ])
+        
+        searchBar.searchTextPositionAdjustment = UIOffset(horizontal: 0, vertical: 0)
+        
         return searchBar
     }()
     
@@ -75,10 +97,10 @@ class TrackersViewController: UIViewController {
     
     private func setupNavigationBar() {
         
-        let addButtonItem = UIBarButtonItem(image: UIImage(systemName: "plus"), style: .done, target: self, action: #selector(addButtonTapped))
-        addButtonItem.tintColor = ProjectColors.black
-        
+        let addButtonItem = UIBarButtonItem(customView: addButton)
         let datePickerItem = UIBarButtonItem(customView: datePicker)
+        
+        addButton.addTarget(self, action: #selector(addButtonTapped), for: .touchUpInside)
         
         navigationItem.leftBarButtonItem = addButtonItem
         navigationItem.rightBarButtonItem = datePickerItem
@@ -98,24 +120,34 @@ class TrackersViewController: UIViewController {
     }
     
     private func setupLayout() {
+        view.addSubview(addButton)
+        view.addSubview(datePicker)
         view.addSubview(titleLabel)
         view.addSubview(searchBar)
         view.addSubview(placeholderImageView)
         view.addSubview(placeholderLabel)
         
         NSLayoutConstraint.activate([
+            
+            // addButton constraints
+            addButton.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 6),
+            
+            // datePicker constraints
+            datePicker.heightAnchor.constraint(equalToConstant: 34),
+            datePicker.widthAnchor.constraint(equalToConstant: 100),
+            
             // titleLabel constraints
             titleLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 1),
             titleLabel.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
             
             // searchBar constraints
-            searchBar.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 8),
-            searchBar.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
-            searchBar.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
+            searchBar.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 7),
+            searchBar.leadingAnchor.constraint(equalTo: titleLabel.leadingAnchor),
+            searchBar.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             searchBar.heightAnchor.constraint(equalToConstant: 36),
             
             // collectionView constraints
-            collectionView.topAnchor.constraint(equalTo: searchBar.bottomAnchor, constant: 20),
+            collectionView.topAnchor.constraint(equalTo: searchBar.bottomAnchor, constant: 10),
             collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 0),
             collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: 0),
             collectionView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),

@@ -16,11 +16,11 @@ struct Tracker {
 }
 
 enum Weekday: String {
-    case monday = "пн."
-    case tuesday = "вт."
-    case wednesday = "ср."
-    case thursday = "чт."
-    case friday = "пт."
-    case saturday = "сб."
-    case sunday = "вс."
+    case monday = "Понедельник"
+    case tuesday = "Вторник"
+    case wednesday = "Среда"
+    case thursday = "Четверг"
+    case friday = "Пятница"
+    case saturday = "Суббота"
+    case sunday = "Воскресенье"
 }
