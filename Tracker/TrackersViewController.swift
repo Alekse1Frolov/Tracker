@@ -90,6 +90,11 @@ class TrackersViewController: UIViewController {
             updatePlaceholderVisibility()
         }
     }
+    var currentWeekday: Weekday {
+            let calendar = Calendar.current
+            let weekdayIndex = calendar.component(.weekday, from: currentDate) - 1
+            return Weekday(rawValue: weekdayIndex + 1) ?? .sunday
+        }
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
@@ -101,8 +106,15 @@ class TrackersViewController: UIViewController {
         setupCollectionView()
         setupLayout()
         setupNotificationObserver()
-        //setupDefaultCategory()
         updatePlaceholderVisibility()
+        
+        datePicker.addTarget(self, action: #selector(dateChanged(_:)), for: .valueChanged)
+        datePicker.addTarget(self, action: #selector(datePickerValueChanged(_:)), for: .valueChanged)
+    }
+    
+    @objc private func datePickerValueChanged(_ sender: UIDatePicker) {
+        currentDate = sender.date
+        print("Выбранная дата:", currentDate)
     }
     
     private func setupNavigationBar() {
@@ -131,32 +143,6 @@ class TrackersViewController: UIViewController {
         collectionView.register(TrackerCell.self, forCellWithReuseIdentifier: TrackerCell.identifier)
         collectionView.register(TrackerCategoryHeader.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: TrackerCategoryHeader.reuseID)
         view.addSubview(collectionView)
-    }
-    
-    private func setupDefaultCategory() {
-        let defaultCategory = TrackerCategory(title: "Домашний уют", trackers: [])
-        categories.append(defaultCategory)
-    }
-    
-    private func handleCompletion(for tracker: Tracker) {
-        let currentDateOnly = Calendar.current.startOfDay(for: currentDate)
-        
-        guard currentDateOnly <= Calendar.current.startOfDay(for: Date()) else {
-            return
-        }
-        
-        let record = TrackerRecord(trackerId: tracker.id, date: currentDateOnly)
-        
-        if completedTrackers.contains(record) {
-            completedTrackers.remove(record)
-        } else {
-            completedTrackers.insert(record)
-        }
-        collectionView.reloadData()
-    }
-    
-    func toggleCompletion(for tracker: Tracker) {
-        handleCompletion(for: tracker)
     }
     
     @objc private func addTracker(_ notification: Notification) {
@@ -198,11 +184,28 @@ class TrackersViewController: UIViewController {
     }
     
     private func updatePlaceholderVisibility() {
-        let isEmpty = categories.isEmpty
-        placeholderImageView.isHidden = !isEmpty
-        placeholderLabel.isHidden = !isEmpty
-        collectionView.isHidden = isEmpty
-        print("Коллекция скрыта:", isEmpty)
+        let hasTrackersForCurrentDate = categories.contains { category in
+            category.trackers.contains { $0.schedule.contains(currentWeekday) }
+        }
+        
+        print("Трекеры для \(currentWeekday): \(hasTrackersForCurrentDate ? "есть" : "нет")")
+        placeholderImageView.isHidden = hasTrackersForCurrentDate
+        placeholderLabel.isHidden = hasTrackersForCurrentDate
+        collectionView.isHidden = !hasTrackersForCurrentDate
+        print("Коллекция скрыта:", !hasTrackersForCurrentDate)
+    }
+    
+    private func filteredCategories() -> [TrackerCategory] {
+        let currentWeekday = Calendar.current.component(.weekday, from: currentDate)
+        
+        return categories.compactMap { category in
+            let filteredTrackers = category.trackers.filter { tracker in
+                tracker.schedule.contains { weekday in
+                    return weekday.rawValue == currentWeekday
+                }
+            }
+            return filteredTrackers.isEmpty ? nil : TrackerCategory(title: category.title, trackers: filteredTrackers)
+        }
     }
     
     @objc private func addButtonTapped() {
@@ -223,6 +226,12 @@ class TrackersViewController: UIViewController {
             typeSelectionVC.navigationController?.pushViewController(habitVC, animated: true)
         }
         present(navigationController, animated: true, completion: nil)
+    }
+    
+    @objc private func dateChanged(_ sender: UIDatePicker) {
+        currentDate = sender.date
+        print("Выбранная дата обновлена: \(currentDate)")
+        collectionView.reloadData()
     }
     
     private func setupLayout() {
@@ -277,7 +286,7 @@ extension TrackersViewController: TrackerCellDelegate {
         let currentDateOnly = Calendar.current.startOfDay(for: currentDate)
         
         guard currentDateOnly <= Calendar.current.startOfDay(for: Date()) else {
-            print("Нельзя отметить для будущей даты")
+            print("Нельзя отметить трекер выполненым для будущей даты")
             return
         }
         
@@ -312,28 +321,30 @@ extension TrackersViewController: UICollectionViewDataSource {
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return categories[section].trackers.count
+        let filteredTrackers = categories[section].trackers.filter { $0.schedule.contains(currentWeekday) }
+        print("Трекеры, отфильтрованные для \(currentWeekday):", filteredTrackers)
+        return filteredTrackers.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: TrackerCell.identifier, for: indexPath) as? TrackerCell else {
-            return UICollectionViewCell()
+            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: TrackerCell.identifier, for: indexPath) as? TrackerCell else {
+                return UICollectionViewCell()
+            }
+            
+            let filteredTrackers = categories[indexPath.section].trackers.filter { $0.schedule.contains(currentWeekday) }
+            let tracker = filteredTrackers[indexPath.item]
+            
+            let currentDateOnly = Calendar.current.startOfDay(for: currentDate)
+            let record = TrackerRecord(trackerId: tracker.id, date: currentDateOnly)
+            
+            let isCompleted = completedTrackers.contains(record)
+            let completionCount = completedTrackers.filter { $0.trackerId == tracker.id }.count
+            
+            cell.configure(with: tracker, completed: isCompleted, completionCount: completionCount)
+            cell.delegate = self
+            
+            return cell
         }
-        
-        let tracker = categories[indexPath.section].trackers[indexPath.item]
-        print("Отображение трекера в ячейке:", tracker)
-        let currentDateOnly = Calendar.current.startOfDay(for: currentDate)
-        let record = TrackerRecord(trackerId: tracker.id, date: currentDateOnly)
-        
-        let isCompleted = completedTrackers.contains(record)
-        let completionCount = completedTrackers.filter { $0.trackerId == tracker.id }.count
-        
-        cell.configure(with: tracker, completed: isCompleted, completionCount: completionCount)
-        
-        cell.delegate = self
-        
-        return cell
-    }
     
     func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
         if kind == UICollectionView.elementKindSectionHeader {

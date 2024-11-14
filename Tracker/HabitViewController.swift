@@ -228,9 +228,8 @@ final class HabitViewController: UIViewController {
             name: trackerName,
             color: ProjectColors.colorSelection5,
             emoji: "🌱",
-            schedule: [.monday, .wednesday]
+            schedule: [.monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday]
         )
-        print("Вызов onTrackerCreated с трекером:", newTracker)
         print("Создан трекер:", newTracker)
         NotificationCenter.default.post(name: .createdTracker, object: newTracker)
         dismiss(animated: true, completion: nil)

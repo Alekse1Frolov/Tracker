@@ -91,24 +91,29 @@ final class TrackerCell: UICollectionViewCell {
     private func setupLayout() {
         NSLayoutConstraint.activate([
             
+            // backView constraint
             backView.topAnchor.constraint(equalTo: contentView.topAnchor),
             backView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             backView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             backView.heightAnchor.constraint(equalToConstant: 90),
             
+            // emojiLabel constraint
             emojiLabel.topAnchor.constraint(equalTo: backView.topAnchor, constant: 12),
             emojiLabel.leadingAnchor.constraint(equalTo: backView.leadingAnchor, constant: 12),
             emojiLabel.heightAnchor.constraint(equalToConstant: 24),
             emojiLabel.widthAnchor.constraint(equalToConstant: 24),
             
+            // trackerCellLabel constraint
             trackerCellLabel.topAnchor.constraint(equalTo: emojiLabel.bottomAnchor, constant: 8),
             trackerCellLabel.leadingAnchor.constraint(equalTo: emojiLabel.leadingAnchor),
             trackerCellLabel.centerXAnchor.constraint(equalTo: backView.centerXAnchor),
             trackerCellLabel.trailingAnchor.constraint(equalTo: backView.trailingAnchor, constant: -12),
             
+            // counterLabel constraint
             counterLabel.topAnchor.constraint(equalTo: backView.bottomAnchor, constant: 16),
             counterLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 12),
             
+            // plusButton constraint
             plusButton.centerYAnchor.constraint(equalTo: counterLabel.centerYAnchor),
             plusButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -12),
             plusButton.widthAnchor.constraint(equalToConstant: 34),

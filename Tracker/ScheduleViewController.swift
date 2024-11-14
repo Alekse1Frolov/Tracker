@@ -9,7 +9,7 @@ import UIKit
 
 final class ScheduleViewController: UIViewController {
     
-    private let days: [Weekday] = [.monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday]
+    private let days = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье"]
     private var selectedDays: [Bool]
     
     var onDaysSelected: (([Weekday]) -> Void)?
@@ -89,8 +89,9 @@ final class ScheduleViewController: UIViewController {
     }
     
     @objc private func readyButtonTapped() {
-        let selectedDaysNames = days.enumerated()
-            .compactMap { index, day in selectedDays[index] ? day : nil}
+        let selectedDaysNames = days.enumerated().compactMap { index, day in
+            selectedDays[index] ? Weekday(rawValue: index + 1) : nil
+        }
         
         onDaysSelected?(selectedDaysNames)
         dismiss(animated: true, completion: nil)
@@ -134,7 +135,7 @@ extension ScheduleViewController: UITableViewDataSource, UITableViewDelegate {
             return UITableViewCell()
         }
         
-        let day = days[indexPath.row].rawValue
+        let day = days[indexPath.row]
         let isSelected = selectedDays[indexPath.row]
         
         cell.configure(with: day, isSelected: isSelected, tag: indexPath.row, target: self, action: #selector(switchToggled(_:)))
