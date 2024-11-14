@@ -59,4 +59,3 @@ final class ScheduleCell: UITableViewCell {
         switchView.addTarget(target, action: action, for: .valueChanged)
     }
 }
-

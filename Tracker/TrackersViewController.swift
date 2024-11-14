@@ -83,16 +83,26 @@ class TrackersViewController: UIViewController {
     }()
     
     var categories: [TrackerCategory] = []
-    var completedTrackers: [TrackerRecord] = []
+    private var completedTrackers: Set<TrackerRecord> = []
+    var currentDate: Date = Date() {
+        didSet {
+            collectionView.reloadData()
+            updatePlaceholderVisibility()
+        }
+    }
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
+        print("Изначальный массив категорий:", categories)
         view.backgroundColor = ProjectColors.white
         
         setupNavigationBar()
         setupCollectionView()
         setupLayout()
+        setupNotificationObserver()
+        //setupDefaultCategory()
+        updatePlaceholderVisibility()
     }
     
     private func setupNavigationBar() {
@@ -106,17 +116,113 @@ class TrackersViewController: UIViewController {
         navigationItem.rightBarButtonItem = datePickerItem
     }
     
+    private func setupNotificationObserver() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(addTracker(_:)),
+            name: .createdTracker,
+            object: nil
+        )
+    }
+    
     private func setupCollectionView() {
         collectionView.dataSource = self
         collectionView.delegate = self
         collectionView.register(TrackerCell.self, forCellWithReuseIdentifier: TrackerCell.identifier)
+        collectionView.register(TrackerCategoryHeader.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: TrackerCategoryHeader.reuseID)
         view.addSubview(collectionView)
     }
     
+    private func setupDefaultCategory() {
+        let defaultCategory = TrackerCategory(title: "Домашний уют", trackers: [])
+        categories.append(defaultCategory)
+    }
+    
+    private func handleCompletion(for tracker: Tracker) {
+        let currentDateOnly = Calendar.current.startOfDay(for: currentDate)
+        
+        guard currentDateOnly <= Calendar.current.startOfDay(for: Date()) else {
+            return
+        }
+        
+        let record = TrackerRecord(trackerId: tracker.id, date: currentDateOnly)
+        
+        if completedTrackers.contains(record) {
+            completedTrackers.remove(record)
+        } else {
+            completedTrackers.insert(record)
+        }
+        collectionView.reloadData()
+    }
+    
+    func toggleCompletion(for tracker: Tracker) {
+        handleCompletion(for: tracker)
+    }
+    
+    @objc private func addTracker(_ notification: Notification) {
+        guard let tracker = notification.object as? Tracker else { return }
+        
+        print("Добавление трекера в категорию")
+        
+        var newCategories: [TrackerCategory] = []
+        var trackerAdded = false
+        
+        for category in categories {
+            if category.title == "Домашний уют" {
+                var newTrackers = category.trackers
+                newTrackers.append(tracker)
+                
+                let newCategory = TrackerCategory(title: category.title, trackers: newTrackers)
+                newCategories.append(newCategory)
+                trackerAdded = true
+                print("Трекер добавлен в существующую категорию")
+            } else {
+                newCategories.append(category)
+            }
+        }
+        
+        if !trackerAdded {
+            let newCategory = TrackerCategory(title: "Домашний уют", trackers: [tracker])
+            newCategories.append(newCategory)
+            print("Создана новая категория с трекером:", newCategory)
+        }
+        
+        categories = newCategories
+        print("Категории после добавления трекера:", categories)
+        collectionView.reloadData()
+        updatePlaceholderVisibility()
+        print("Обновлены данные коллекции")
+    }
+    deinit {
+        NotificationCenter.default.removeObserver(self, name: .createdTracker, object:  nil)
+    }
+    
+    private func updatePlaceholderVisibility() {
+        let isEmpty = categories.isEmpty
+        placeholderImageView.isHidden = !isEmpty
+        placeholderLabel.isHidden = !isEmpty
+        collectionView.isHidden = isEmpty
+        print("Коллекция скрыта:", isEmpty)
+    }
+    
     @objc private func addButtonTapped() {
-        let trackerTypeSelectionVC = TrackerTypeSelectionViewController()
-        trackerTypeSelectionVC.modalPresentationStyle = .pageSheet
-        present(trackerTypeSelectionVC, animated: true, completion: nil)
+        let typeSelectionVC = TrackerTypeSelectionViewController()
+        let navigationController = UINavigationController(rootViewController: typeSelectionVC)
+        navigationController.modalPresentationStyle = .pageSheet
+        
+        typeSelectionVC.onTrackerTypeSelected = { [weak self] trackerType in
+            guard let _ = self else { return }
+            let habitVC = HabitViewController()
+            habitVC.modalPresentationStyle = .pageSheet
+            
+            habitVC.onTrackerCreated = { newTracker in
+                print("Созданный трекер:", newTracker)
+                NotificationCenter.default.post(name: NSNotification.Name("createdTracker"), object: newTracker)
+                navigationController.dismiss(animated: true,completion: nil)
+            }
+            typeSelectionVC.navigationController?.pushViewController(habitVC, animated: true)
+        }
+        present(navigationController, animated: true, completion: nil)
     }
     
     private func setupLayout() {
@@ -165,10 +271,48 @@ class TrackersViewController: UIViewController {
     }
 }
 
+extension TrackersViewController: TrackerCellDelegate {
+    func toggleCompletion(for trackerID: UUID) {
+        guard let _ = findTracker(by: trackerID) else { return }
+        let currentDateOnly = Calendar.current.startOfDay(for: currentDate)
+        
+        guard currentDateOnly <= Calendar.current.startOfDay(for: Date()) else {
+            print("Нельзя отметить для будущей даты")
+            return
+        }
+        
+        let record = TrackerRecord(trackerId: trackerID, date: currentDateOnly)
+        
+        if completedTrackers.contains(record) {
+            completedTrackers.remove(record)
+        } else {
+            completedTrackers.insert(record)
+        }
+        
+        collectionView.reloadData()
+    }
+    
+    private func findTracker(by id: UUID) -> Tracker? {
+        for category in categories {
+            if let tracker = category.trackers.first(where: { $0.id == id }) {
+                return tracker
+            }
+        }
+        return nil
+    }
+    
+    func completeTracker(id: UUID) { }
+    func uncompleteTracker(id: UUID) { }
+}
+
 extension TrackersViewController: UICollectionViewDataSource {
     
+    func numberOfSections(in collectionView: UICollectionView) -> Int {
+        return categories.count
+    }
+    
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return categories.flatMap { $0.trackers }.count
+        return categories[section].trackers.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -176,20 +320,55 @@ extension TrackersViewController: UICollectionViewDataSource {
             return UICollectionViewCell()
         }
         
-        let tracker = categories.flatMap { $0.trackers }[indexPath.item]
-        cell.configure(with: tracker)
+        let tracker = categories[indexPath.section].trackers[indexPath.item]
+        print("Отображение трекера в ячейке:", tracker)
+        let currentDateOnly = Calendar.current.startOfDay(for: currentDate)
+        let record = TrackerRecord(trackerId: tracker.id, date: currentDateOnly)
+        
+        let isCompleted = completedTrackers.contains(record)
+        let completionCount = completedTrackers.filter { $0.trackerId == tracker.id }.count
+        
+        cell.configure(with: tracker, completed: isCompleted, completionCount: completionCount)
+        
+        cell.delegate = self
         
         return cell
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
+        if kind == UICollectionView.elementKindSectionHeader {
+            guard let header = collectionView.dequeueReusableSupplementaryView(
+                ofKind: kind,
+                withReuseIdentifier: TrackerCategoryHeader.reuseID,
+                for: indexPath) as? TrackerCategoryHeader else { return UICollectionReusableView() }
+            
+            let category = categories[indexPath.section]
+            header.configure(with: category.title)
+            return header
+        }
+        return UICollectionReusableView()
     }
 }
 
 extension TrackersViewController: UICollectionViewDelegateFlowLayout {
-    
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let pad: CGFloat = 25
-        let width = collectionView.bounds.width - pad
-        let cellWidth = width / -6
-        
-        return CGSize(width: cellWidth, height: 120)
+        let width = (collectionView.bounds.width - 48) / 2
+        return CGSize(width: width, height: 148)
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
+        return CGSize(width: collectionView.bounds.width, height: 42)
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
+        return UIEdgeInsets(top: 12, left: 16, bottom: 16, right: 16)
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
+        return 9
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
+        return 46
     }
 }

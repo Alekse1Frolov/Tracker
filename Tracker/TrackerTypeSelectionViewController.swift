@@ -9,6 +9,11 @@ import UIKit
 
 final class TrackerTypeSelectionViewController: UIViewController {
     
+    enum TrackerType {
+        case habit
+        case irregularEvent
+    }
+    
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.text = "Создание трекера"
@@ -18,7 +23,7 @@ final class TrackerTypeSelectionViewController: UIViewController {
         return label
     }()
     
-    private let habbitButton: UIButton = {
+    private let habitButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Привычка", for: .normal)
         button.backgroundColor = ProjectColors.black
@@ -26,7 +31,7 @@ final class TrackerTypeSelectionViewController: UIViewController {
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         button.layer.cornerRadius = 16
         button.translatesAutoresizingMaskIntoConstraints = false
-        button.addTarget(self, action: #selector(habbitButtonTapped), for: .touchUpInside)
+        button.addTarget(self, action: #selector(habitButtonTapped), for: .touchUpInside)
         return button
     }()
     
@@ -42,16 +47,24 @@ final class TrackerTypeSelectionViewController: UIViewController {
         return button
     }()
     
+    var onTrackerTypeSelected: ((TrackerType) -> Void)?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
         view.backgroundColor = ProjectColors.white
+        
+        navigationController?.navigationBar.isHidden = true
+        
+        habitButton.addTarget(self, action: #selector(habitButtonTapped), for: .touchUpInside)
+        irregularEventButton.addTarget(self, action: #selector(irregularEventButtonTapped), for: .touchUpInside)
+        
         setupLayout()
     }
     
     private func setupLayout() {
         view.addSubview(titleLabel)
-        view.addSubview(habbitButton)
+        view.addSubview(habitButton)
         view.addSubview(irregularEventButton)
         
         NSLayoutConstraint.activate([
@@ -61,30 +74,30 @@ final class TrackerTypeSelectionViewController: UIViewController {
             titleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             
             // habbitButton constraints
-            habbitButton.centerYAnchor.constraint(equalTo: view.safeAreaLayoutGuide.centerYAnchor),
-            habbitButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            habbitButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            habbitButton.heightAnchor.constraint(equalToConstant: 60),
+            habitButton.centerYAnchor.constraint(equalTo: view.safeAreaLayoutGuide.centerYAnchor),
+            habitButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            habitButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            habitButton.heightAnchor.constraint(equalToConstant: 60),
             
             // irregularEventButton constraints
-            irregularEventButton.topAnchor.constraint(equalTo: habbitButton.bottomAnchor, constant: 16),
-            irregularEventButton.leadingAnchor.constraint(equalTo: habbitButton.leadingAnchor),
-            irregularEventButton.trailingAnchor.constraint(equalTo: habbitButton.trailingAnchor),
-            irregularEventButton.heightAnchor.constraint(equalTo: habbitButton.heightAnchor)
+            irregularEventButton.topAnchor.constraint(equalTo: habitButton.bottomAnchor, constant: 16),
+            irregularEventButton.leadingAnchor.constraint(equalTo: habitButton.leadingAnchor),
+            irregularEventButton.trailingAnchor.constraint(equalTo: habitButton.trailingAnchor),
+            irregularEventButton.heightAnchor.constraint(equalTo: habitButton.heightAnchor)
         ])
     }
     
-    @objc private func habbitButtonTapped() {
+    @objc private func habitButtonTapped() {
+        guard navigationController?.topViewController == self else { return }
         let habitVC = HabitViewController()
-        habitVC.modalPresentationStyle = .pageSheet
-        present(habitVC, animated: true, completion: nil)
+        navigationController?.pushViewController(habitVC, animated: true)
         print("Переход на экран создания Привычки")
     }
     
     @objc private func irregularEventButtonTapped() {
+        guard navigationController?.topViewController == self else { return }
         let irregularEventVC = IrregularEventViewController()
-        irregularEventVC.modalPresentationStyle = .pageSheet
-        present(irregularEventVC, animated: true, completion: nil)
+        navigationController?.pushViewController(irregularEventVC, animated: true)
         print("Переход на экран создания Нерегулярного события")
     }
 }

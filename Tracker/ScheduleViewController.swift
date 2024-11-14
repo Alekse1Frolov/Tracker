@@ -26,8 +26,6 @@ final class ScheduleViewController: UIViewController {
     
     private let tableView: UITableView = {
         let tableView = UITableView(frame: .zero, style: .plain)
-        tableView.layer.cornerRadius = 16
-        tableView.layer.masksToBounds = true
         tableView.separatorInset = .zero
         tableView.translatesAutoresizingMaskIntoConstraints = false
         return tableView
@@ -70,17 +68,18 @@ final class ScheduleViewController: UIViewController {
         view.addSubview(readyButton)
         
         NSLayoutConstraint.activate([
-        
+            
             // titleLabel constraint
             titleLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
             titleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-
+            
             // tableView constraint
             tableView.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 24),
             tableView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
             tableView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
             tableView.bottomAnchor.constraint(equalTo: readyButton.topAnchor, constant: 39),
             
+            // readyButton constraint
             readyButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
             readyButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -20),
             readyButton.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 20),
@@ -109,6 +108,20 @@ extension ScheduleViewController: UITableViewDataSource, UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        cell.selectionStyle = .none
+        
+        if indexPath.row == 0 {
+            cell.layer.cornerRadius = 16
+            cell.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
+            cell.layer.masksToBounds = true
+        } else if indexPath.row == tableView.numberOfRows(inSection: indexPath.section) - 1 {
+            cell.layer.cornerRadius = 16
+            cell.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
+            cell.layer.masksToBounds = true
+        } else {
+            cell.layer.cornerRadius = 0
+        }
+        
         if indexPath.row == tableView.numberOfRows(inSection: indexPath.section) - 1 {
             cell.separatorInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: .greatestFiniteMagnitude)
         } else {
@@ -117,18 +130,18 @@ extension ScheduleViewController: UITableViewDataSource, UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-            guard let cell = tableView.dequeueReusableCell(withIdentifier: ScheduleCell.reuseIdentifier, for: indexPath) as? ScheduleCell else {
-                return UITableViewCell()
-            }
-            
-            let day = days[indexPath.row].rawValue
-            let isSelected = selectedDays[indexPath.row]
-            
-            cell.configure(with: day, isSelected: isSelected, tag: indexPath.row, target: self, action: #selector(switchToggled(_:)))
-            cell.backgroundColor = ProjectColors.lightGray?.withAlphaComponent(0.3)
-            
-            return cell
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: ScheduleCell.reuseIdentifier, for: indexPath) as? ScheduleCell else {
+            return UITableViewCell()
         }
+        
+        let day = days[indexPath.row].rawValue
+        let isSelected = selectedDays[indexPath.row]
+        
+        cell.configure(with: day, isSelected: isSelected, tag: indexPath.row, target: self, action: #selector(switchToggled(_:)))
+        cell.backgroundColor = ProjectColors.lightGray?.withAlphaComponent(0.3)
+        
+        return cell
+    }
     
     @objc private func switchToggled(_ sender: UISwitch) {
         selectedDays[sender.tag] = sender.isOn

@@ -8,7 +8,7 @@
 import UIKit
 
 final class HabitViewController: UIViewController {
-    
+    // MARK: - UI Elements
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.text = "Новая привычка"
@@ -46,43 +46,41 @@ final class HabitViewController: UIViewController {
         return tableView
     }()
     
-    private var scheduleText: String = "Выберите дни"
-    
-//    private let emojiLabel: UILabel = {
-//        let label = UILabel()
-//        label.text = "Emoji"
-//        label.font = .systemFont(ofSize: 19, weight: .bold)
-//        label.translatesAutoresizingMaskIntoConstraints = false
-//        return label
-//    }()
-//    
-//    private let emojiCollectionView: UICollectionView = {
-//        let layout = UICollectionViewFlowLayout()
-//        layout.minimumLineSpacing = 5
-//        layout.minimumInteritemSpacing = 5
-//        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
-//        collectionView.isScrollEnabled = false
-//        collectionView.translatesAutoresizingMaskIntoConstraints = false
-//        return collectionView
-//    }()
-//    
-//    private let colorLabel: UILabel = {
-//        let label = UILabel()
-//        label.text = "Цвет"
-//        label.font = .systemFont(ofSize: 19, weight: .bold)
-//        label.translatesAutoresizingMaskIntoConstraints = false
-//        return label
-//    }()
-//    
-//    private let colorCollectionView: UICollectionView = {
-//        let layout = UICollectionViewFlowLayout()
-//        layout.scrollDirection = .vertical
-//        layout.minimumLineSpacing = 5
-//        layout.minimumInteritemSpacing = 5
-//        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
-//        collectionView.translatesAutoresizingMaskIntoConstraints = false
-//        return collectionView
-//    }()
+    //    private let emojiLabel: UILabel = {
+    //        let label = UILabel()
+    //        label.text = "Emoji"
+    //        label.font = .systemFont(ofSize: 19, weight: .bold)
+    //        label.translatesAutoresizingMaskIntoConstraints = false
+    //        return label
+    //    }()
+    //
+    //    private let emojiCollectionView: UICollectionView = {
+    //        let layout = UICollectionViewFlowLayout()
+    //        layout.minimumLineSpacing = 5
+    //        layout.minimumInteritemSpacing = 5
+    //        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+    //        collectionView.isScrollEnabled = false
+    //        collectionView.translatesAutoresizingMaskIntoConstraints = false
+    //        return collectionView
+    //    }()
+    //
+    //    private let colorLabel: UILabel = {
+    //        let label = UILabel()
+    //        label.text = "Цвет"
+    //        label.font = .systemFont(ofSize: 19, weight: .bold)
+    //        label.translatesAutoresizingMaskIntoConstraints = false
+    //        return label
+    //    }()
+    //
+    //    private let colorCollectionView: UICollectionView = {
+    //        let layout = UICollectionViewFlowLayout()
+    //        layout.scrollDirection = .vertical
+    //        layout.minimumLineSpacing = 5
+    //        layout.minimumInteritemSpacing = 5
+    //        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+    //        collectionView.translatesAutoresizingMaskIntoConstraints = false
+    //        return collectionView
+    //    }()
     
     private let cancelButton: UIButton = {
         let button = UIButton(type: .system)
@@ -116,6 +114,8 @@ final class HabitViewController: UIViewController {
         return stackView
     }()
     
+    var onTrackerCreated: ((Tracker) -> Void)?
+    
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -132,23 +132,23 @@ final class HabitViewController: UIViewController {
         view.addSubview(tableView)
     }
     
-//    private func setupCollectionView() {
-//        emojiCollectionView.dataSource = self
-//        emojiCollectionView.delegate = self
-//        emojiCollectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "emojiCell")
-//        
-//        colorCollectionView.dataSource = self
-//        colorCollectionView.delegate = self
-//        colorCollectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "colorCell")
-//    }
+    //    private func setupCollectionView() {
+    //        emojiCollectionView.dataSource = self
+    //        emojiCollectionView.delegate = self
+    //        emojiCollectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "emojiCell")
+    //
+    //        colorCollectionView.dataSource = self
+    //        colorCollectionView.delegate = self
+    //        colorCollectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "colorCell")
+    //    }
     
     private func setupLayout() {
         view.addSubview(titleLabel)
         view.addSubview(nameTextField)
-//        view.addSubview(emojiLabel)
-//        view.addSubview(emojiCollectionView)
-//        view.addSubview(colorLabel)
-//        view.addSubview(colorCollectionView)
+    //  view.addSubview(emojiLabel)
+    //  view.addSubview(emojiCollectionView)
+    //  view.addSubview(colorLabel)
+    //  view.addSubview(colorCollectionView)
         view.addSubview(buttonStackView)
         buttonStackView.addSubview(cancelButton)
         buttonStackView.addSubview(createButton)
@@ -172,24 +172,24 @@ final class HabitViewController: UIViewController {
             tableView.heightAnchor.constraint(equalToConstant: 150),
             
             // emojiLabel constraints
-//            emojiLabel.topAnchor.constraint(equalTo: tableView.bottomAnchor, constant: 32),
-//            emojiLabel.leadingAnchor.constraint(equalTo: nameTextField.leadingAnchor),
+            // emojiLabel.topAnchor.constraint(equalTo: tableView.bottomAnchor, constant: 32),
+            // emojiLabel.leadingAnchor.constraint(equalTo: nameTextField.leadingAnchor),
             
             // emojiCollectionView constraints
-//            emojiCollectionView.topAnchor.constraint(equalTo: emojiLabel.bottomAnchor),
-//            emojiCollectionView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
-//            emojiCollectionView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
-//            emojiCollectionView.heightAnchor.constraint(equalToConstant: 204),
+            // emojiCollectionView.topAnchor.constraint(equalTo: emojiLabel.bottomAnchor),
+            // emojiCollectionView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
+            // emojiCollectionView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+            // emojiCollectionView.heightAnchor.constraint(equalToConstant: 204),
             
             // colorLabel constraints
-//            colorLabel.topAnchor.constraint(equalTo: emojiCollectionView.bottomAnchor, constant: 16),
-//            colorLabel.leadingAnchor.constraint(equalTo: nameTextField.leadingAnchor),
+            // colorLabel.topAnchor.constraint(equalTo: emojiCollectionView.bottomAnchor, constant: 16),
+            // colorLabel.leadingAnchor.constraint(equalTo: nameTextField.leadingAnchor),
             
             // colorCollectionView constraints
-//            colorCollectionView.topAnchor.constraint(equalTo: colorLabel.bottomAnchor),
-//            colorCollectionView.leadingAnchor.constraint(equalTo: emojiCollectionView.leadingAnchor),
-//            colorCollectionView.trailingAnchor.constraint(equalTo: emojiCollectionView.trailingAnchor),
-//            colorCollectionView.heightAnchor.constraint(equalTo: emojiCollectionView.heightAnchor),
+            // colorCollectionView.topAnchor.constraint(equalTo: colorLabel.bottomAnchor),
+            // colorCollectionView.leadingAnchor.constraint(equalTo: emojiCollectionView.leadingAnchor),
+            // colorCollectionView.trailingAnchor.constraint(equalTo: emojiCollectionView.trailingAnchor),
+            // colorCollectionView.heightAnchor.constraint(equalTo: emojiCollectionView.heightAnchor),
             
             // buttonStackView constraints
             buttonStackView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 20),
@@ -214,11 +214,25 @@ final class HabitViewController: UIViewController {
     
     // MARK: - Actions
     @objc private func cancelButtonTapped() {
-        dismiss(animated: true, completion: nil)
+        navigationController?.popViewController(animated: true)
     }
     
     @objc private func createButtonTapped() {
-        // TO DO
+        guard let trackerName = nameTextField.text, !trackerName.isEmpty else {
+            print("Трекер не создан: не введено имя")
+            return
+        }
+        
+        let newTracker = Tracker(
+            id: UUID(),
+            name: trackerName,
+            color: ProjectColors.colorSelection5,
+            emoji: "🌱",
+            schedule: [.monday, .wednesday]
+        )
+        print("Вызов onTrackerCreated с трекером:", newTracker)
+        print("Создан трекер:", newTracker)
+        NotificationCenter.default.post(name: .createdTracker, object: newTracker)
         dismiss(animated: true, completion: nil)
     }
 }
@@ -268,7 +282,6 @@ extension HabitViewController: UITableViewDelegate {
         if indexPath.row == 1 {
             let scheduleVC = ScheduleViewController(selectedDays: Array(repeating: false, count: 7))
             scheduleVC.onDaysSelected = { [weak self] selectedDays in
-                self?.scheduleText = selectedDays.map { $0.rawValue }.joined(separator: ", ")
                 self?.tableView.reloadRows(at: [indexPath], with: .automatic)
             }
             present(scheduleVC, animated: true, completion: nil)
@@ -281,7 +294,7 @@ extension HabitViewController: UITableViewDelegate {
 //    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
 //        return 18
 //    }
-//    
+//
 //    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
 //        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: collectionView == emojiCollectionView ? "emojiCell" : "colorCell", for: indexPath)
 //        cell.layer.cornerRadius = 8
@@ -291,7 +304,7 @@ extension HabitViewController: UITableViewDelegate {
 //    }
 //}
 //
-//// MARK: - UICollectionViewDelegateFlowLayout
+// MARK: - UICollectionViewDelegateFlowLayout
 //extension HabitViewController: UICollectionViewDelegateFlowLayout {
 //    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
 //        let side = (view.frame.width - 64) / 6

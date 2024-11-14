@@ -25,6 +25,8 @@
 		F7D1EBBF2CDAEA1D00DD2085 /* HabitViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7D1EBBE2CDAEA1D00DD2085 /* HabitViewCell.swift */; };
 		F7EB95372CDFE15F007F0D08 /* ScheduleViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7EB95362CDFE15F007F0D08 /* ScheduleViewController.swift */; };
 		F7EB95392CE12158007F0D08 /* ScheduleCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7EB95382CE12158007F0D08 /* ScheduleCell.swift */; };
+		F7EB953B2CE145FB007F0D08 /* TrackerCategoryHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7EB953A2CE145FB007F0D08 /* TrackerCategoryHeader.swift */; };
+		F7EB95412CE4DC7F007F0D08 /* Notification.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7EB95402CE4DC7F007F0D08 /* Notification.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -48,6 +50,8 @@
 		F7D1EBBE2CDAEA1D00DD2085 /* HabitViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HabitViewCell.swift; sourceTree = "<group>"; };
 		F7EB95362CDFE15F007F0D08 /* ScheduleViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleViewController.swift; sourceTree = "<group>"; };
 		F7EB95382CE12158007F0D08 /* ScheduleCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleCell.swift; sourceTree = "<group>"; };
+		F7EB953A2CE145FB007F0D08 /* TrackerCategoryHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerCategoryHeader.swift; sourceTree = "<group>"; };
+		F7EB95402CE4DC7F007F0D08 /* Notification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Notification.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -105,16 +109,18 @@
 				F7AF2C402C595A88003831AC /* LaunchScreen.storyboard */,
 				F7AF2C432C595A88003831AC /* Info.plist */,
 				F72274522C67611E004C0971 /* Resources */,
-				F72274552C677056004C0971 /* TrackersViewController.swift */,
 				F77F91682C67F0F400E14393 /* TabBarViewController.swift */,
-				F77F916C2C68042100E14393 /* StatisticViewController.swift */,
-				F7D1EBB22CD83D8000DD2085 /* TrackerTypeSelectionViewController.swift */,
+				F72274552C677056004C0971 /* TrackersViewController.swift */,
+				F7EB953A2CE145FB007F0D08 /* TrackerCategoryHeader.swift */,
 				F7D1EBB42CD96D2F00DD2085 /* TrackerCell.swift */,
+				F7D1EBB22CD83D8000DD2085 /* TrackerTypeSelectionViewController.swift */,
+				F77F916C2C68042100E14393 /* StatisticViewController.swift */,
 				F7D1EBBA2CDA1B7E00DD2085 /* HabitViewController.swift */,
-				F7D1EBBC2CDAA29D00DD2085 /* IrregularEventViewController.swift */,
 				F7D1EBBE2CDAEA1D00DD2085 /* HabitViewCell.swift */,
+				F7D1EBBC2CDAA29D00DD2085 /* IrregularEventViewController.swift */,
 				F7EB95362CDFE15F007F0D08 /* ScheduleViewController.swift */,
 				F7EB95382CE12158007F0D08 /* ScheduleCell.swift */,
+				F7EB95402CE4DC7F007F0D08 /* Notification.swift */,
 			);
 			path = Tracker;
 			sourceTree = "<group>";
@@ -191,6 +197,7 @@
 			files = (
 				F7EB95372CDFE15F007F0D08 /* ScheduleViewController.swift in Sources */,
 				F77F916D2C68042100E14393 /* StatisticViewController.swift in Sources */,
+				F7EB95412CE4DC7F007F0D08 /* Notification.swift in Sources */,
 				F77F916B2C67F2D400E14393 /* ProjectColors.swift in Sources */,
 				F71236792CD1A9C40041A336 /* TrackerCategory.swift in Sources */,
 				F72274562C677056004C0971 /* TrackersViewController.swift in Sources */,
@@ -202,6 +209,7 @@
 				F7D1EBB32CD83D8000DD2085 /* TrackerTypeSelectionViewController.swift in Sources */,
 				F7D1EBBD2CDAA29D00DD2085 /* IrregularEventViewController.swift in Sources */,
 				F77F91692C67F0F400E14393 /* TabBarViewController.swift in Sources */,
+				F7EB953B2CE145FB007F0D08 /* TrackerCategoryHeader.swift in Sources */,
 				F7D1EBBF2CDAEA1D00DD2085 /* HabitViewCell.swift in Sources */,
 				F7AF2C382C595A86003831AC /* SceneDelegate.swift in Sources */,
 				F71236772CD1A9B50041A336 /* Tracker.swift in Sources */,
