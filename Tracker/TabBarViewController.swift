@@ -19,10 +19,10 @@ final class TabBarViewController: UITabBarController {
         view.backgroundColor = ProjectColors.white
         
         let trackersVC = UINavigationController(rootViewController: TrackersViewController())
-        trackersVC.tabBarItem = UITabBarItem(title: "Трекеры", image: UIImage(named: "TrackerTabImage"), selectedImage: nil)
+        trackersVC.tabBarItem = UITabBarItem(title: Constants.tabBarItemTrackers, image: UIImage(named: "TrackerTabImage"), selectedImage: nil)
         
         let statisticVC = UINavigationController(rootViewController: StatisticViewController())
-        statisticVC.tabBarItem = UITabBarItem(title: "Статистика", image: UIImage(named: "StatTabImage"), selectedImage: nil)
+        statisticVC.tabBarItem = UITabBarItem(title: Constants.tabBarItemStatistic, image: UIImage(named: "StatTabImage"), selectedImage: nil)
         
         viewControllers = [trackersVC, statisticVC]
         

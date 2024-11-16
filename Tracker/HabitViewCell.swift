@@ -7,9 +7,9 @@
 
 import UIKit
 
-class HabitViewCell: UICollectionViewCell {
+final class HabitViewCell: UICollectionViewCell {
     
-    let emojiLabel: UILabel = {
+    private let emojiLabel: UILabel = {
         let label = UILabel()
         label.textAlignment = .center
         label.font = .systemFont(ofSize: 32)

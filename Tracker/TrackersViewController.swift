@@ -7,18 +7,22 @@
 
 import UIKit
 
-class TrackersViewController: UIViewController {
+final class TrackersViewController: UIViewController {
     
     private let titleLabel: UILabel = {
         let label = UILabel()
-        label.text = "Трекеры"
+        label.text = Constants.trackersVcTitleLabel
         label.font = UIFont.boldSystemFont(ofSize: 34)
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
     private let addButton: UIButton = {
-        let button = UIButton.systemButton(with: UIImage(named: "PlusButton") ?? UIImage(), target: nil, action: nil)
+        let button = UIButton.systemButton(
+            with: UIImage(named: "PlusButton") ?? UIImage(),
+            target: nil,
+            action: nil
+        )
         button.tintColor = ProjectColors.black
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
@@ -34,7 +38,7 @@ class TrackersViewController: UIViewController {
     
     private let searchBar: UISearchBar = {
         let searchBar = UISearchBar()
-        searchBar.placeholder = "Поиск"
+        searchBar.placeholder = Constants.trackersVcSearchPlaceholder
         searchBar.layer.cornerRadius = 8
         searchBar.layer.masksToBounds = true
         searchBar.backgroundImage = UIImage()
@@ -65,7 +69,7 @@ class TrackersViewController: UIViewController {
     
     private let placeholderLabel: UILabel = {
         let label = UILabel()
-        label.text = "Что будем отслеживать?"
+        label.text = Constants.trackersVcPlaceholderLabel
         label.font = UIFont.systemFont(ofSize: 12)
         label.textColor = ProjectColors.black
         label.translatesAutoresizingMaskIntoConstraints = false

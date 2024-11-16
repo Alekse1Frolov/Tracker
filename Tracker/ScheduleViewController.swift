@@ -9,14 +9,13 @@ import UIKit
 
 final class ScheduleViewController: UIViewController {
     
-    private let days = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье"]
     private var selectedDays: [Bool]
     
     var onDaysSelected: (([Weekday]) -> Void)?
     
     private let titleLabel: UILabel = {
         let label = UILabel()
-        label.text = "Расписание"
+        label.text = Constants.scheduleVcTitle
         label.font = .systemFont(ofSize: 16, weight: .medium)
         label.textAlignment = .center
         label.tintColor = ProjectColors.black
@@ -33,7 +32,7 @@ final class ScheduleViewController: UIViewController {
     
     private let readyButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Готово", for: .normal)
+        button.setTitle(Constants.scheduleVcReadyButtonTitle, for: .normal)
         button.backgroundColor = ProjectColors.black
         button.setTitleColor(ProjectColors.white, for: .normal)
         button.layer.cornerRadius = 16
@@ -89,7 +88,7 @@ final class ScheduleViewController: UIViewController {
     }
     
     @objc private func readyButtonTapped() {
-        let selectedDaysNames = days.enumerated().compactMap { index, day in
+        let selectedDaysNames = MockData.days.enumerated().compactMap { index, day in
             selectedDays[index] ? Weekday(rawValue: index + 1) : nil
         }
         
@@ -101,7 +100,7 @@ final class ScheduleViewController: UIViewController {
 extension ScheduleViewController: UITableViewDataSource, UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return days.count
+        return MockData.days.count
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -135,7 +134,7 @@ extension ScheduleViewController: UITableViewDataSource, UITableViewDelegate {
             return UITableViewCell()
         }
         
-        let day = days[indexPath.row]
+        let day = MockData.days[indexPath.row]
         let isSelected = selectedDays[indexPath.row]
         
         cell.configure(with: day, isSelected: isSelected, tag: indexPath.row, target: self, action: #selector(switchToggled(_:)))

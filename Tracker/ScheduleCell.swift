@@ -11,14 +11,14 @@ final class ScheduleCell: UITableViewCell {
 
     static let reuseIdentifier = "ScheduleCell"
 
-    let dayLabel: UILabel = {
+    private let dayLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 17, weight: .regular)
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
-    let switchView: UISwitch = {
+    private let switchView: UISwitch = {
         let switchView = UISwitch()
         switchView.onTintColor = ProjectColors.blue
         switchView.translatesAutoresizingMaskIntoConstraints = false

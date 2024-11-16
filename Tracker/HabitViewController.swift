@@ -14,7 +14,7 @@ final class HabitViewController: UIViewController {
         label.text = "Новая привычка"
         label.font = .systemFont(ofSize: 16, weight: .medium)
         label.textAlignment = .center
-        label.tintColor = ProjectColors.black
+        label.textColor = ProjectColors.black
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -38,8 +38,10 @@ final class HabitViewController: UIViewController {
         let tableView = UITableView(frame: .zero, style: .plain)
         tableView.isScrollEnabled = false
         tableView.backgroundColor = ProjectColors.white
-        tableView.separatorColor = ProjectColors.lightGray
+        tableView.separatorColor = ProjectColors.gray
         tableView.separatorInset = .zero
+        tableView.tableHeaderView = UIView(frame: .zero)
+        tableView.tableFooterView = UIView(frame: .zero)
         tableView.layer.cornerRadius = 16
         tableView.layer.masksToBounds = true
         tableView.translatesAutoresizingMaskIntoConstraints = false
@@ -226,7 +228,7 @@ final class HabitViewController: UIViewController {
         let newTracker = Tracker(
             id: UUID(),
             name: trackerName,
-            color: ProjectColors.colorSelection5,
+            color: ProjectColors.TrackersColosSet.colorSelection5,
             emoji: "🌱",
             schedule: [.monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday]
         )

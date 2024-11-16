@@ -9,14 +9,9 @@ import UIKit
 
 final class TrackerTypeSelectionViewController: UIViewController {
     
-    enum TrackerType {
-        case habit
-        case irregularEvent
-    }
-    
     private let titleLabel: UILabel = {
         let label = UILabel()
-        label.text = "Создание трекера"
+        label.text = Constants.trackerTypeSelectionVcTitle
         label.font = .systemFont(ofSize: 16, weight: .medium)
         label.tintColor = ProjectColors.black
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -25,7 +20,7 @@ final class TrackerTypeSelectionViewController: UIViewController {
     
     private let habitButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Привычка", for: .normal)
+        button.setTitle(Constants.trackerTypeSelectionVcHabit, for: .normal)
         button.backgroundColor = ProjectColors.black
         button.setTitleColor(ProjectColors.white, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
@@ -37,7 +32,7 @@ final class TrackerTypeSelectionViewController: UIViewController {
     
     private let irregularEventButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Нерегулярное событие", for: .normal)
+        button.setTitle(Constants.trackerTypeSelectionVcIrregularEvent, for: .normal)
         button.backgroundColor = ProjectColors.black
         button.setTitleColor(ProjectColors.white, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)

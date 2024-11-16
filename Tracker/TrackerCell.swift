@@ -40,7 +40,7 @@ final class TrackerCell: UICollectionViewCell {
     private let backView: UIView = {
         let view = UIView()
         view.layer.cornerRadius = 14
-        view.backgroundColor = ProjectColors.colorSelection5
+        view.backgroundColor = ProjectColors.TrackersColosSet.colorSelection5
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
@@ -122,13 +122,9 @@ final class TrackerCell: UICollectionViewCell {
     }
     
     private func updateButton() {
-        if isCompleted {
-            plusButton.setImage(UIImage(named: "DoneImage"), for: .normal)
-            plusButton.alpha = 0.5
-        } else {
-            plusButton.setImage(UIImage(systemName: "plus"), for: .normal)
-            plusButton.alpha = 1.0
-        }
+        let image = isCompleted ? UIImage(named: "DoneImage") : UIImage(systemName: "plus")
+        plusButton.setImage(image, for: .normal)
+        plusButton.alpha = isCompleted ? 0.5 : 1.0
     }
     
     @objc private func plusButtonTapped() {
