@@ -1,5 +1,5 @@
 //
-//  HabitViewCell.swift
+//  EventViewControllerCell.swift
 //  Tracker
 //
 //  Created by Aleksei Frolov on 06.11.2024.
@@ -7,7 +7,7 @@
 
 import UIKit
 
-final class HabitViewCell: UICollectionViewCell {
+final class EventViewControllerCell: UICollectionViewCell {
     
     private let emojiLabel: UILabel = {
         let label = UILabel()

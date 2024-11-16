@@ -219,7 +219,7 @@ final class TrackersViewController: UIViewController {
         
         typeSelectionVC.onTrackerTypeSelected = { [weak self] trackerType in
             guard let _ = self else { return }
-            let habitVC = HabitViewController()
+            let habitVC = EventViewController(trackerType: .habit)
             habitVC.modalPresentationStyle = .pageSheet
             
             habitVC.onTrackerCreated = { newTracker in
