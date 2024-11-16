@@ -104,11 +104,10 @@ final class TrackersViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         print("Изначальный массив категорий:", categories)
-        view.backgroundColor = ProjectColors.white
         
+        setupLayout()
         setupNavigationBar()
         setupCollectionView()
-        setupLayout()
         setupNotificationObserver()
         updatePlaceholderVisibility()
         
@@ -149,44 +148,6 @@ final class TrackersViewController: UIViewController {
         view.addSubview(collectionView)
     }
     
-    @objc private func addTracker(_ notification: Notification) {
-        guard let tracker = notification.object as? Tracker else { return }
-        
-        print("Добавление трекера в категорию")
-        
-        var newCategories: [TrackerCategory] = []
-        var trackerAdded = false
-        
-        for category in categories {
-            if category.title == "Домашний уют" {
-                var newTrackers = category.trackers
-                newTrackers.append(tracker)
-                
-                let newCategory = TrackerCategory(title: category.title, trackers: newTrackers)
-                newCategories.append(newCategory)
-                trackerAdded = true
-                print("Трекер добавлен в существующую категорию")
-            } else {
-                newCategories.append(category)
-            }
-        }
-        
-        if !trackerAdded {
-            let newCategory = TrackerCategory(title: "Домашний уют", trackers: [tracker])
-            newCategories.append(newCategory)
-            print("Создана новая категория с трекером:", newCategory)
-        }
-        
-        categories = newCategories
-        print("Категории после добавления трекера:", categories)
-        collectionView.reloadData()
-        updatePlaceholderVisibility()
-        print("Обновлены данные коллекции")
-    }
-    deinit {
-        NotificationCenter.default.removeObserver(self, name: .createdTracker, object:  nil)
-    }
-    
     private func updatePlaceholderVisibility() {
         let hasTrackersForCurrentDate = categories.contains { category in
             category.trackers.contains { $0.schedule.contains(currentWeekday) }
@@ -212,39 +173,71 @@ final class TrackersViewController: UIViewController {
         }
     }
     
-    @objc private func addButtonTapped() {
+    private func presentEventViewController(
+        for trackerType: TrackerType,
+        in navigationController: UINavigationController
+    ) {
+        let eventVC = EventViewController(trackerType: trackerType)
+        eventVC.modalPresentationStyle = .pageSheet
+        eventVC.onTrackerCreated = { newTracker in
+            NotificationCenter.default.post(name: .createdTracker, object: newTracker)
+            navigationController.dismiss(animated: true, completion: nil)
+        }
+        navigationController.pushViewController(eventVC, animated: true)
+    }
+    
+    private func presentTypeSelection() {
         let typeSelectionVC = TrackerTypeSelectionViewController()
         let navigationController = UINavigationController(rootViewController: typeSelectionVC)
         navigationController.modalPresentationStyle = .pageSheet
-        
         typeSelectionVC.onTrackerTypeSelected = { [weak self] trackerType in
-            guard let _ = self else { return }
-            let habitVC = EventViewController(trackerType: .habit)
-            habitVC.modalPresentationStyle = .pageSheet
-            
-            habitVC.onTrackerCreated = { newTracker in
-                print("Созданный трекер:", newTracker)
-                NotificationCenter.default.post(name: NSNotification.Name("createdTracker"), object: newTracker)
-                navigationController.dismiss(animated: true,completion: nil)
-            }
-            typeSelectionVC.navigationController?.pushViewController(habitVC, animated: true)
+            self?.presentEventViewController(for: trackerType, in: navigationController)
         }
         present(navigationController, animated: true, completion: nil)
     }
     
+    private func mapCategories(tracker: Tracker) -> [TrackerCategory] {
+        var trackerAdded = false
+        var updatedCategories = categories.map { category -> TrackerCategory in
+            if category.title == "Домашний уют" {
+                var trackers = category.trackers
+                trackers.append(tracker)
+                trackerAdded = true
+                return TrackerCategory(title: category.title, trackers: trackers)
+            }
+            return category
+        }
+        
+        if !trackerAdded {
+            let newCategory = TrackerCategory(title: "Домашний уют", trackers: [tracker])
+            updatedCategories.append(newCategory)
+        }
+        return updatedCategories
+    }
+    
+    @objc private func addTracker(_ notification: Notification) {
+        guard let tracker = notification.object as? Tracker else { return }
+        categories = mapCategories(tracker: tracker)
+        collectionView.reloadData()
+        updatePlaceholderVisibility()
+    }
+    
+    @objc private func addButtonTapped() {
+        presentTypeSelection()
+    }
+    
     @objc private func dateChanged(_ sender: UIDatePicker) {
         currentDate = sender.date
-        print("Выбранная дата обновлена: \(currentDate)")
-        collectionView.reloadData()
     }
     
     private func setupLayout() {
-        view.addSubview(addButton)
-        view.addSubview(datePicker)
-        view.addSubview(titleLabel)
-        view.addSubview(searchBar)
-        view.addSubview(placeholderImageView)
-        view.addSubview(placeholderLabel)
+        view.backgroundColor = ProjectColors.white
+        
+        [titleLabel, addButton, datePicker, searchBar, 
+         placeholderImageView, placeholderLabel].forEach { element in
+            view.addSubview(element)
+            element.translatesAutoresizingMaskIntoConstraints = false
+        }
         
         NSLayoutConstraint.activate([
             

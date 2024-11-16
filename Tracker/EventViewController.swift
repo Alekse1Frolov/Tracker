@@ -46,8 +46,6 @@ final class EventViewController: UIViewController {
         tableView.backgroundColor = ProjectColors.white
         tableView.separatorColor = ProjectColors.gray
         tableView.separatorInset = .zero
-        //        tableView.tableHeaderView = UIView(frame: .zero)
-        //        tableView.tableFooterView = UIView(frame: .zero)
         tableView.layer.cornerRadius = 16
         tableView.layer.masksToBounds = true
         return tableView
@@ -294,7 +292,6 @@ extension EventViewController: UITableViewDataSource {
         cell.backgroundColor = ProjectColors.lightGray?.withAlphaComponent(0.3)
         
         if trackerType == .habit {
-            
             switch indexPath.row {
             case 0:
                 cell.textLabel?.text = "Категория"
