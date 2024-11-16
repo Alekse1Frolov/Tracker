@@ -35,5 +35,13 @@ final class HabitViewCell: UICollectionViewCell {
     
     func configure(with emoji: String) {
         emojiLabel.text = emoji
+        contentView.backgroundColor = .clear
+    }
+    
+    func configure(with color: UIColor) {
+        contentView.backgroundColor = color
+        emojiLabel.text = ""
+        contentView.layer.cornerRadius = 8
+        contentView.layer.masksToBounds = true
     }
 }

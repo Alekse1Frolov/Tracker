@@ -20,6 +20,7 @@ enum MockData {
         ProjectColors.TrackersColosSet.colorSelection15, ProjectColors.TrackersColosSet.colorSelection16,
         ProjectColors.TrackersColosSet.colorSelection17, ProjectColors.TrackersColosSet.colorSelection18
     ]
+    static let emojis = [ "🙂", "😻", "🌺", "🐶", "❤️", "😱", "😇", "😡", "🥶", "🤔", "🙌", "🍔", "🥦", "🏓", "🥇", "🎸", "🏝", "😪" ]
     
     // Перечисление дополняется
 }
