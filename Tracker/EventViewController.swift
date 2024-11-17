@@ -80,6 +80,7 @@ final class EventViewController: UIViewController {
         layout.minimumLineSpacing = 5
         layout.minimumInteritemSpacing = 5
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        collectionView.isScrollEnabled = false
         return collectionView
     }()
     
@@ -189,7 +190,7 @@ final class EventViewController: UIViewController {
             
             // emojiLabel constraints
             emojiLabel.topAnchor.constraint(equalTo: tableView.bottomAnchor, constant: 32),
-            emojiLabel.leadingAnchor.constraint(equalTo: nameTextField.leadingAnchor),
+            emojiLabel.leadingAnchor.constraint(equalTo: contentView.safeAreaLayoutGuide.leadingAnchor, constant: 28),
             
             // emojiCollectionView constraints
             emojiCollectionView.topAnchor.constraint(equalTo: emojiLabel.bottomAnchor),
@@ -199,7 +200,7 @@ final class EventViewController: UIViewController {
             
             // colorLabel constraints
             colorLabel.topAnchor.constraint(equalTo: emojiCollectionView.bottomAnchor, constant: 16),
-            colorLabel.leadingAnchor.constraint(equalTo: nameTextField.leadingAnchor),
+            colorLabel.leadingAnchor.constraint(equalTo: emojiLabel.leadingAnchor),
             
             // colorCollectionView constraints
             colorCollectionView.topAnchor.constraint(equalTo: colorLabel.bottomAnchor),
@@ -361,35 +362,26 @@ extension EventViewController: UICollectionViewDataSource, UICollectionViewDeleg
 // MARK: - UICollectionViewDelegateFlowLayout
 extension EventViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        if collectionView == colorCollectionView {
-            return CGSize(width: 40, height: 40)
-        } else {
-            let side = (view.frame.width - 64) / 6
-            return CGSize(width: side, height: side)
-        }
+        
+        let itemsPerRow: CGFloat = 6
+        let sidePadding: CGFloat = 18
+        let interItemSpacing: CGFloat = 5
+        
+        let totalPadding = sidePadding * 2 + interItemSpacing * (itemsPerRow - 1)
+        let availableWidth = collectionView.bounds.width - totalPadding
+        let itemWidth = availableWidth / itemsPerRow
+        return CGSize(width: itemWidth, height: itemWidth)
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
-        if collectionView == colorCollectionView {
-            return UIEdgeInsets(top: 30, left: 28, bottom: 30, right: 28)
-        } else {
-            return UIEdgeInsets(top: 31, left: 18, bottom: 24, right: 18)
-        }
+        return UIEdgeInsets(top: 24, left: 18, bottom: 24, right: 18)
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
-        if collectionView == colorCollectionView {
-            return 17
-        } else {
-            return 5
-        }
+        return 5
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
-        if collectionView == colorCollectionView {
-            return 12
-        } else {
-            return 0
-        }
+        return 0
     }
 }

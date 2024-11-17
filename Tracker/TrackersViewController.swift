@@ -13,7 +13,6 @@ final class TrackersViewController: UIViewController {
         let label = UILabel()
         label.text = Constants.trackersVcTitleLabel
         label.font = UIFont.boldSystemFont(ofSize: 34)
-        label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
@@ -23,6 +22,7 @@ final class TrackersViewController: UIViewController {
             target: nil,
             action: nil
         )
+        button.frame.size = CGSize(width: 19, height: 18)
         button.tintColor = ProjectColors.black
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
@@ -30,6 +30,7 @@ final class TrackersViewController: UIViewController {
     
     private let datePicker: UIDatePicker = {
         let datePicker = UIDatePicker()
+        datePicker.frame.size = CGSize(width: 100, height: 34)
         datePicker.datePickerMode = .date
         datePicker.preferredDatePickerStyle = .compact
         datePicker.translatesAutoresizingMaskIntoConstraints = false
@@ -42,7 +43,6 @@ final class TrackersViewController: UIViewController {
         searchBar.layer.cornerRadius = 8
         searchBar.layer.masksToBounds = true
         searchBar.backgroundImage = UIImage()
-        searchBar.translatesAutoresizingMaskIntoConstraints = false
         
         let textField = searchBar.searchTextField
         textField.translatesAutoresizingMaskIntoConstraints = false
@@ -63,7 +63,6 @@ final class TrackersViewController: UIViewController {
         let imageView = UIImageView(image: UIImage(named: "StarPlaceholder"))
         imageView.contentMode = .scaleAspectFit
         imageView.tintColor = ProjectColors.lightGray
-        imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
     }()
     
@@ -72,7 +71,6 @@ final class TrackersViewController: UIViewController {
         label.text = Constants.trackersVcPlaceholderLabel
         label.font = UIFont.systemFont(ofSize: 12)
         label.textColor = ProjectColors.black
-        label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
@@ -82,7 +80,6 @@ final class TrackersViewController: UIViewController {
         layout.minimumInteritemSpacing = 16
         layout.scrollDirection = .vertical
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
-        collectionView.translatesAutoresizingMaskIntoConstraints = false
         return collectionView
     }()
     
@@ -233,21 +230,13 @@ final class TrackersViewController: UIViewController {
     private func setupLayout() {
         view.backgroundColor = ProjectColors.white
         
-        [titleLabel, addButton, datePicker, searchBar, 
-         placeholderImageView, placeholderLabel].forEach { element in
-            view.addSubview(element)
+        [titleLabel, searchBar, placeholderImageView,
+         collectionView, placeholderLabel].forEach { element in
             element.translatesAutoresizingMaskIntoConstraints = false
+            view.addSubview(element)
         }
         
         NSLayoutConstraint.activate([
-            
-            // addButton constraints
-            addButton.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 6),
-            
-            // datePicker constraints
-            datePicker.heightAnchor.constraint(equalToConstant: 34),
-            datePicker.widthAnchor.constraint(equalToConstant: 100),
-            
             // titleLabel constraints
             titleLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 1),
             titleLabel.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
