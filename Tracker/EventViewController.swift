@@ -7,7 +7,7 @@
 
 import UIKit
 
-final class EventViewController: UIViewController {
+final class EventViewController: UIViewController, UITextFieldDelegate {
     
     // MARK: - Properties
     private let trackerType: TrackerType
@@ -34,6 +34,8 @@ final class EventViewController: UIViewController {
         textField.layer.cornerRadius = 16
         textField.layer.masksToBounds = true
         textField.backgroundColor = ProjectColors.lightGray?.withAlphaComponent(0.3)
+        textField.returnKeyType = .go
+        textField.enablesReturnKeyAutomatically = false
         
         let padding = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: textField.frame.height))
         textField.leftView = padding
@@ -129,6 +131,8 @@ final class EventViewController: UIViewController {
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        nameTextField.delegate = self
         
         setupScrollView()
         setupView()
@@ -274,6 +278,15 @@ final class EventViewController: UIViewController {
         print("Создан трекер:", newTracker)
         NotificationCenter.default.post(name: .createdTracker, object: newTracker)
         dismiss(animated: true, completion: nil)
+    }
+    
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        textField.resignFirstResponder()
+        return true
+    }
+    
+    func textFieldDidBeginEditing(_ textField: UITextField) {
+        textField.becomeFirstResponder()
     }
 }
 

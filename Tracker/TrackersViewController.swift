@@ -7,7 +7,7 @@
 
 import UIKit
 
-final class TrackersViewController: UIViewController {
+final class TrackersViewController: UIViewController, UISearchBarDelegate {
     
     // MARK: - UI Elements
     private let titleLabel: UILabel = {
@@ -46,6 +46,8 @@ final class TrackersViewController: UIViewController {
         searchBar.backgroundImage = UIImage()
         
         let textField = searchBar.searchTextField
+        textField.enablesReturnKeyAutomatically = false
+        textField.returnKeyType = .go
         textField.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
@@ -103,6 +105,10 @@ final class TrackersViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         print("Изначальный массив категорий:", categories)
+        
+        searchBar.delegate = self
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+        view.addGestureRecognizer(tapGesture)
         
         setupLayout()
         setupNavigationBar()
@@ -229,6 +235,10 @@ final class TrackersViewController: UIViewController {
         currentDate = sender.date
     }
     
+    @objc private func dismissKeyboard() {
+        view.endEditing(true)
+    }
+    
     private func setupLayout() {
         view.backgroundColor = ProjectColors.white
         
@@ -266,11 +276,16 @@ final class TrackersViewController: UIViewController {
             placeholderLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor)
         ])
     }
+    
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        searchBar.resignFirstResponder()
+    }
 }
 
 extension TrackersViewController: TrackerCellDelegate {
     func toggleCompletion(for trackerID: UUID) {
-        guard let _ = findTracker(by: trackerID) else { return }
+        guard findTracker(by: trackerID) != nil else { return }
+        
         let currentDateOnly = Calendar.current.startOfDay(for: currentDate)
         
         guard currentDateOnly <= Calendar.current.startOfDay(for: Date()) else {
@@ -290,12 +305,9 @@ extension TrackersViewController: TrackerCellDelegate {
     }
     
     private func findTracker(by id: UUID) -> Tracker? {
-        for category in categories {
-            if let tracker = category.trackers.first(where: { $0.id == id }) {
-                return tracker
-            }
-        }
-        return nil
+        return categories
+            .flatMap { $0.trackers }
+            .first(where: { $0.id == id })
     }
     
     func completeTracker(id: UUID) { }
