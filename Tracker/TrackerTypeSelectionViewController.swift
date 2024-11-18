@@ -14,7 +14,6 @@ final class TrackerTypeSelectionViewController: UIViewController {
         label.text = Constants.trackerTypeSelectionVcTitle
         label.font = .systemFont(ofSize: 16, weight: .medium)
         label.tintColor = ProjectColors.black
-        label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
@@ -25,7 +24,6 @@ final class TrackerTypeSelectionViewController: UIViewController {
         button.setTitleColor(ProjectColors.white, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         button.layer.cornerRadius = 16
-        button.translatesAutoresizingMaskIntoConstraints = false
         button.addTarget(self, action: #selector(habitButtonTapped), for: .touchUpInside)
         return button
     }()
@@ -37,7 +35,6 @@ final class TrackerTypeSelectionViewController: UIViewController {
         button.setTitleColor(ProjectColors.white, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         button.layer.cornerRadius = 16
-        button.translatesAutoresizingMaskIntoConstraints = false
         button.addTarget(self, action: #selector(irregularEventButtonTapped), for: .touchUpInside)
         return button
     }()
@@ -46,8 +43,6 @@ final class TrackerTypeSelectionViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        view.backgroundColor = ProjectColors.white
         
         navigationController?.navigationBar.isHidden = true
         
@@ -58,9 +53,12 @@ final class TrackerTypeSelectionViewController: UIViewController {
     }
     
     private func setupLayout() {
-        view.addSubview(titleLabel)
-        view.addSubview(habitButton)
-        view.addSubview(irregularEventButton)
+        view.backgroundColor = ProjectColors.white
+        
+        [titleLabel, habitButton, irregularEventButton].forEach { element in
+            element.translatesAutoresizingMaskIntoConstraints = false
+            view.addSubview(element)
+        }
         
         NSLayoutConstraint.activate([
             

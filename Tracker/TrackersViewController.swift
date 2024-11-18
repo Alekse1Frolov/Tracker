@@ -9,6 +9,7 @@ import UIKit
 
 final class TrackersViewController: UIViewController {
     
+    // MARK: - UI Elements
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.text = Constants.trackersVcTitleLabel
@@ -83,6 +84,7 @@ final class TrackersViewController: UIViewController {
         return collectionView
     }()
     
+    // MARK: - Properties
     var categories: [TrackerCategory] = []
     private var completedTrackers: Set<TrackerRecord> = []
     var currentDate: Date = Date() {

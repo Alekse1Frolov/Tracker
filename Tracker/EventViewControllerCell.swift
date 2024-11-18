@@ -13,7 +13,6 @@ final class EventViewControllerCell: UICollectionViewCell {
         let label = UILabel()
         label.textAlignment = .center
         label.font = .systemFont(ofSize: 32)
-        label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
@@ -21,14 +20,16 @@ final class EventViewControllerCell: UICollectionViewCell {
         let view = UIView()
             view.layer.cornerRadius = 8
             view.layer.masksToBounds = true
-            view.translatesAutoresizingMaskIntoConstraints = false
             return view
         }()
     
     override init(frame: CGRect) {
         super.init(frame: frame)
-        contentView.addSubview(colorView)
-        contentView.addSubview(emojiLabel)
+        
+        [colorView, emojiLabel].forEach { element in
+            element.translatesAutoresizingMaskIntoConstraints = false
+            contentView.addSubview(element)
+        }
         
         NSLayoutConstraint.activate([
             colorView.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),

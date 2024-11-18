@@ -13,6 +13,7 @@ final class EventViewController: UIViewController {
     private let trackerType: TrackerType
     private let emojis = MockData.emojis
     private let colors = MockData.trackersColors
+    private var selectedDaysText = ""
     
     // MARK: - UI Elements
     private let scrollView = UIScrollView()
@@ -287,7 +288,7 @@ extension EventViewController: UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "tableCell", for: indexPath)
+        let cell = UITableViewCell(style: .subtitle, reuseIdentifier: "tableCell")
         
         cell.accessoryType = .disclosureIndicator
         cell.backgroundColor = ProjectColors.lightGray?.withAlphaComponent(0.3)
@@ -298,17 +299,24 @@ extension EventViewController: UITableViewDataSource {
                 cell.textLabel?.text = "Категория"
             case 1:
                 cell.textLabel?.text = "Расписание"
+            
+              let attributedText = NSAttributedString(
+              string: selectedDaysText,
+              attributes: [
+                .font: UIFont.systemFont(ofSize: 17, weight: .regular),
+                .foregroundColor: UIColor.gray
+              ]
+            )
+                cell.detailTextLabel?.attributedText = attributedText
             default:
                 break
             }
             cell.textLabel?.font = .systemFont(ofSize: 17, weight: .regular)
-            return cell
         } else if trackerType == .irregularEvent {
             cell.textLabel?.text = "Категория"
             cell.textLabel?.font = .systemFont(ofSize: 17, weight: .regular)
-            return cell
         }
-        return UITableViewCell()
+        return cell
     }
     
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
@@ -328,7 +336,10 @@ extension EventViewController: UITableViewDelegate {
         if indexPath.row == 1 {
             let scheduleVC = ScheduleViewController(selectedDays: Array(repeating: false, count: 7))
             scheduleVC.onDaysSelected = { [weak self] selectedDays in
-                self?.tableView.reloadRows(at: [indexPath], with: .automatic)
+                guard let self else { return }
+                let selectedDayNames = selectedDays.map { MockData.dayAbbreviations[MockData.days[$0.rawValue - 1]] ?? "" }
+                self.selectedDaysText = selectedDayNames.joined(separator: ", ")
+                self.tableView.reloadRows(at: [indexPath], with: .automatic)
             }
             present(scheduleVC, animated: true, completion: nil)
         }

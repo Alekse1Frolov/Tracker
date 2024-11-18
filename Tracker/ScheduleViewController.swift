@@ -19,14 +19,12 @@ final class ScheduleViewController: UIViewController {
         label.font = .systemFont(ofSize: 16, weight: .medium)
         label.textAlignment = .center
         label.tintColor = ProjectColors.black
-        label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
     private let tableView: UITableView = {
         let tableView = UITableView(frame: .zero, style: .plain)
         tableView.separatorInset = .zero
-        tableView.translatesAutoresizingMaskIntoConstraints = false
         return tableView
     }()
     
@@ -36,7 +34,6 @@ final class ScheduleViewController: UIViewController {
         button.backgroundColor = ProjectColors.black
         button.setTitleColor(ProjectColors.white, for: .normal)
         button.layer.cornerRadius = 16
-        button.translatesAutoresizingMaskIntoConstraints = false
         button.addTarget(self, action: #selector(readyButtonTapped), for: .touchUpInside)
         return button
     }()
@@ -52,19 +49,24 @@ final class ScheduleViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = ProjectColors.white
         
-        tableView.dataSource = self
-        tableView.delegate = self
-        tableView.register(ScheduleCell.self, forCellReuseIdentifier: ScheduleCell.reuseIdentifier)
-        
+        setupTableView()
         setupLayout()
     }
     
+    private func setupTableView() {
+        tableView.dataSource = self
+        tableView.delegate = self
+        tableView.register(ScheduleCell.self, forCellReuseIdentifier: ScheduleCell.reuseIdentifier)
+    }
+    
     private func setupLayout() {
-        view.addSubview(titleLabel)
-        view.addSubview(tableView)
-        view.addSubview(readyButton)
+        view.backgroundColor = ProjectColors.white
+        
+        [titleLabel, tableView, readyButton].forEach { element in
+            element.translatesAutoresizingMaskIntoConstraints = false
+            view.addSubview(element)
+        }
         
         NSLayoutConstraint.activate([
             
@@ -88,12 +90,16 @@ final class ScheduleViewController: UIViewController {
     }
     
     @objc private func readyButtonTapped() {
-        let selectedDaysNames = MockData.days.enumerated().compactMap { index, day in
+        let selectedDaysNames = MockData.days.enumerated().compactMap { index, _ in
             selectedDays[index] ? Weekday(rawValue: index + 1) : nil
         }
         
         onDaysSelected?(selectedDaysNames)
         dismiss(animated: true, completion: nil)
+    }
+    
+    @objc private func switchToggled(_ sender: UISwitch) {
+        selectedDays[sender.tag] = sender.isOn
     }
 }
 
@@ -141,9 +147,5 @@ extension ScheduleViewController: UITableViewDataSource, UITableViewDelegate {
         cell.backgroundColor = ProjectColors.lightGray?.withAlphaComponent(0.3)
         
         return cell
-    }
-    
-    @objc private func switchToggled(_ sender: UISwitch) {
-        selectedDays[sender.tag] = sender.isOn
     }
 }

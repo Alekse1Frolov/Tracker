@@ -11,6 +11,7 @@ final class ScheduleCell: UITableViewCell {
 
     static let reuseIdentifier = "ScheduleCell"
 
+    // MARK: - UI Elements
     private let dayLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 17, weight: .regular)
@@ -38,8 +39,11 @@ final class ScheduleCell: UITableViewCell {
     
     // MARK: - Layout Setup
     private func setupLayout() {
-        contentView.addSubview(dayLabel)
-        contentView.addSubview(switchView)
+        
+        [dayLabel, switchView].forEach { element in
+            element.translatesAutoresizingMaskIntoConstraints = false
+            contentView.addSubview(element)
+        }
         
         NSLayoutConstraint.activate([
             // dayLabel constraints
