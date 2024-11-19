@@ -13,6 +13,7 @@ final class EventViewController: UIViewController, UITextFieldDelegate {
     private let trackerType: TrackerType
     private let emojis = MockData.emojis
     private let colors = MockData.trackersColors
+    private var selectedDays: [Bool] = Array(repeating: false, count: MockData.days.count)
     private var selectedDaysText = ""
     
     // MARK: - UI Elements
@@ -425,10 +426,14 @@ extension EventViewController: UITableViewDelegate {
         if indexPath.row == 1 {
             view.endEditing(true)
             
-            let scheduleVC = ScheduleViewController(selectedDays: Array(repeating: false, count: 7))
-            scheduleVC.onDaysSelected = { [weak self] selectedDays in
+            let scheduleVC = ScheduleViewController(selectedDays: selectedDays)
+            scheduleVC.onDaysSelected = { [weak self] selectedWeekdays in
                 guard let self else { return }
-                let selectedDayNames = selectedDays.map { MockData.dayAbbreviations[MockData.days[$0.rawValue - 1]] ?? "" }
+                self.selectedDays = MockData.days.enumerated().map { index, _ in
+                    selectedWeekdays.contains(where: { $0.rawValue == index + 1 })
+                }
+                let selectedDayNames = selectedWeekdays.map { MockData.dayAbbreviations[MockData.days[$0.rawValue - 1]] ?? ""
+                }
                 self.selectedDaysText = selectedDayNames.joined(separator: ", ")
                 self.tableView.reloadRows(at: [indexPath], with: .automatic)
             }
