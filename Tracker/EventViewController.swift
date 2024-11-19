@@ -302,38 +302,14 @@ extension EventViewController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = UITableViewCell(style: .subtitle, reuseIdentifier: "tableCell")
-        
-        cell.accessoryType = .disclosureIndicator
-        cell.backgroundColor = ProjectColors.lightGray?.withAlphaComponent(0.3)
-        
-        let paragraphStyle = NSMutableParagraphStyle()
-        paragraphStyle.alignment = .right
-        
-        let textAttributes: [NSAttributedString.Key: Any] = [
-            .font: UIFont.systemFont(ofSize: 17, weight: .regular),
-            .foregroundColor: ProjectColors.black ?? .black,
-            .paragraphStyle: paragraphStyle
-        ]
-        
-        let detailAttributes: [NSAttributedString.Key: Any] = [
-            .font: UIFont.systemFont(ofSize: 17, weight: .regular),
-            .foregroundColor: ProjectColors.gray ?? .gray
-        ]
+        configureCellAppearence(cell)
         
         if trackerType == .habit {
-            switch indexPath.row {
-            case 0:
-                cell.textLabel?.attributedText = NSAttributedString(string: "Категория", attributes: textAttributes)
-            case 1:
-                cell.textLabel?.attributedText = NSAttributedString(string: "Расписание", attributes: textAttributes)
-                cell.detailTextLabel?.attributedText = NSAttributedString(string: selectedDaysText, attributes: detailAttributes)
-            default:
-                break
-            }
-            cell.textLabel?.font = .systemFont(ofSize: 17, weight: .regular)
-        } else if trackerType == .irregularEvent {
-            cell.textLabel?.attributedText = NSAttributedString(string: "Категория", attributes: textAttributes)
+            configureHabitCell(cell, at: indexPath)
+        } else if trackerType == . irregularEvent {
+            configureIrregularEventCell(cell)
         }
+        
         return cell
     }
     
@@ -343,6 +319,72 @@ extension EventViewController: UITableViewDataSource {
         } else {
             cell.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
         }
+    }
+    
+    private func configureCellAppearence(_ cell: UITableViewCell) {
+        cell.accessoryType = .disclosureIndicator
+        cell.backgroundColor = ProjectColors.lightGray?.withAlphaComponent(0.3)
+    }
+    
+    private func configureTextAttributes(alignment: NSTextAlignment = .left, color: UIColor = ProjectColors.black ?? .black) -> [NSAttributedString.Key: Any] {
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.alignment = alignment
+        
+        return [
+            .font: UIFont.systemFont(ofSize: 17, weight: .regular),
+            .foregroundColor: color,
+            .paragraphStyle: paragraphStyle
+        ]
+    }
+    
+    private func configureCellText(
+        _ cell: UITableViewCell,
+        mainText: String,
+        detailText: String? = nil,
+        mainTextColor: UIColor = ProjectColors.black ?? .black,
+        detailTextColor: UIColor = .gray,
+        alignment: NSTextAlignment = .right
+    ) {
+        cell.textLabel?.attributedText = NSAttributedString(
+            string: mainText,
+            attributes: configureTextAttributes(alignment: alignment, color: mainTextColor)
+        )
+
+        if let detailText = detailText {
+            cell.detailTextLabel?.attributedText = NSAttributedString(
+                string: detailText,
+                attributes: configureTextAttributes(color: detailTextColor)
+            )
+        }
+    }
+
+    private func configureCategoryCell(_ cell: UITableViewCell) {
+        configureCellText(
+            cell,
+            mainText: "Категория",
+            mainTextColor: ProjectColors.black ?? .black
+        )
+    }
+
+    private func configureHabitCell(_ cell: UITableViewCell, at indexPath: IndexPath) {
+        switch indexPath.row {
+        case 0:
+            configureCategoryCell(cell)
+        case 1:
+            configureCellText(
+                cell,
+                mainText: "Расписание",
+                detailText: selectedDaysText,
+                mainTextColor: ProjectColors.black ?? .black,
+                detailTextColor: .gray
+            )
+        default:
+            break
+        }
+    }
+
+    private func configureIrregularEventCell(_ cell: UITableViewCell) {
+        configureCategoryCell(cell)
     }
 }
 // MARK: - UITableViewDelegate
