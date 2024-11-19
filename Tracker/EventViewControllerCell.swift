@@ -18,10 +18,10 @@ final class EventViewControllerCell: UICollectionViewCell {
     
     private let colorView: UIView = {
         let view = UIView()
-            view.layer.cornerRadius = 8
-            view.layer.masksToBounds = true
-            return view
-        }()
+        view.layer.cornerRadius = 8
+        view.layer.masksToBounds = true
+        return view
+    }()
     
     override init(frame: CGRect) {
         super.init(frame: frame)

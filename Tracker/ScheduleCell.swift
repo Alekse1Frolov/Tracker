@@ -8,9 +8,9 @@
 import UIKit
 
 final class ScheduleCell: UITableViewCell {
-
-    static let reuseIdentifier = "ScheduleCell"
-
+    
+    static let reuseIdentifier = Constants.scheduleVcCellId
+    
     // MARK: - UI Elements
     private let dayLabel: UILabel = {
         let label = UILabel()
@@ -49,14 +49,20 @@ final class ScheduleCell: UITableViewCell {
             // dayLabel constraints
             dayLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             dayLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
-
+            
             // switchView constraints
             switchView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
             switchView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor)
         ])
     }
     
-    func configure(with day: String, isSelected: Bool, tag: Int, target: Any?, action: Selector) {
+    func configure(
+        with day: String,
+        isSelected: Bool,
+        tag: Int,
+        target: Any?,
+        action: Selector
+    ) {
         dayLabel.text = day.capitalized
         switchView.isOn = isSelected
         switchView.tag = tag

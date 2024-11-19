@@ -105,15 +105,25 @@ final class ScheduleViewController: UIViewController {
 
 extension ScheduleViewController: UITableViewDataSource, UITableViewDelegate {
     
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return MockData.days.count
+    func tableView(
+        _ tableView: UITableView,
+        numberOfRowsInSection section: Int
+    ) -> Int {
+        MockData.days.count
     }
     
-    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 75
+    func tableView(
+        _ tableView: UITableView,
+        heightForRowAt indexPath: IndexPath
+    ) -> CGFloat {
+        75
     }
     
-    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+    func tableView(
+        _ tableView: UITableView,
+        willDisplay cell: UITableViewCell,
+        forRowAt indexPath: IndexPath
+    ) {
         cell.selectionStyle = .none
         
         if indexPath.row == 0 {
@@ -135,15 +145,26 @@ extension ScheduleViewController: UITableViewDataSource, UITableViewDelegate {
         }
     }
     
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: ScheduleCell.reuseIdentifier, for: indexPath) as? ScheduleCell else {
+    func tableView(
+        _ tableView: UITableView,
+        cellForRowAt indexPath: IndexPath
+    ) -> UITableViewCell {
+        guard let cell = tableView.dequeueReusableCell(
+            withIdentifier: ScheduleCell.reuseIdentifier,
+            for: indexPath
+        ) as? ScheduleCell else {
             return UITableViewCell()
         }
         
         let day = MockData.days[indexPath.row]
         let isSelected = selectedDays[indexPath.row]
         
-        cell.configure(with: day, isSelected: isSelected, tag: indexPath.row, target: self, action: #selector(switchToggled(_:)))
+        cell.configure(
+            with: day,
+            isSelected: isSelected,
+            tag: indexPath.row,
+            target: self,
+            action: #selector(switchToggled(_:)))
         cell.backgroundColor = ProjectColors.lightGray?.withAlphaComponent(0.3)
         
         return cell

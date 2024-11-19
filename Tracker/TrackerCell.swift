@@ -15,7 +15,7 @@ protocol TrackerCellDelegate: AnyObject {
 
 final class TrackerCell: UICollectionViewCell {
     
-    static let identifier = "TrakerCell"
+    static let identifier = Constants.trackersVcTrackerCellId
     
     private let emojiLabel: UILabel = {
         let label = UILabel()
@@ -24,7 +24,6 @@ final class TrackerCell: UICollectionViewCell {
         label.textAlignment = .center
         label.layer.cornerRadius = 12
         label.backgroundColor = ProjectColors.white?.withAlphaComponent(0.3)
-        label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
@@ -33,7 +32,6 @@ final class TrackerCell: UICollectionViewCell {
         label.font = UIFont.systemFont(ofSize: 12, weight: .medium)
         label.textColor = ProjectColors.white
         label.numberOfLines = 2
-        label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
@@ -41,7 +39,6 @@ final class TrackerCell: UICollectionViewCell {
         let view = UIView()
         view.layer.cornerRadius = 14
         view.backgroundColor = ProjectColors.TrackersColosSet.colorSelection5
-        view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
     
@@ -49,7 +46,6 @@ final class TrackerCell: UICollectionViewCell {
         let label = UILabel()
         label.font = .systemFont(ofSize: 13, weight: .regular)
         label.textColor = ProjectColors.black
-        label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
@@ -60,7 +56,6 @@ final class TrackerCell: UICollectionViewCell {
         button.layer.cornerRadius = 18
         button.layer.masksToBounds = true
         button.tintColor = ProjectColors.white
-        button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
     
@@ -74,11 +69,6 @@ final class TrackerCell: UICollectionViewCell {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
-        contentView.addSubview(backView)
-        backView.addSubview(emojiLabel)
-        backView.addSubview(trackerCellLabel)
-        contentView.addSubview(counterLabel)
-        contentView.addSubview(plusButton)
         
         plusButton.addTarget(self, action: #selector(plusButtonTapped), for: .touchUpInside)
         setupLayout()
@@ -89,6 +79,17 @@ final class TrackerCell: UICollectionViewCell {
     }
     
     private func setupLayout() {
+        
+        [emojiLabel, trackerCellLabel].forEach { element in
+            element.translatesAutoresizingMaskIntoConstraints = false
+            backView.addSubview(element)
+        }
+        
+        [backView, counterLabel, plusButton].forEach { element in
+            element.translatesAutoresizingMaskIntoConstraints = false
+            contentView.addSubview(element)
+        }
+        
         NSLayoutConstraint.activate([
             
             // backView constraint
@@ -140,13 +141,20 @@ final class TrackerCell: UICollectionViewCell {
         trackerCellLabel.text = tracker.name
     }
     
-    func configure(with tracker: Tracker, completed: Bool, completionCount: Int) {
+    func configure(
+        with tracker: Tracker,
+        completed: Bool,
+        completionCount: Int
+    ) {
         emojiLabel.text = tracker.emoji
         trackerCellLabel.text = tracker.name
+        
         let color = tracker.color
+        
         backView.backgroundColor = color
         plusButton.backgroundColor = color
         counterLabel.text = "\(formatDay(completionCount))"
+        
         self.trackerID = tracker.id
         self.isCompleted = completed
     }
@@ -154,7 +162,7 @@ final class TrackerCell: UICollectionViewCell {
     private func formatDay(_ count: Int) -> String {
         let remainderAfterDivisionBy10 = count % 10
         let remainderAfterDivisionBy100 = count % 100
-
+        
         switch (remainderAfterDivisionBy10, remainderAfterDivisionBy100) {
         case (1, _) where remainderAfterDivisionBy100 != 11:
             return "\(count) день"

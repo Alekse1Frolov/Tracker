@@ -29,7 +29,7 @@ final class EventViewController: UIViewController, UITextFieldDelegate {
     
     private let nameTextField: UITextField = {
         let textField = UITextField()
-        textField.placeholder = "Введите название трекера"
+        textField.placeholder = Constants.eventVcTextFieldPlaceholderTitle
         textField.borderStyle = .none
         textField.layer.cornerRadius = 16
         textField.layer.masksToBounds = true
@@ -56,7 +56,7 @@ final class EventViewController: UIViewController, UITextFieldDelegate {
     
     private let emojiLabel: UILabel = {
         let label = UILabel()
-        label.text = "Emoji"
+        label.text = Constants.eventVcEmojiLabelTitile
         label.font = .systemFont(ofSize: 19, weight: .bold)
         return label
     }()
@@ -72,7 +72,7 @@ final class EventViewController: UIViewController, UITextFieldDelegate {
     
     private let colorLabel: UILabel = {
         let label = UILabel()
-        label.text = "Цвет"
+        label.text = Constants.eventVcColorLabelTitle
         label.font = .systemFont(ofSize: 19, weight: .bold)
         return label
     }()
@@ -89,7 +89,7 @@ final class EventViewController: UIViewController, UITextFieldDelegate {
     
     private let cancelButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Отменить", for: .normal)
+        button.setTitle(Constants.eventVcCancelButtonTitle, for: .normal)
         button.setTitleColor(ProjectColors.red, for: .normal)
         button.layer.borderWidth = 1
         button.layer.borderColor = ProjectColors.red?.cgColor
@@ -100,7 +100,7 @@ final class EventViewController: UIViewController, UITextFieldDelegate {
     
     private let createButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Создать", for: .normal)
+        button.setTitle(Constants.eventVcCreateButtonTitle, for: .normal)
         button.setTitleColor(ProjectColors.gray, for: .normal)
         button.backgroundColor = ProjectColors.lightGray
         button.layer.cornerRadius = 16
@@ -142,7 +142,9 @@ final class EventViewController: UIViewController, UITextFieldDelegate {
     
     private func setupView() {
         view.backgroundColor = ProjectColors.white
-        titleLabel.text = trackerType == .habit ? "Новая привычка" : "Новое нерегулярное событие"
+        titleLabel.text = trackerType ==
+            .habit ? Constants.eventVcNewHabitCreationTitle
+        : Constants.eventVcNewIrregularEventCreationTitle
         
         [titleLabel, nameTextField, tableView, emojiLabel, emojiCollectionView,
          colorLabel, colorCollectionView, buttonStackView]
@@ -161,17 +163,25 @@ final class EventViewController: UIViewController, UITextFieldDelegate {
     private func setupTableView() {
         tableView.dataSource = self
         tableView.delegate = self
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "tableCell")
+        tableView.register(
+            UITableViewCell.self,
+            forCellReuseIdentifier: Constants.eventVcTableViewCellId
+        )
     }
     
     private func setupCollectionView() {
         emojiCollectionView.dataSource = self
         emojiCollectionView.delegate = self
-        emojiCollectionView.register(EventViewControllerCell.self, forCellWithReuseIdentifier: "emojiCell")
+        emojiCollectionView.register(
+            EventViewControllerCell.self,
+            forCellWithReuseIdentifier: Constants.eventVcEmojiCollectionCellId
+        )
         
         colorCollectionView.dataSource = self
         colorCollectionView.delegate = self
-        colorCollectionView.register(EventViewControllerCell.self, forCellWithReuseIdentifier: "colorCell")
+        colorCollectionView.register(
+            EventViewControllerCell.self,
+            forCellWithReuseIdentifier: Constants.eventVcColorCollectionCellId)
     }
     
     private func activateConstraints() {
@@ -292,16 +302,25 @@ final class EventViewController: UIViewController, UITextFieldDelegate {
 
 // MARK: - UITableViewDataSource
 extension EventViewController: UITableViewDataSource {
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return trackerType == .habit ? 2 : 1
+    func tableView(
+        _ tableView: UITableView,
+        numberOfRowsInSection section: Int
+    ) -> Int {
+        trackerType == .habit ? 2 : 1
     }
     
-    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 75
+    func tableView(
+        _ tableView: UITableView,
+        heightForRowAt indexPath: IndexPath
+    ) -> CGFloat {
+        75
     }
     
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = UITableViewCell(style: .subtitle, reuseIdentifier: "tableCell")
+    func tableView(
+        _ tableView: UITableView,
+        cellForRowAt indexPath: IndexPath
+    ) -> UITableViewCell {
+        let cell = UITableViewCell(style: .subtitle, reuseIdentifier: Constants.eventVcTableViewCellId)
         configureCellAppearence(cell)
         
         if trackerType == .habit {
@@ -313,7 +332,11 @@ extension EventViewController: UITableViewDataSource {
         return cell
     }
     
-    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+    func tableView(
+        _ tableView: UITableView,
+        willDisplay cell: UITableViewCell,
+        forRowAt indexPath: IndexPath
+    ) {
         if indexPath.row == tableView.numberOfRows(inSection: indexPath.section) - 1 {
             cell.separatorInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: .greatestFiniteMagnitude)
         } else {
@@ -326,7 +349,10 @@ extension EventViewController: UITableViewDataSource {
         cell.backgroundColor = ProjectColors.lightGray?.withAlphaComponent(0.3)
     }
     
-    private func configureTextAttributes(alignment: NSTextAlignment = .left, color: UIColor = ProjectColors.black ?? .black) -> [NSAttributedString.Key: Any] {
+    private func configureTextAttributes(
+        alignment: NSTextAlignment = .left,
+        color: UIColor = ProjectColors.black ?? .black
+    ) -> [NSAttributedString.Key: Any] {
         let paragraphStyle = NSMutableParagraphStyle()
         paragraphStyle.alignment = alignment
         
@@ -349,7 +375,7 @@ extension EventViewController: UITableViewDataSource {
             string: mainText,
             attributes: configureTextAttributes(alignment: alignment, color: mainTextColor)
         )
-
+        
         if let detailText = detailText {
             cell.detailTextLabel?.attributedText = NSAttributedString(
                 string: detailText,
@@ -357,15 +383,15 @@ extension EventViewController: UITableViewDataSource {
             )
         }
     }
-
+    
     private func configureCategoryCell(_ cell: UITableViewCell) {
         configureCellText(
             cell,
-            mainText: "Категория",
+            mainText: Constants.eventVcCategoryTitle,
             mainTextColor: ProjectColors.black ?? .black
         )
     }
-
+    
     private func configureHabitCell(_ cell: UITableViewCell, at indexPath: IndexPath) {
         switch indexPath.row {
         case 0:
@@ -373,7 +399,7 @@ extension EventViewController: UITableViewDataSource {
         case 1:
             configureCellText(
                 cell,
-                mainText: "Расписание",
+                mainText: Constants.scheduleVcTitle,
                 detailText: selectedDaysText,
                 mainTextColor: ProjectColors.black ?? .black,
                 detailTextColor: .gray
@@ -382,7 +408,7 @@ extension EventViewController: UITableViewDataSource {
             break
         }
     }
-
+    
     private func configureIrregularEventCell(_ cell: UITableViewCell) {
         configureCategoryCell(cell)
     }
@@ -390,7 +416,10 @@ extension EventViewController: UITableViewDataSource {
 // MARK: - UITableViewDelegate
 extension EventViewController: UITableViewDelegate {
     
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+    func tableView(
+        _ tableView: UITableView,
+        didSelectRowAt indexPath: IndexPath
+    ) {
         tableView.deselectRow(at: indexPath, animated: true)
         
         if indexPath.row == 1 {
@@ -410,19 +439,31 @@ extension EventViewController: UITableViewDelegate {
 
 // MARK: - UICollectionViewDataSource
 extension EventViewController: UICollectionViewDataSource, UICollectionViewDelegate {
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return collectionView == emojiCollectionView ? emojis.count : colors.count
+    func collectionView(
+        _ collectionView: UICollectionView,
+        numberOfItemsInSection section: Int
+    ) -> Int {
+        collectionView == emojiCollectionView ? emojis.count : colors.count
     }
     
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+    func collectionView(
+        _ collectionView: UICollectionView,
+        cellForItemAt indexPath: IndexPath
+    ) -> UICollectionViewCell {
         if collectionView == emojiCollectionView {
-            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "emojiCell", for: indexPath) as? EventViewControllerCell else { return UICollectionViewCell() }
+            guard let cell = collectionView.dequeueReusableCell(
+                withReuseIdentifier: Constants.eventVcEmojiCollectionCellId,
+                for: indexPath
+            ) as? EventViewControllerCell else { return UICollectionViewCell() }
             
             let emoji = emojis[indexPath.item]
             cell.configure(with: emoji)
             return cell
         } else if collectionView == colorCollectionView {
-            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "colorCell", for: indexPath) as? EventViewControllerCell else { return UICollectionViewCell() }
+            guard let cell = collectionView.dequeueReusableCell(
+                withReuseIdentifier: Constants.eventVcColorCollectionCellId,
+                for: indexPath
+            ) as? EventViewControllerCell else { return UICollectionViewCell() }
             
             let color = colors[indexPath.item]
             cell.configure(with: color)
@@ -434,7 +475,11 @@ extension EventViewController: UICollectionViewDataSource, UICollectionViewDeleg
 
 // MARK: - UICollectionViewDelegateFlowLayout
 extension EventViewController: UICollectionViewDelegateFlowLayout {
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+    func collectionView(
+        _ collectionView: UICollectionView,
+        layout collectionViewLayout: UICollectionViewLayout,
+        sizeForItemAt indexPath: IndexPath
+    ) -> CGSize {
         
         let itemsPerRow: CGFloat = 6
         let sidePadding: CGFloat = 18
@@ -446,15 +491,27 @@ extension EventViewController: UICollectionViewDelegateFlowLayout {
         return CGSize(width: itemWidth, height: itemWidth)
     }
     
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
-        return UIEdgeInsets(top: 24, left: 18, bottom: 24, right: 18)
+    func collectionView(
+        _ collectionView: UICollectionView,
+        layout collectionViewLayout: UICollectionViewLayout,
+        insetForSectionAt section: Int
+    ) -> UIEdgeInsets {
+        UIEdgeInsets(top: 24, left: 18, bottom: 24, right: 18)
     }
     
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
-        return 5
+    func collectionView(
+        _ collectionView: UICollectionView,
+        layout collectionViewLayout: UICollectionViewLayout,
+        minimumInteritemSpacingForSectionAt section: Int
+    ) -> CGFloat {
+        5
     }
     
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
-        return 0
+    func collectionView(
+        _ collectionView: UICollectionView,
+        layout collectionViewLayout: UICollectionViewLayout,
+        minimumLineSpacingForSectionAt section: Int
+    ) -> CGFloat {
+        0
     }
 }

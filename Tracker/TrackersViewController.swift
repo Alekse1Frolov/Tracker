@@ -96,10 +96,10 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
         }
     }
     var currentWeekday: Weekday {
-            let calendar = Calendar.current
-            let weekdayIndex = calendar.component(.weekday, from: currentDate) - 1
-            return Weekday(rawValue: weekdayIndex + 1) ?? .sunday
-        }
+        let calendar = Calendar.current
+        let weekdayIndex = calendar.component(.weekday, from: currentDate) - 1
+        return Weekday(rawValue: weekdayIndex + 1) ?? .sunday
+    }
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
@@ -320,33 +320,43 @@ extension TrackersViewController: UICollectionViewDataSource {
         return categories.count
     }
     
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+    func collectionView(
+        _ collectionView: UICollectionView,
+        numberOfItemsInSection section: Int
+    ) -> Int {
         let filteredTrackers = categories[section].trackers.filter { $0.schedule.contains(currentWeekday) }
         print("Трекеры, отфильтрованные для \(currentWeekday):", filteredTrackers)
         return filteredTrackers.count
     }
     
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: TrackerCell.identifier, for: indexPath) as? TrackerCell else {
-                return UICollectionViewCell()
-            }
-            
-            let filteredTrackers = categories[indexPath.section].trackers.filter { $0.schedule.contains(currentWeekday) }
-            let tracker = filteredTrackers[indexPath.item]
-            
-            let currentDateOnly = Calendar.current.startOfDay(for: currentDate)
-            let record = TrackerRecord(trackerId: tracker.id, date: currentDateOnly)
-            
-            let isCompleted = completedTrackers.contains(record)
-            let completionCount = completedTrackers.filter { $0.trackerId == tracker.id }.count
-            
-            cell.configure(with: tracker, completed: isCompleted, completionCount: completionCount)
-            cell.delegate = self
-            
-            return cell
+    func collectionView(
+        _ collectionView: UICollectionView,
+        cellForItemAt indexPath: IndexPath
+    ) -> UICollectionViewCell {
+        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: TrackerCell.identifier, for: indexPath) as? TrackerCell else {
+            return UICollectionViewCell()
         }
+        
+        let filteredTrackers = categories[indexPath.section].trackers.filter { $0.schedule.contains(currentWeekday) }
+        let tracker = filteredTrackers[indexPath.item]
+        
+        let currentDateOnly = Calendar.current.startOfDay(for: currentDate)
+        let record = TrackerRecord(trackerId: tracker.id, date: currentDateOnly)
+        
+        let isCompleted = completedTrackers.contains(record)
+        let completionCount = completedTrackers.filter { $0.trackerId == tracker.id }.count
+        
+        cell.configure(with: tracker, completed: isCompleted, completionCount: completionCount)
+        cell.delegate = self
+        
+        return cell
+    }
     
-    func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
+    func collectionView(
+        _ collectionView: UICollectionView,
+        viewForSupplementaryElementOfKind kind: String,
+        at indexPath: IndexPath
+    ) -> UICollectionReusableView {
         if kind == UICollectionView.elementKindSectionHeader {
             guard let header = collectionView.dequeueReusableSupplementaryView(
                 ofKind: kind,
@@ -362,24 +372,44 @@ extension TrackersViewController: UICollectionViewDataSource {
 }
 
 extension TrackersViewController: UICollectionViewDelegateFlowLayout {
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+    func collectionView(
+        _ collectionView: UICollectionView,
+        layout collectionViewLayout: UICollectionViewLayout,
+        sizeForItemAt indexPath: IndexPath
+    ) -> CGSize {
         let width = (collectionView.bounds.width - 48) / 2
         return CGSize(width: width, height: 148)
     }
     
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
-        return CGSize(width: collectionView.bounds.width, height: 42)
+    func collectionView(
+        _ collectionView: UICollectionView,
+        layout collectionViewLayout: UICollectionViewLayout,
+        referenceSizeForHeaderInSection section: Int
+    ) -> CGSize {
+        CGSize(width: collectionView.bounds.width, height: 42)
     }
     
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
-        return UIEdgeInsets(top: 12, left: 16, bottom: 16, right: 16)
+    func collectionView(
+        _ collectionView: UICollectionView,
+        layout collectionViewLayout: UICollectionViewLayout,
+        insetForSectionAt section: Int
+    ) -> UIEdgeInsets {
+        UIEdgeInsets(top: 12, left: 16, bottom: 16, right: 16)
     }
     
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
-        return 9
+    func collectionView(
+        _ collectionView: UICollectionView,
+        layout collectionViewLayout: UICollectionViewLayout,
+        minimumInteritemSpacingForSectionAt section: Int
+    ) -> CGFloat {
+        9
     }
     
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
-        return 46
+    func collectionView(
+        _ collectionView: UICollectionView,
+        layout collectionViewLayout: UICollectionViewLayout,
+        minimumLineSpacingForSectionAt section: Int
+    ) -> CGFloat {
+        46
     }
 }
