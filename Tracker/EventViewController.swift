@@ -347,6 +347,8 @@ extension EventViewController: UITableViewDelegate {
         tableView.deselectRow(at: indexPath, animated: true)
         
         if indexPath.row == 1 {
+            view.endEditing(true)
+            
             let scheduleVC = ScheduleViewController(selectedDays: Array(repeating: false, count: 7))
             scheduleVC.onDaysSelected = { [weak self] selectedDays in
                 guard let self else { return }
