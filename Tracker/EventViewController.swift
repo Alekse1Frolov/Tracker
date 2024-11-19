@@ -306,28 +306,33 @@ extension EventViewController: UITableViewDataSource {
         cell.accessoryType = .disclosureIndicator
         cell.backgroundColor = ProjectColors.lightGray?.withAlphaComponent(0.3)
         
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.alignment = .right
+        
+        let textAttributes: [NSAttributedString.Key: Any] = [
+            .font: UIFont.systemFont(ofSize: 17, weight: .regular),
+            .foregroundColor: ProjectColors.black ?? .black,
+            .paragraphStyle: paragraphStyle
+        ]
+        
+        let detailAttributes: [NSAttributedString.Key: Any] = [
+            .font: UIFont.systemFont(ofSize: 17, weight: .regular),
+            .foregroundColor: ProjectColors.gray ?? .gray
+        ]
+        
         if trackerType == .habit {
             switch indexPath.row {
             case 0:
-                cell.textLabel?.text = "Категория"
+                cell.textLabel?.attributedText = NSAttributedString(string: "Категория", attributes: textAttributes)
             case 1:
-                cell.textLabel?.text = "Расписание"
-            
-              let attributedText = NSAttributedString(
-              string: selectedDaysText,
-              attributes: [
-                .font: UIFont.systemFont(ofSize: 17, weight: .regular),
-                .foregroundColor: UIColor.gray
-              ]
-            )
-                cell.detailTextLabel?.attributedText = attributedText
+                cell.textLabel?.attributedText = NSAttributedString(string: "Расписание", attributes: textAttributes)
+                cell.detailTextLabel?.attributedText = NSAttributedString(string: selectedDaysText, attributes: detailAttributes)
             default:
                 break
             }
             cell.textLabel?.font = .systemFont(ofSize: 17, weight: .regular)
         } else if trackerType == .irregularEvent {
-            cell.textLabel?.text = "Категория"
-            cell.textLabel?.font = .systemFont(ofSize: 17, weight: .regular)
+            cell.textLabel?.attributedText = NSAttributedString(string: "Категория", attributes: textAttributes)
         }
         return cell
     }
