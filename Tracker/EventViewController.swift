@@ -135,29 +135,11 @@ final class EventViewController: UIViewController, UITextFieldDelegate {
         
         nameTextField.delegate = self
         
+        setupLayout()
         setupScrollView()
-        setupView()
         setupTableView()
         setupCollectionView()
-    }
-    
-    private func setupView() {
-        view.backgroundColor = Asset.ypWhite.color
-        titleLabel.text = trackerType ==
-            .habit ? Constants.eventVcNewHabitCreationTitle
-        : Constants.eventVcNewIrregularEventCreationTitle
-        
-        [titleLabel, nameTextField, tableView, emojiLabel, emojiCollectionView,
-         colorLabel, colorCollectionView, buttonStackView].forEach { element in
-                contentView.addSubview(element)
-                element.translatesAutoresizingMaskIntoConstraints = false
-            }
-        
-        [cancelButton, createButton].forEach { element in
-            buttonStackView.addSubview(element)
-            element.translatesAutoresizingMaskIntoConstraints = false
-        }
-        activateConstraints()
+        setupScrollViewContent()
     }
     
     private func setupTableView() {
@@ -184,15 +166,65 @@ final class EventViewController: UIViewController, UITextFieldDelegate {
             forCellWithReuseIdentifier: Constants.eventVcColorCollectionCellId)
     }
     
-    private func activateConstraints() {
+    private func setupLayout() {
+        view.backgroundColor = Asset.ypWhite.color
+        
+        titleLabel.text = trackerType ==
+            .habit ? Constants.eventVcNewHabitCreationTitle
+        : Constants.eventVcNewIrregularEventCreationTitle
+        
+        [cancelButton, createButton].forEach { element in
+            buttonStackView.addSubview(element)
+            element.translatesAutoresizingMaskIntoConstraints = false
+        }
+        
+        [titleLabel, scrollView, buttonStackView].forEach { element in
+            element.translatesAutoresizingMaskIntoConstraints = false
+            view.addSubview(element)
+        }
+        
         NSLayoutConstraint.activate([
-            
             // titleLabel constraints
-            titleLabel.topAnchor.constraint(equalTo: contentView.safeAreaLayoutGuide.topAnchor, constant: 20),
-            titleLabel.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+            titleLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 28),
+            titleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             
+            // scrollView constraints
+            scrollView.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 14),
+            scrollView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
+            scrollView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+            scrollView.bottomAnchor.constraint(equalTo: buttonStackView.topAnchor, constant: -16),
+            
+            // buttonStackView constraints
+            buttonStackView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 20),
+            buttonStackView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -20),
+            buttonStackView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+            buttonStackView.heightAnchor.constraint(equalToConstant: 60),
+            
+            // cancelButton constraints
+            cancelButton.leadingAnchor.constraint(equalTo: buttonStackView.leadingAnchor),
+            cancelButton.topAnchor.constraint(equalTo: buttonStackView.topAnchor),
+            cancelButton.bottomAnchor.constraint(equalTo: buttonStackView.bottomAnchor),
+            cancelButton.trailingAnchor.constraint(equalTo: createButton.leadingAnchor, constant: -16),
+            cancelButton.widthAnchor.constraint(equalTo: createButton.widthAnchor),
+            
+            // createButton constraints
+            createButton.trailingAnchor.constraint(equalTo: buttonStackView.trailingAnchor),
+            createButton.topAnchor.constraint(equalTo: buttonStackView.topAnchor),
+            createButton.bottomAnchor.constraint(equalTo: buttonStackView.bottomAnchor)
+        ])
+    }
+    
+    private func setupScrollViewContent() {
+        
+        [nameTextField, tableView, emojiLabel, emojiCollectionView,
+         colorLabel, colorCollectionView].forEach { element in
+            element.translatesAutoresizingMaskIntoConstraints = false
+            contentView.addSubview(element)
+        }
+        
+        NSLayoutConstraint.activate([
             // nameTextField constraints
-            nameTextField.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 38),
+            nameTextField.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 24),
             nameTextField.leadingAnchor.constraint(equalTo: contentView.safeAreaLayoutGuide.leadingAnchor, constant: 16),
             nameTextField.trailingAnchor.constraint(equalTo: contentView.safeAreaLayoutGuide.trailingAnchor, constant: -16),
             nameTextField.heightAnchor.constraint(equalToConstant: 75),
@@ -222,43 +254,16 @@ final class EventViewController: UIViewController, UITextFieldDelegate {
             colorCollectionView.leadingAnchor.constraint(equalTo: emojiCollectionView.leadingAnchor),
             colorCollectionView.trailingAnchor.constraint(equalTo: emojiCollectionView.trailingAnchor),
             colorCollectionView.heightAnchor.constraint(equalTo: emojiCollectionView.heightAnchor),
-            
-            // buttonStackView constraints
-            buttonStackView.leadingAnchor.constraint(equalTo: contentView.safeAreaLayoutGuide.leadingAnchor, constant: 20),
-            buttonStackView.trailingAnchor.constraint(equalTo: contentView.safeAreaLayoutGuide.trailingAnchor, constant: -20),
-            buttonStackView.topAnchor.constraint(equalTo: colorCollectionView.bottomAnchor, constant: 16),
-            buttonStackView.bottomAnchor.constraint(equalTo: contentView.safeAreaLayoutGuide.bottomAnchor),
-            buttonStackView.heightAnchor.constraint(equalToConstant: 60),
-            
-            // cancelButton constraints
-            cancelButton.leadingAnchor.constraint(equalTo: buttonStackView.leadingAnchor),
-            cancelButton.topAnchor.constraint(equalTo: buttonStackView.topAnchor),
-            cancelButton.bottomAnchor.constraint(equalTo: buttonStackView.bottomAnchor),
-            cancelButton.trailingAnchor.constraint(equalTo: createButton.leadingAnchor, constant: -16),
-            cancelButton.widthAnchor.constraint(equalTo: createButton.widthAnchor),
-            
-            // createButton constraints
-            createButton.trailingAnchor.constraint(equalTo: buttonStackView.trailingAnchor),
-            createButton.topAnchor.constraint(equalTo: buttonStackView.topAnchor),
-            createButton.bottomAnchor.constraint(equalTo: buttonStackView.bottomAnchor)
-            
+            colorCollectionView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
         ])
     }
     
     private func setupScrollView() {
-        view.addSubview(scrollView)
         scrollView.addSubview(contentView)
-        
-        scrollView.translatesAutoresizingMaskIntoConstraints = false
         contentView.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
-            
-            scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            scrollView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
-            scrollView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
-            scrollView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
-            
+            // contentView constraints
             contentView.topAnchor.constraint(equalTo: scrollView.topAnchor),
             contentView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
             contentView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
