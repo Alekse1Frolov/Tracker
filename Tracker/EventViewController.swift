@@ -275,7 +275,6 @@ final class EventViewController: UIViewController, UITextFieldDelegate {
     
     @objc private func createButtonTapped() {
         guard let trackerName = nameTextField.text, !trackerName.isEmpty else {
-            print("Трекер не создан: не введено имя")
             return
         }
         
@@ -286,7 +285,6 @@ final class EventViewController: UIViewController, UITextFieldDelegate {
             emoji: "🌱",
             schedule: [.monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday]
         )
-        print("Создан трекер:", newTracker)
         NotificationCenter.default.post(name: .createdTracker, object: newTracker)
         dismiss(animated: true, completion: nil)
     }

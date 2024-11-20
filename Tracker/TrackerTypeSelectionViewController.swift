@@ -84,13 +84,11 @@ final class TrackerTypeSelectionViewController: UIViewController {
         guard navigationController?.topViewController == self else { return }
         let habitVC = EventViewController(trackerType: .habit)
         navigationController?.pushViewController(habitVC, animated: true)
-        print("Переход на экран создания Привычки")
     }
     
     @objc private func irregularEventButtonTapped() {
         guard navigationController?.topViewController == self else { return }
         let irregularEventVC = EventViewController(trackerType: .irregularEvent)
         navigationController?.pushViewController(irregularEventVC, animated: true)
-        print("Переход на экран создания Нерегулярного события")
     }
 }

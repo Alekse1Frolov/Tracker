@@ -104,7 +104,6 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        print("Изначальный массив категорий:", categories)
         
         searchBar.delegate = self
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
@@ -122,7 +121,6 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
     
     @objc private func datePickerValueChanged(_ sender: UIDatePicker) {
         currentDate = sender.date
-        print("Выбранная дата:", currentDate)
     }
     
     private func setupNavigationBar() {
@@ -157,12 +155,9 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
         let hasTrackersForCurrentDate = categories.contains { category in
             category.trackers.contains { $0.schedule.contains(currentWeekday) }
         }
-        
-        print("Трекеры для \(currentWeekday): \(hasTrackersForCurrentDate ? "есть" : "нет")")
         placeholderImageView.isHidden = hasTrackersForCurrentDate
         placeholderLabel.isHidden = hasTrackersForCurrentDate
         collectionView.isHidden = !hasTrackersForCurrentDate
-        print("Коллекция скрыта:", !hasTrackersForCurrentDate)
     }
     
     private func filteredCategories() -> [TrackerCategory] {
@@ -289,7 +284,6 @@ extension TrackersViewController: TrackerCellDelegate {
         let currentDateOnly = Calendar.current.startOfDay(for: currentDate)
         
         guard currentDateOnly <= Calendar.current.startOfDay(for: Date()) else {
-            print("Нельзя отметить трекер выполненым для будущей даты")
             return
         }
         
@@ -310,8 +304,12 @@ extension TrackersViewController: TrackerCellDelegate {
             .first(where: { $0.id == id })
     }
     
-    func completeTracker(id: UUID) { }
-    func uncompleteTracker(id: UUID) { }
+    func completeTracker(id: UUID) {
+        // TO DO: Добавить новый трекер в список завершенных
+    }
+    func uncompleteTracker(id: UUID) {
+        // TO DO: Удалять незавершенный трекер из списка завершенных
+    }
 }
 
 extension TrackersViewController: UICollectionViewDataSource {
@@ -325,7 +323,6 @@ extension TrackersViewController: UICollectionViewDataSource {
         numberOfItemsInSection section: Int
     ) -> Int {
         let filteredTrackers = categories[section].trackers.filter { $0.schedule.contains(currentWeekday) }
-        print("Трекеры, отфильтрованные для \(currentWeekday):", filteredTrackers)
         return filteredTrackers.count
     }
     
