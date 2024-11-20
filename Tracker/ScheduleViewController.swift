@@ -13,6 +13,9 @@ final class ScheduleViewController: UIViewController {
     
     var onDaysSelected: (([Weekday]) -> Void)?
     
+    private let scrollView = UIScrollView()
+    private let contentView = UIView()
+    
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.text = Constants.scheduleVcTitle
@@ -25,6 +28,7 @@ final class ScheduleViewController: UIViewController {
     private let tableView: UITableView = {
         let tableView = UITableView(frame: .zero, style: .plain)
         tableView.separatorInset = .zero
+        tableView.translatesAutoresizingMaskIntoConstraints = false
         return tableView
     }()
     
@@ -50,42 +54,65 @@ final class ScheduleViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        setupTableView()
+        setupScrollView()
         setupLayout()
+        setupTableView()
     }
     
     private func setupTableView() {
         tableView.dataSource = self
         tableView.delegate = self
         tableView.register(ScheduleCell.self, forCellReuseIdentifier: ScheduleCell.reuseIdentifier)
+        
+        contentView.addSubview(tableView)
+        
+        NSLayoutConstraint.activate([
+                tableView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 25),
+                tableView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+                tableView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+                tableView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
+                tableView.heightAnchor.constraint(equalToConstant: 525)
+            ])
     }
     
     private func setupLayout() {
         view.backgroundColor = Asset.ypWhite.color
         
-        [titleLabel, tableView, readyButton].forEach { element in
+        [titleLabel, scrollView, readyButton].forEach { element in
             element.translatesAutoresizingMaskIntoConstraints = false
             view.addSubview(element)
         }
         
         NSLayoutConstraint.activate([
-            
             // titleLabel constraint
-            titleLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
+            titleLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 28),
             titleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             
             // tableView constraint
-            tableView.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 24),
-            tableView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
-            tableView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
-            tableView.bottomAnchor.constraint(equalTo: readyButton.topAnchor, constant: 39),
+            scrollView.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 14),
+            scrollView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
+            scrollView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+            scrollView.bottomAnchor.constraint(equalTo: readyButton.topAnchor, constant: -24),
             
             // readyButton constraint
-            readyButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+            readyButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16),
             readyButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -20),
             readyButton.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 20),
             readyButton.heightAnchor.constraint(equalToConstant: 60)
-            
+        ])
+    }
+    
+    private func setupScrollView() {
+        scrollView.addSubview(contentView)
+        contentView.translatesAutoresizingMaskIntoConstraints = false
+        
+        NSLayoutConstraint.activate([
+            // contentView constraint
+            contentView.topAnchor.constraint(equalTo: scrollView.topAnchor),
+            contentView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
+            contentView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
+            contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
+            contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor)
         ])
     }
     

@@ -148,8 +148,7 @@ final class EventViewController: UIViewController, UITextFieldDelegate {
         : Constants.eventVcNewIrregularEventCreationTitle
         
         [titleLabel, nameTextField, tableView, emojiLabel, emojiCollectionView,
-         colorLabel, colorCollectionView, buttonStackView]
-            .forEach { element in
+         colorLabel, colorCollectionView, buttonStackView].forEach { element in
                 contentView.addSubview(element)
                 element.translatesAutoresizingMaskIntoConstraints = false
             }
