@@ -16,26 +16,26 @@ final class TabBarViewController: UITabBarController {
     }
     
     private func configure() {
-        view.backgroundColor = ProjectColors.white
+        view.backgroundColor = Asset.ypWhite.color
         
         let trackersVC = UINavigationController(rootViewController: TrackersViewController())
         trackersVC.tabBarItem = UITabBarItem(
             title: Constants.tabBarItemTrackers,
-            image: UIImage(named: "TrackerTabImage"),
+            image: Asset.trackerTabImage.image,
             selectedImage: nil
         )
         
         let statisticVC = UINavigationController(rootViewController: StatisticViewController())
         statisticVC.tabBarItem = UITabBarItem(
             title: Constants.tabBarItemStatistic,
-            image: UIImage(named: "StatTabImage"),
+            image: Asset.statTabImage.image,
             selectedImage: nil
         )
         
         viewControllers = [trackersVC, statisticVC]
         
-        tabBar.tintColor = ProjectColors.blue
-        tabBar.unselectedItemTintColor = ProjectColors.gray
-        tabBar.backgroundColor = ProjectColors.white
+        tabBar.tintColor = Asset.ypBlue.color
+        tabBar.unselectedItemTintColor = Asset.ypGray.color
+        tabBar.backgroundColor = Asset.ypWhite.color
     }
 }

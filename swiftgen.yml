@@ -1,0 +1,6 @@
+xcassets:
+  inputs:
+    - Tracker/Resources/Assets.xcassets # Путь к файлу .xcassets
+  outputs:
+    - templateName: swift5
+      output: Tracker/Resources/Generated/Assets+Generated.swift # Файл для записи сгенерированных данных

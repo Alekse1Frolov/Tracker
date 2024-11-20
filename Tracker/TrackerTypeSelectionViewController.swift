@@ -13,15 +13,15 @@ final class TrackerTypeSelectionViewController: UIViewController {
         let label = UILabel()
         label.text = Constants.trackerTypeSelectionVcTitle
         label.font = .systemFont(ofSize: 16, weight: .medium)
-        label.tintColor = ProjectColors.black
+        label.tintColor = Asset.ypBlack.color
         return label
     }()
     
     private let habitButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle(Constants.trackerTypeSelectionVcHabit, for: .normal)
-        button.backgroundColor = ProjectColors.black
-        button.setTitleColor(ProjectColors.white, for: .normal)
+        button.backgroundColor = Asset.ypBlack.color
+        button.setTitleColor(Asset.ypWhite.color, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         button.layer.cornerRadius = 16
         button.addTarget(self, action: #selector(habitButtonTapped), for: .touchUpInside)
@@ -31,8 +31,8 @@ final class TrackerTypeSelectionViewController: UIViewController {
     private let irregularEventButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle(Constants.trackerTypeSelectionVcIrregularEvent, for: .normal)
-        button.backgroundColor = ProjectColors.black
-        button.setTitleColor(ProjectColors.white, for: .normal)
+        button.backgroundColor = Asset.ypBlack.color
+        button.setTitleColor(Asset.ypWhite.color, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         button.layer.cornerRadius = 16
         button.addTarget(self, action: #selector(irregularEventButtonTapped), for: .touchUpInside)
@@ -53,7 +53,7 @@ final class TrackerTypeSelectionViewController: UIViewController {
     }
     
     private func setupLayout() {
-        view.backgroundColor = ProjectColors.white
+        view.backgroundColor = Asset.ypWhite.color
         
         [titleLabel, habitButton, irregularEventButton].forEach { element in
             element.translatesAutoresizingMaskIntoConstraints = false

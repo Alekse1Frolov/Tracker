@@ -19,12 +19,12 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
     
     private let addButton: UIButton = {
         let button = UIButton.systemButton(
-            with: UIImage(named: "PlusButton") ?? UIImage(),
+            with: Asset.plusButton.image,
             target: nil,
             action: nil
         )
         button.frame.size = CGSize(width: 19, height: 18)
-        button.tintColor = ProjectColors.black
+        button.tintColor = Asset.ypBlack.color
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
@@ -63,9 +63,9 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
     }()
     
     private let placeholderImageView: UIImageView = {
-        let imageView = UIImageView(image: UIImage(named: "StarPlaceholder"))
+        let imageView = UIImageView(image: Asset.starPlaceholder.image)
         imageView.contentMode = .scaleAspectFit
-        imageView.tintColor = ProjectColors.lightGray
+        imageView.tintColor = Asset.ypLightGray.color
         return imageView
     }()
     
@@ -73,7 +73,7 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
         let label = UILabel()
         label.text = Constants.trackersVcPlaceholderLabel
         label.font = UIFont.systemFont(ofSize: 12)
-        label.textColor = ProjectColors.black
+        label.textColor = Asset.ypBlack.color
         return label
     }()
     
@@ -235,7 +235,7 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
     }
     
     private func setupLayout() {
-        view.backgroundColor = ProjectColors.white
+        view.backgroundColor = Asset.ypWhite.color
         
         [titleLabel, searchBar, placeholderImageView,
          collectionView, placeholderLabel].forEach { element in

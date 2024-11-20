@@ -23,14 +23,14 @@ final class TrackerCell: UICollectionViewCell {
         label.clipsToBounds = true
         label.textAlignment = .center
         label.layer.cornerRadius = 12
-        label.backgroundColor = ProjectColors.white?.withAlphaComponent(0.3)
+        label.backgroundColor = Asset.ypWhite.color.withAlphaComponent(0.3)
         return label
     }()
     
     private let trackerCellLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 12, weight: .medium)
-        label.textColor = ProjectColors.white
+        label.textColor = Asset.ypWhite.color
         label.numberOfLines = 2
         return label
     }()
@@ -45,17 +45,17 @@ final class TrackerCell: UICollectionViewCell {
     private let counterLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 13, weight: .regular)
-        label.textColor = ProjectColors.black
+        label.textColor = Asset.ypBlack.color
         return label
     }()
     
     private let plusButton: UIButton = {
         let config = UIImage.SymbolConfiguration(pointSize: 12)
         let button = UIButton()
-        button.setImage(UIImage(named: "WhitePlusButton"), for: .normal)
+        button.setImage(Asset.whitePlusButton.image, for: .normal)
         button.layer.cornerRadius = 18
         button.layer.masksToBounds = true
-        button.tintColor = ProjectColors.white
+        button.tintColor = Asset.ypWhite.color
         return button
     }()
     
@@ -123,7 +123,7 @@ final class TrackerCell: UICollectionViewCell {
     }
     
     private func updateButton() {
-        let image = isCompleted ? UIImage(named: "DoneImage") : UIImage(systemName: "plus")
+        let image = isCompleted ? Asset.doneImage.image : Asset.whitePlusButton.image
         plusButton.setImage(image, for: .normal)
         plusButton.alpha = isCompleted ? 0.5 : 1.0
     }

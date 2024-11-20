@@ -21,7 +21,7 @@ final class ScheduleCell: UITableViewCell {
     
     private let switchView: UISwitch = {
         let switchView = UISwitch()
-        switchView.onTintColor = ProjectColors.blue
+        switchView.onTintColor = Asset.ypBlue.color
         switchView.translatesAutoresizingMaskIntoConstraints = false
         return switchView
     }()

@@ -24,7 +24,7 @@ final class EventViewController: UIViewController, UITextFieldDelegate {
         let label = UILabel()
         label.font = .systemFont(ofSize: 16, weight: .medium)
         label.textAlignment = .center
-        label.textColor = ProjectColors.black
+        label.textColor = Asset.ypBlack.color
         return label
     }()
     
@@ -34,7 +34,7 @@ final class EventViewController: UIViewController, UITextFieldDelegate {
         textField.borderStyle = .none
         textField.layer.cornerRadius = 16
         textField.layer.masksToBounds = true
-        textField.backgroundColor = ProjectColors.lightGray?.withAlphaComponent(0.3)
+        textField.backgroundColor = Asset.ypLightGray.color.withAlphaComponent(0.3)
         textField.returnKeyType = .go
         textField.enablesReturnKeyAutomatically = false
         
@@ -47,8 +47,8 @@ final class EventViewController: UIViewController, UITextFieldDelegate {
     private let tableView: UITableView = {
         let tableView = UITableView(frame: .zero, style: .plain)
         tableView.isScrollEnabled = false
-        tableView.backgroundColor = ProjectColors.white
-        tableView.separatorColor = ProjectColors.gray
+        tableView.backgroundColor = Asset.ypWhite.color
+        tableView.separatorColor = Asset.ypGray.color
         tableView.separatorInset = .zero
         tableView.layer.cornerRadius = 16
         tableView.layer.masksToBounds = true
@@ -91,9 +91,9 @@ final class EventViewController: UIViewController, UITextFieldDelegate {
     private let cancelButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle(Constants.eventVcCancelButtonTitle, for: .normal)
-        button.setTitleColor(ProjectColors.red, for: .normal)
+        button.setTitleColor(Asset.ypRed.color, for: .normal)
         button.layer.borderWidth = 1
-        button.layer.borderColor = ProjectColors.red?.cgColor
+        button.layer.borderColor = Asset.ypRed.color.cgColor
         button.layer.cornerRadius = 16
         button.addTarget(self, action: #selector(cancelButtonTapped), for: .touchUpInside)
         return button
@@ -102,8 +102,8 @@ final class EventViewController: UIViewController, UITextFieldDelegate {
     private let createButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle(Constants.eventVcCreateButtonTitle, for: .normal)
-        button.setTitleColor(ProjectColors.gray, for: .normal)
-        button.backgroundColor = ProjectColors.lightGray
+        button.setTitleColor(Asset.ypGray.color, for: .normal)
+        button.backgroundColor = Asset.ypLightGray.color
         button.layer.cornerRadius = 16
         button.addTarget(self, action: #selector(createButtonTapped), for: .touchUpInside)
         return button
@@ -142,7 +142,7 @@ final class EventViewController: UIViewController, UITextFieldDelegate {
     }
     
     private func setupView() {
-        view.backgroundColor = ProjectColors.white
+        view.backgroundColor = Asset.ypWhite.color
         titleLabel.text = trackerType ==
             .habit ? Constants.eventVcNewHabitCreationTitle
         : Constants.eventVcNewIrregularEventCreationTitle
@@ -345,12 +345,12 @@ extension EventViewController: UITableViewDataSource {
     
     private func configureCellAppearence(_ cell: UITableViewCell) {
         cell.accessoryType = .disclosureIndicator
-        cell.backgroundColor = ProjectColors.lightGray?.withAlphaComponent(0.3)
+        cell.backgroundColor = Asset.ypLightGray.color.withAlphaComponent(0.3)
     }
     
     private func configureTextAttributes(
         alignment: NSTextAlignment = .left,
-        color: UIColor = ProjectColors.black ?? .black
+        color: UIColor = Asset.ypBlack.color
     ) -> [NSAttributedString.Key: Any] {
         let paragraphStyle = NSMutableParagraphStyle()
         paragraphStyle.alignment = alignment
@@ -366,7 +366,7 @@ extension EventViewController: UITableViewDataSource {
         _ cell: UITableViewCell,
         mainText: String,
         detailText: String? = nil,
-        mainTextColor: UIColor = ProjectColors.black ?? .black,
+        mainTextColor: UIColor = Asset.ypBlack.color,
         detailTextColor: UIColor = .gray,
         alignment: NSTextAlignment = .right
     ) {
@@ -387,7 +387,7 @@ extension EventViewController: UITableViewDataSource {
         configureCellText(
             cell,
             mainText: Constants.eventVcCategoryTitle,
-            mainTextColor: ProjectColors.black ?? .black
+            mainTextColor: Asset.ypBlack.color
         )
     }
     
@@ -400,7 +400,7 @@ extension EventViewController: UITableViewDataSource {
                 cell,
                 mainText: Constants.scheduleVcTitle,
                 detailText: selectedDaysText,
-                mainTextColor: ProjectColors.black ?? .black,
+                mainTextColor: Asset.ypBlack.color,
                 detailTextColor: .gray
             )
         default:

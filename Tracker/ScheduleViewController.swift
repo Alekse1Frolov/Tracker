@@ -18,7 +18,7 @@ final class ScheduleViewController: UIViewController {
         label.text = Constants.scheduleVcTitle
         label.font = .systemFont(ofSize: 16, weight: .medium)
         label.textAlignment = .center
-        label.tintColor = ProjectColors.black
+        label.tintColor = Asset.ypBlack.color
         return label
     }()
     
@@ -31,8 +31,8 @@ final class ScheduleViewController: UIViewController {
     private let readyButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle(Constants.scheduleVcReadyButtonTitle, for: .normal)
-        button.backgroundColor = ProjectColors.black
-        button.setTitleColor(ProjectColors.white, for: .normal)
+        button.backgroundColor = Asset.ypBlack.color
+        button.setTitleColor(Asset.ypWhite.color, for: .normal)
         button.layer.cornerRadius = 16
         button.addTarget(self, action: #selector(readyButtonTapped), for: .touchUpInside)
         return button
@@ -61,7 +61,7 @@ final class ScheduleViewController: UIViewController {
     }
     
     private func setupLayout() {
-        view.backgroundColor = ProjectColors.white
+        view.backgroundColor = Asset.ypWhite.color
         
         [titleLabel, tableView, readyButton].forEach { element in
             element.translatesAutoresizingMaskIntoConstraints = false
@@ -165,7 +165,7 @@ extension ScheduleViewController: UITableViewDataSource, UITableViewDelegate {
             tag: indexPath.row,
             target: self,
             action: #selector(switchToggled(_:)))
-        cell.backgroundColor = ProjectColors.lightGray?.withAlphaComponent(0.3)
+        cell.backgroundColor = Asset.ypLightGray.color.withAlphaComponent(0.3)
         
         return cell
     }
