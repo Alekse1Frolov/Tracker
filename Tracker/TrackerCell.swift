@@ -52,7 +52,7 @@ final class TrackerCell: UICollectionViewCell {
     private let plusButton: UIButton = {
         let config = UIImage.SymbolConfiguration(pointSize: 12)
         let button = UIButton()
-        button.setImage(Asset.whitePlusButton.image, for: .normal)
+        button.setImage(UIImage(systemName: "plus"), for: .normal)
         button.layer.cornerRadius = 18
         button.layer.masksToBounds = true
         button.tintColor = Asset.ypWhite.color
@@ -123,7 +123,7 @@ final class TrackerCell: UICollectionViewCell {
     }
     
     private func updateButton() {
-        let image = isCompleted ? Asset.doneImage.image : Asset.whitePlusButton.image
+        let image = isCompleted ? Asset.doneImage.image : UIImage(systemName: "plus")
         plusButton.setImage(image, for: .normal)
         plusButton.alpha = isCompleted ? 0.5 : 1.0
     }

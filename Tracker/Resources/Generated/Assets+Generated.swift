@@ -38,7 +38,6 @@ internal enum Asset {
   internal static let starPlaceholder = ImageAsset(name: "StarPlaceholder")
   internal static let statTabImage = ImageAsset(name: "StatTabImage")
   internal static let trackerTabImage = ImageAsset(name: "TrackerTabImage")
-  internal static let whitePlusButton = ImageAsset(name: "WhitePlusButton")
 }
 // swiftlint:enable identifier_name line_length nesting type_body_length type_name
 
