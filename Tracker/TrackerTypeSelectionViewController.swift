@@ -9,40 +9,32 @@ import UIKit
 
 final class TrackerTypeSelectionViewController: UIViewController {
     
-    enum TrackerType {
-        case habit
-        case irregularEvent
-    }
-    
     private let titleLabel: UILabel = {
         let label = UILabel()
-        label.text = "Создание трекера"
+        label.text = Constants.trackerTypeSelectionVcTitle
         label.font = .systemFont(ofSize: 16, weight: .medium)
-        label.tintColor = ProjectColors.black
-        label.translatesAutoresizingMaskIntoConstraints = false
+        label.tintColor = Asset.ypBlack.color
         return label
     }()
     
     private let habitButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Привычка", for: .normal)
-        button.backgroundColor = ProjectColors.black
-        button.setTitleColor(ProjectColors.white, for: .normal)
+        button.setTitle(Constants.trackerTypeSelectionVcHabit, for: .normal)
+        button.backgroundColor = Asset.ypBlack.color
+        button.setTitleColor(Asset.ypWhite.color, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         button.layer.cornerRadius = 16
-        button.translatesAutoresizingMaskIntoConstraints = false
         button.addTarget(self, action: #selector(habitButtonTapped), for: .touchUpInside)
         return button
     }()
     
     private let irregularEventButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Нерегулярное событие", for: .normal)
-        button.backgroundColor = ProjectColors.black
-        button.setTitleColor(ProjectColors.white, for: .normal)
+        button.setTitle(Constants.trackerTypeSelectionVcIrregularEvent, for: .normal)
+        button.backgroundColor = Asset.ypBlack.color
+        button.setTitleColor(Asset.ypWhite.color, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         button.layer.cornerRadius = 16
-        button.translatesAutoresizingMaskIntoConstraints = false
         button.addTarget(self, action: #selector(irregularEventButtonTapped), for: .touchUpInside)
         return button
     }()
@@ -51,8 +43,6 @@ final class TrackerTypeSelectionViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        view.backgroundColor = ProjectColors.white
         
         navigationController?.navigationBar.isHidden = true
         
@@ -63,9 +53,12 @@ final class TrackerTypeSelectionViewController: UIViewController {
     }
     
     private func setupLayout() {
-        view.addSubview(titleLabel)
-        view.addSubview(habitButton)
-        view.addSubview(irregularEventButton)
+        view.backgroundColor = Asset.ypWhite.color
+        
+        [titleLabel, habitButton, irregularEventButton].forEach { element in
+            element.translatesAutoresizingMaskIntoConstraints = false
+            view.addSubview(element)
+        }
         
         NSLayoutConstraint.activate([
             
@@ -89,15 +82,13 @@ final class TrackerTypeSelectionViewController: UIViewController {
     
     @objc private func habitButtonTapped() {
         guard navigationController?.topViewController == self else { return }
-        let habitVC = HabitViewController()
+        let habitVC = EventViewController(trackerType: .habit)
         navigationController?.pushViewController(habitVC, animated: true)
-        print("Переход на экран создания Привычки")
     }
     
     @objc private func irregularEventButtonTapped() {
         guard navigationController?.topViewController == self else { return }
-        let irregularEventVC = IrregularEventViewController()
+        let irregularEventVC = EventViewController(trackerType: .irregularEvent)
         navigationController?.pushViewController(irregularEventVC, animated: true)
-        print("Переход на экран создания Нерегулярного события")
     }
 }

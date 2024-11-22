@@ -14,13 +14,3 @@ struct Tracker {
     let emoji: String
     let schedule: [Weekday]
 }
-
-enum Weekday: Int {
-    case monday = 1
-    case tuesday
-    case wednesday
-    case thursday
-    case friday
-    case saturday
-    case sunday
-}

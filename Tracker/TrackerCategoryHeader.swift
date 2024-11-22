@@ -8,12 +8,12 @@
 import UIKit
 
 final class TrackerCategoryHeader: UICollectionReusableView {
-    static let reuseID = "TrackerCategoryHeader"
+    static let reuseID = Constants.trackersVcTrackerCategoryHeaderId
     
     private let textLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 19, weight: .bold)
-        label.textColor = ProjectColors.black
+        label.textColor = Asset.ypBlack.color
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()

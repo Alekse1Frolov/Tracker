@@ -8,19 +8,20 @@
 import UIKit
 
 final class ScheduleCell: UITableViewCell {
-
-    static let reuseIdentifier = "ScheduleCell"
-
-    let dayLabel: UILabel = {
+    
+    static let reuseIdentifier = Constants.scheduleVcCellId
+    
+    // MARK: - UI Elements
+    private let dayLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 17, weight: .regular)
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
-    let switchView: UISwitch = {
+    private let switchView: UISwitch = {
         let switchView = UISwitch()
-        switchView.onTintColor = ProjectColors.blue
+        switchView.onTintColor = Asset.ypBlue.color
         switchView.translatesAutoresizingMaskIntoConstraints = false
         return switchView
     }()
@@ -38,21 +39,30 @@ final class ScheduleCell: UITableViewCell {
     
     // MARK: - Layout Setup
     private func setupLayout() {
-        contentView.addSubview(dayLabel)
-        contentView.addSubview(switchView)
+        
+        [dayLabel, switchView].forEach { element in
+            element.translatesAutoresizingMaskIntoConstraints = false
+            contentView.addSubview(element)
+        }
         
         NSLayoutConstraint.activate([
             // dayLabel constraints
             dayLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             dayLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
-
+            
             // switchView constraints
             switchView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
             switchView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor)
         ])
     }
     
-    func configure(with day: String, isSelected: Bool, tag: Int, target: Any?, action: Selector) {
+    func configure(
+        with day: String,
+        isSelected: Bool,
+        tag: Int,
+        target: Any?,
+        action: Selector
+    ) {
         dayLabel.text = day.capitalized
         switchView.isOn = isSelected
         switchView.tag = tag
