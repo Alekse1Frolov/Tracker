@@ -23,15 +23,29 @@ final class EventViewControllerCell: UICollectionViewCell {
         return view
     }()
     
+    private let borderView: UIView = {
+        let view = UIView()
+        view.layer.borderWidth = 3
+        view.layer.cornerRadius = 10
+        view.layer.masksToBounds = true
+        view.isHidden = true
+        return view
+    }()
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         
-        [colorView, emojiLabel].forEach { element in
+        [borderView, colorView, emojiLabel].forEach { element in
             element.translatesAutoresizingMaskIntoConstraints = false
             contentView.addSubview(element)
         }
         
         NSLayoutConstraint.activate([
+            borderView.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+            borderView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+            borderView.widthAnchor.constraint(equalTo: colorView.widthAnchor, constant: 9),
+            borderView.heightAnchor.constraint(equalTo: colorView.heightAnchor, constant: 9),
+            
             colorView.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
             colorView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
             colorView.widthAnchor.constraint(equalToConstant: 40),
@@ -42,11 +56,6 @@ final class EventViewControllerCell: UICollectionViewCell {
         ])
     }
     
-//    override func prepareForReuse() {
-//        super.prepareForReuse()
-//        contentView.backgroundColor = .clear
-//    }
-    
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -56,8 +65,10 @@ final class EventViewControllerCell: UICollectionViewCell {
         contentView.backgroundColor = .clear
     }
     
-    func configure(with color: UIColor) {
+    func configure(with color: UIColor, isSelected: Bool) {
         colorView.backgroundColor = color
         emojiLabel.text = ""
+        borderView.isHidden = !isSelected
+        borderView.layer.borderColor = color.withAlphaComponent(0.3).cgColor
     }
 }

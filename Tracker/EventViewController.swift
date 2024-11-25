@@ -17,6 +17,7 @@ final class EventViewController: UIViewController {
     private var selectedDaysText = ""
     private var errorLabelHeightConstraint: NSLayoutConstraint!
     private var selectedEmojiIndex: IndexPath?
+    private var selectedColorIndex: IndexPath?
     
     // MARK: - UI Elements
     private let scrollView = UIScrollView()
@@ -558,7 +559,8 @@ extension EventViewController: UICollectionViewDataSource, UICollectionViewDeleg
             ) as? EventViewControllerCell else { return UICollectionViewCell() }
             
             let color = colors[indexPath.item]
-            cell.configure(with: color)
+            let isSelected = indexPath == selectedColorIndex
+            cell.configure(with: color, isSelected: isSelected)
             return cell
         }
         return UICollectionViewCell()
@@ -589,6 +591,9 @@ extension EventViewController: UICollectionViewDelegateFlowLayout {
     ) {
         if collectionView == emojiCollectionView {
             selectedEmojiIndex = indexPath
+            collectionView.reloadData()
+        } else if collectionView == colorCollectionView {
+            selectedColorIndex = indexPath
             collectionView.reloadData()
         }
     }
