@@ -42,6 +42,11 @@ final class EventViewControllerCell: UICollectionViewCell {
         ])
     }
     
+//    override func prepareForReuse() {
+//        super.prepareForReuse()
+//        contentView.backgroundColor = .clear
+//    }
+    
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }

@@ -16,6 +16,7 @@ final class EventViewController: UIViewController {
     private var selectedDays: [Bool] = Array(repeating: false, count: MockData.days.count)
     private var selectedDaysText = ""
     private var errorLabelHeightConstraint: NSLayoutConstraint!
+    private var selectedEmojiIndex: IndexPath?
     
     // MARK: - UI Elements
     private let scrollView = UIScrollView()
@@ -539,7 +540,17 @@ extension EventViewController: UICollectionViewDataSource, UICollectionViewDeleg
             
             let emoji = emojis[indexPath.item]
             cell.configure(with: emoji)
+            
+            if indexPath == selectedEmojiIndex {
+                cell.contentView.backgroundColor = Asset.ypLightGray.color
+                cell.contentView.layer.cornerRadius = 16
+                cell.contentView.layer.masksToBounds = true
+            } else {
+                cell.contentView.backgroundColor = .clear
+            }
+            
             return cell
+            
         } else if collectionView == colorCollectionView {
             guard let cell = collectionView.dequeueReusableCell(
                 withReuseIdentifier: Constants.eventVcColorCollectionCellId,
@@ -570,6 +581,16 @@ extension EventViewController: UICollectionViewDelegateFlowLayout {
         let availableWidth = collectionView.bounds.width - totalPadding
         let itemWidth = availableWidth / itemsPerRow
         return CGSize(width: itemWidth, height: itemWidth)
+    }
+    
+    func collectionView(
+        _ collectionView: UICollectionView,
+        didSelectItemAt indexPath: IndexPath
+    ) {
+        if collectionView == emojiCollectionView {
+            selectedEmojiIndex = indexPath
+            collectionView.reloadData()
+        }
     }
     
     func collectionView(
