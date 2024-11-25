@@ -26,7 +26,7 @@ final class EventViewControllerCell: UICollectionViewCell {
     private let borderView: UIView = {
         let view = UIView()
         view.layer.borderWidth = 3
-        view.layer.cornerRadius = 10
+        view.layer.cornerRadius = 12
         view.layer.masksToBounds = true
         view.isHidden = true
         return view
@@ -43,8 +43,8 @@ final class EventViewControllerCell: UICollectionViewCell {
         NSLayoutConstraint.activate([
             borderView.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
             borderView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
-            borderView.widthAnchor.constraint(equalTo: colorView.widthAnchor, constant: 9),
-            borderView.heightAnchor.constraint(equalTo: colorView.heightAnchor, constant: 9),
+            borderView.widthAnchor.constraint(equalTo: colorView.widthAnchor, constant: 12),
+            borderView.heightAnchor.constraint(equalTo: colorView.heightAnchor, constant: 12),
             
             colorView.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
             colorView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
