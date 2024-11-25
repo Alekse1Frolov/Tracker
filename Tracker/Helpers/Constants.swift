@@ -36,6 +36,8 @@ enum Constants {
     static let eventVcTableViewCellId = "tableCell"
     static let eventVcEmojiCollectionCellId = "emojiCell"
     static let eventVcColorCollectionCellId = "colorCell"
+    static let eventVcMaxNameLength = 38
+    static let eventVcMaxNameLengthErrorText = "Ограничение 38 символов"
     
     // Перечисление дополняется
     

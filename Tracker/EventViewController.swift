@@ -7,7 +7,7 @@
 
 import UIKit
 
-final class EventViewController: UIViewController, UITextFieldDelegate {
+final class EventViewController: UIViewController {
     
     // MARK: - Properties
     private let trackerType: TrackerType
@@ -15,6 +15,7 @@ final class EventViewController: UIViewController, UITextFieldDelegate {
     private let colors = MockData.trackersColors
     private var selectedDays: [Bool] = Array(repeating: false, count: MockData.days.count)
     private var selectedDaysText = ""
+    private var errorLabelHeightConstraint: NSLayoutConstraint!
     
     // MARK: - UI Elements
     private let scrollView = UIScrollView()
@@ -42,6 +43,25 @@ final class EventViewController: UIViewController, UITextFieldDelegate {
         textField.leftView = padding
         textField.leftViewMode = .always
         return textField
+    }()
+    
+    private let clearButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setImage(UIImage(systemName: "xmark.circle.fill"), for: .normal)
+        button.tintColor = Asset.ypGray.color
+        button.addTarget(self, action: #selector(clearNameTextField), for: .touchUpInside)
+        button.isHidden = true
+        return button
+    }()
+    
+    private let errorLabel: UILabel = {
+        let label = UILabel()
+        label.text = Constants.eventVcMaxNameLengthErrorText
+        label.font = .systemFont(ofSize: 17, weight: .regular)
+        label.textColor = Asset.ypRed.color
+        label.textAlignment = .center
+        label.isHidden = true
+        return label
     }()
     
     private let tableView: UITableView = {
@@ -140,6 +160,7 @@ final class EventViewController: UIViewController, UITextFieldDelegate {
         setupTableView()
         setupCollectionView()
         setupScrollViewContent()
+        setupClearButton()
     }
     
     private func setupTableView() {
@@ -216,11 +237,13 @@ final class EventViewController: UIViewController, UITextFieldDelegate {
     
     private func setupScrollViewContent() {
         
-        [nameTextField, tableView, emojiLabel, emojiCollectionView,
+        [nameTextField, errorLabel, tableView, emojiLabel, emojiCollectionView,
          colorLabel, colorCollectionView].forEach { element in
             element.translatesAutoresizingMaskIntoConstraints = false
             contentView.addSubview(element)
         }
+        
+        errorLabelHeightConstraint = errorLabel.heightAnchor.constraint(equalToConstant: 0)
         
         NSLayoutConstraint.activate([
             // nameTextField constraints
@@ -230,7 +253,14 @@ final class EventViewController: UIViewController, UITextFieldDelegate {
             nameTextField.heightAnchor.constraint(equalToConstant: 75),
             
             // tableView constraints
-            tableView.topAnchor.constraint(equalTo: nameTextField.bottomAnchor, constant: 24),
+            errorLabel.topAnchor.constraint(equalTo: nameTextField.bottomAnchor, constant: 8),
+            errorLabel.leadingAnchor.constraint(equalTo: nameTextField.leadingAnchor),
+            errorLabel.trailingAnchor.constraint(equalTo: nameTextField.trailingAnchor),
+            errorLabel.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+            errorLabelHeightConstraint,
+            
+            // tableView constraints
+            tableView.topAnchor.constraint(equalTo: errorLabel.bottomAnchor, constant: 24),
             tableView.leadingAnchor.constraint(equalTo: nameTextField.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: nameTextField.trailingAnchor),
             tableView.heightAnchor.constraint(equalToConstant: trackerType == .habit ? 150 : 75),
@@ -270,6 +300,32 @@ final class EventViewController: UIViewController, UITextFieldDelegate {
             contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
             contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor)
         ])
+        view.layoutIfNeeded()
+    }
+    
+    private func setupClearButton() {
+        let rightViewContainer = UIView()
+        [rightViewContainer, clearButton].forEach { element in
+            element.translatesAutoresizingMaskIntoConstraints = false
+        }
+        
+        rightViewContainer.addSubview(clearButton)
+        
+        NSLayoutConstraint.activate([
+            rightViewContainer.widthAnchor.constraint(equalToConstant: 41),
+            rightViewContainer.heightAnchor.constraint(equalToConstant: 75)
+        ])
+        
+        NSLayoutConstraint.activate([
+            clearButton.widthAnchor.constraint(equalToConstant: 17),
+            clearButton.heightAnchor.constraint(equalToConstant: 17),
+            clearButton.centerYAnchor.constraint(equalTo: rightViewContainer.centerYAnchor),
+            clearButton.centerXAnchor.constraint(equalTo: rightViewContainer.centerXAnchor)
+        ])
+        
+        nameTextField.rightView = rightViewContainer
+        nameTextField.rightViewMode = .whileEditing
+        nameTextField.addTarget(self, action: #selector(nameTextFieldDidChange), for: .editingChanged)
     }
     
     // MARK: - Actions
@@ -293,6 +349,16 @@ final class EventViewController: UIViewController, UITextFieldDelegate {
         dismiss(animated: true, completion: nil)
     }
     
+    @objc private func nameTextFieldDidChange(_ textField: UITextField) {
+        clearButton.isHidden = nameTextField.text?.isEmpty ?? true
+    }
+    
+    @objc private func clearNameTextField() {
+        nameTextField.text = ""
+        clearButton.isHidden = true
+        updateErrorLabelVisibility(isVisible: false)
+    }
+    
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder()
         return true
@@ -300,6 +366,14 @@ final class EventViewController: UIViewController, UITextFieldDelegate {
     
     func textFieldDidBeginEditing(_ textField: UITextField) {
         textField.becomeFirstResponder()
+    }
+    
+    func updateErrorLabelVisibility(isVisible: Bool) {
+        errorLabel.isHidden = !isVisible
+        errorLabelHeightConstraint.constant = isVisible ? 22 : 0
+        UIView.animate(withDuration: 0.25) {
+            self.contentView.layoutIfNeeded()
+        }
     }
 }
 
@@ -520,5 +594,29 @@ extension EventViewController: UICollectionViewDelegateFlowLayout {
         minimumLineSpacingForSectionAt section: Int
     ) -> CGFloat {
         0
+    }
+}
+
+// MARK: - UITextFieldDelegate
+extension EventViewController: UITextFieldDelegate {
+    func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
+        return true
+    }
+
+    func textFieldShouldEndEditing(_ textField: UITextField) -> Bool {
+        return true
+    }
+
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        guard let currentText = textField.text as NSString? else { return true }
+        let updatedText = currentText.replacingCharacters(in: range, with: string)
+        
+        if updatedText.count > Constants.eventVcMaxNameLength {
+            updateErrorLabelVisibility(isVisible: true)
+            return false
+        } else {
+            updateErrorLabelVisibility(isVisible: false)
+        }
+        return true
     }
 }
