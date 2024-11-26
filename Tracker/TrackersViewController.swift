@@ -87,18 +87,20 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
     }()
     
     // MARK: - Properties
-    var categories: [TrackerCategory] = []
+    private let trackerStore = TrackerStore()
+    private var categories: [TrackerCategory] = []
     private var completedTrackers: Set<TrackerRecord> = []
-    var currentDate: Date = Date() {
+    private var currentDate: Date = Date() {
         didSet {
             collectionView.reloadData()
             updatePlaceholderVisibility()
         }
     }
-    var currentWeekday: Weekday {
-        let calendar = Calendar.current
-        let weekdayIndex = calendar.component(.weekday, from: currentDate) - 1
-        return Weekday(rawValue: weekdayIndex + 1) ?? .sunday
+    private var currentWeekday: Weekday {
+        let weekdayIndex = Calendar.current.component(.weekday, from: currentDate)
+        let correctedIndex = (weekdayIndex + 5) % 7 + 1
+        print("Сегодня \(Weekday(rawValue: correctedIndex)?.displayName ?? "ХЗ")")
+        return Weekday(rawValue: correctedIndex) ?? .sunday
     }
     
     // MARK: - Lifecycle
@@ -161,13 +163,10 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
     }
     
     private func filteredCategories() -> [TrackerCategory] {
-        let currentWeekday = Calendar.current.component(.weekday, from: currentDate)
-        
+        print("Фильтруем категории для \(currentWeekday.displayName)")
         return categories.compactMap { category in
             let filteredTrackers = category.trackers.filter { tracker in
-                tracker.schedule.contains { weekday in
-                    return weekday.rawValue == currentWeekday
-                }
+                tracker.schedule.contains(currentWeekday)
             }
             return filteredTrackers.isEmpty ? nil : TrackerCategory(title: category.title, trackers: filteredTrackers)
         }
@@ -197,24 +196,28 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
     }
     
     private func mapCategories(tracker: Tracker) -> [TrackerCategory] {
+        print("Сопоставление трекера с категориями")
+
         var trackerAdded = false
         var updatedCategories = categories.map { category -> TrackerCategory in
             if category.title == "Домашний уют" {
                 var trackers = category.trackers
                 trackers.append(tracker)
                 trackerAdded = true
+                print("Трекер добавлен в существующую категорию: \(category.title)")
                 return TrackerCategory(title: category.title, trackers: trackers)
             }
             return category
         }
-        
+
         if !trackerAdded {
             let newCategory = TrackerCategory(title: "Домашний уют", trackers: [tracker])
             updatedCategories.append(newCategory)
+            print("Новая категория создана для трекера: \(tracker.name)")
         }
         return updatedCategories
     }
-    
+
     @objc private func addTracker(_ notification: Notification) {
         guard let tracker = notification.object as? Tracker else { return }
         categories = mapCategories(tracker: tracker)
@@ -322,20 +325,27 @@ extension TrackersViewController: UICollectionViewDataSource {
         _ collectionView: UICollectionView,
         numberOfItemsInSection section: Int
     ) -> Int {
-        let filteredTrackers = categories[section].trackers.filter { $0.schedule.contains(currentWeekday) }
-        return filteredTrackers.count
+        let filteredTrackers = filteredCategories()
+        guard section < filteredCategories().count else { return 0 }
+        return filteredTrackers[section].trackers.count
     }
     
     func collectionView(
         _ collectionView: UICollectionView,
         cellForItemAt indexPath: IndexPath
     ) -> UICollectionViewCell {
+        let filteredCategories = filteredCategories()
+        
+        guard indexPath.section < filteredCategories.count,
+              indexPath.item < filteredCategories[indexPath.section].trackers.count else {
+            fatalError("Invalid indexPath: \(indexPath)")
+        }
+        
+        let tracker = filteredCategories[indexPath.section].trackers[indexPath.item]
+        
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: TrackerCell.identifier, for: indexPath) as? TrackerCell else {
             return UICollectionViewCell()
         }
-        
-        let filteredTrackers = categories[indexPath.section].trackers.filter { $0.schedule.contains(currentWeekday) }
-        let tracker = filteredTrackers[indexPath.item]
         
         let currentDateOnly = Calendar.current.startOfDay(for: currentDate)
         let record = TrackerRecord(trackerId: tracker.id, date: currentDateOnly)

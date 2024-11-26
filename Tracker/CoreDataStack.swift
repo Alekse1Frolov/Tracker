@@ -12,7 +12,7 @@ final class CoreDataStack {
     
     static let shared = CoreDataStack()
     
-    private let modelName: String = "Tracker"
+    private let modelName: String = "TrackerModel"
     
     lazy var persistentContainer: NSPersistentContainer = {
         let container = NSPersistentContainer(name: modelName)

@@ -8,16 +8,6 @@
 import Foundation
 
 enum MockData {
-    static let days = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье"]
-    static let dayAbbreviations: [String: String] = [
-        "Понедельник": "Пн",
-        "Вторник": "Вт",
-        "Среда": "Ср",
-        "Четверг": "Чт",
-        "Пятница": "Пт",
-        "Суббота": "Сб",
-        "Воскресенье": "Вс"
-    ]
     static let trackersColors = [
         ProjectColors.TrackersColosSet.colorSelection1, ProjectColors.TrackersColosSet.colorSelection2,
         ProjectColors.TrackersColosSet.colorSelection3, ProjectColors.TrackersColosSet.colorSelection4,

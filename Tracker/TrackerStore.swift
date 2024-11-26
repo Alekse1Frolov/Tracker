@@ -63,7 +63,7 @@ final class TrackerStore: NSObject, NSFetchedResultsControllerDelegate {
         let fetchRequest: NSFetchRequest<TrackerCoreData> = TrackerCoreData.fetchRequest()
         do {
             let trackersCoreData = try context.fetch(fetchRequest)
-            return trackersCoreData.map { coreData in
+            let trackers = trackersCoreData.map { coreData in
                 Tracker(
                     id: coreData.id ?? UUID(),
                     name: coreData.name ?? "",
@@ -74,8 +74,8 @@ final class TrackerStore: NSObject, NSFetchedResultsControllerDelegate {
                     } ?? []
                 )
             }
+            return trackers
         } catch {
-            print("Error fetching trackers: \(error)")
             return []
         }
     }

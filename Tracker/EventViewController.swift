@@ -13,7 +13,7 @@ final class EventViewController: UIViewController {
     private let trackerType: TrackerType
     private let emojis = MockData.emojis
     private let colors = MockData.trackersColors
-    private var selectedDays: [Bool] = Array(repeating: false, count: MockData.days.count)
+    private var selectedDays: [Weekday] = []
     private var selectedDaysText = ""
     private var errorLabelHeightConstraint: NSLayoutConstraint!
     private var selectedEmojiIndex: IndexPath?
@@ -336,20 +336,27 @@ final class EventViewController: UIViewController {
     }
     
     @objc private func createButtonTapped() {
-        guard let trackerName = nameTextField.text, !trackerName.isEmpty else {
-            return
-        }
-        
+        guard let trackerName = nameTextField.text, !trackerName.isEmpty else { return }
+        guard let selectedEmojiIndex = selectedEmojiIndex else { return }
+        guard let selectedColorIndex = selectedColorIndex else { return }
+
+        let selectedEmoji = emojis[selectedEmojiIndex.item]
+        let selectedColor = colors[selectedColorIndex.item]
+        let selectedWeekdays = Weekday.allCases.filter { selectedDays.contains($0) }
+
         let newTracker = Tracker(
             id: UUID(),
             name: trackerName,
-            color: ProjectColors.TrackersColosSet.colorSelection5,
-            emoji: "🌱",
-            schedule: [.monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday]
+            color: selectedColor,
+            emoji: selectedEmoji,
+            schedule: selectedWeekdays
         )
+
         NotificationCenter.default.post(name: .createdTracker, object: newTracker)
         dismiss(animated: true, completion: nil)
     }
+
+
     
     @objc private func nameTextFieldDidChange(_ textField: UITextField) {
         clearButton.isHidden = nameTextField.text?.isEmpty ?? true
@@ -504,14 +511,13 @@ extension EventViewController: UITableViewDelegate {
         if indexPath.row == 1 {
             view.endEditing(true)
             
-            let scheduleVC = ScheduleViewController(selectedDays: selectedDays)
+            let scheduleVC = ScheduleViewController(selectedDays: Weekday.allCases.map {
+                selectedDays.contains($0)
+            })
             scheduleVC.onDaysSelected = { [weak self] selectedWeekdays in
                 guard let self else { return }
-                self.selectedDays = MockData.days.enumerated().map { index, _ in
-                    selectedWeekdays.contains(where: { $0.rawValue == index + 1 })
-                }
-                let selectedDayNames = selectedWeekdays.map { MockData.dayAbbreviations[MockData.days[$0.rawValue - 1]] ?? ""
-                }
+                self.selectedDays = selectedWeekdays
+                let selectedDayNames = selectedWeekdays.map { $0.abbreviation }
                 self.selectedDaysText = selectedDayNames.joined(separator: ", ")
                 self.tableView.reloadRows(at: [indexPath], with: .automatic)
             }
