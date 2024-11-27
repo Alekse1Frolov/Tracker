@@ -66,4 +66,17 @@ final class TrackerStore: NSObject, NSFetchedResultsControllerDelegate {
         }
         CoreDataStack.shared.saveContext()
     }
+    
+    func fetchAllTrackers() -> [Tracker] {
+        let fetchRequest: NSFetchRequest<TrackerCoreData> = TrackerCoreData.fetchRequest()
+        do {
+            let trackersCoreData = try context.fetch(fetchRequest)
+            let recordStore = TrackerRecordStore(context: context)
+            return trackersCoreData.map { Tracker(coreDataTracker: $0, recordStore: recordStore) }
+        } catch {
+            print("❌ Ошибка загрузки трекеров из Core Data: \(error)")
+            return []
+        }
+    }
+
 }

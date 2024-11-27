@@ -199,7 +199,7 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
     
     private func mapCategories(tracker: Tracker) -> [TrackerCategory] {
         print("Сопоставление трекера с категориями")
-
+        
         var trackerAdded = false
         var updatedCategories = categories.map { category -> TrackerCategory in
             if category.title == "Домашний уют" {
@@ -211,7 +211,7 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
             }
             return category
         }
-
+        
         if !trackerAdded {
             let newCategory = TrackerCategory(title: "Домашний уют", trackers: [tracker])
             updatedCategories.append(newCategory)
@@ -226,7 +226,7 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
         collectionView.reloadData()
         updatePlaceholderVisibility()
     }
-
+    
     @objc private func addTracker(_ notification: Notification) {
         guard let tracker = notification.object as? Tracker else { return }
         trackerStore.createTracker(from: tracker)
@@ -293,23 +293,23 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
 extension TrackersViewController: TrackerCellDelegate {
     func toggleCompletion(for trackerID: UUID) {
         guard findTracker(by: trackerID) != nil else { return }
-        
+
         let currentDateOnly = Calendar.current.startOfDay(for: currentDate)
-        
         guard currentDateOnly <= Calendar.current.startOfDay(for: Date()) else {
             return
         }
-        
-        let record = TrackerRecord(trackerId: trackerID, date: currentDateOnly)
-        
-        if completedTrackers.contains(record) {
-            completedTrackers.remove(record)
+
+        let recordStore = TrackerRecordStore(context: CoreDataStack.shared.mainContext)
+        let existingRecords = recordStore.fetchRecords(for: trackerID)
+
+        if existingRecords.contains(currentDateOnly) {
+            recordStore.deleteRecord(for: trackerID, on: currentDateOnly)
         } else {
-            completedTrackers.insert(record)
+            recordStore.addRecord(for: trackerID, on: currentDateOnly)
         }
-        
         collectionView.reloadData()
     }
+
     
     private func findTracker(by id: UUID) -> Tracker? {
         return categories
@@ -329,8 +329,8 @@ extension TrackersViewController: UICollectionViewDataSource {
     
     func numberOfSections(in collectionView: UICollectionView) -> Int {
         let count = filteredCategories().count
-            print("📊 Количество секций: \(count)")
-            return count
+        print("📊 Количество секций: \(count)")
+        return count
     }
     
     func collectionView(
@@ -363,9 +363,9 @@ extension TrackersViewController: UICollectionViewDataSource {
         let record = TrackerRecord(trackerId: tracker.id, date: currentDateOnly)
         
         let isCompleted = completedTrackers.contains(record)
-        let completionCount = completedTrackers.filter { $0.trackerId == tracker.id }.count
+        let completionCount = tracker.completionCount
         
-        cell.configure(with: tracker, completed: isCompleted, completionCount: completionCount)
+        cell.configure(with: tracker, completed: isCompleted, completionCount: tracker.completionCount)
         cell.delegate = self
         
         return cell

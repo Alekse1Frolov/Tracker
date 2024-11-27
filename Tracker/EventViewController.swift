@@ -343,6 +343,7 @@ final class EventViewController: UIViewController {
         let selectedEmoji = emojis[selectedEmojiIndex.item]
         let selectedColor = colors[selectedColorIndex.item]
 
+        let trackerStore = TrackerStore(context: CoreDataStack.shared.mainContext)
         let newTracker = Tracker(
             id: UUID(),
             name: trackerName,
@@ -351,6 +352,8 @@ final class EventViewController: UIViewController {
             schedule: selectedDays, 
             category: "Домашний уют"
         )
+        
+        trackerStore.createTracker(from: newTracker)
 
         NotificationCenter.default.post(name: .createdTracker, object: newTracker)
         dismiss(animated: true, completion: nil)

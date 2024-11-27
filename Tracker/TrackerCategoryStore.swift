@@ -67,20 +67,12 @@ final class TrackerCategoryStore: NSObject, NSFetchedResultsControllerDelegate {
         let fetchRequest: NSFetchRequest<TrackerCategoryCoreData> = TrackerCategoryCoreData.fetchRequest()
         do {
             let categoriesCoreData = try context.fetch(fetchRequest)
+            let recordStore = TrackerRecordStore(context: context)
             return categoriesCoreData.map { coreData in
                 TrackerCategory(
                     title: coreData.title ?? "",
-                    trackers: (coreData.trackers as? Set<TrackerCoreData>)?.compactMap { trackerCoreData in
-                        Tracker(
-                            id: trackerCoreData.id ?? UUID(),
-                            name: trackerCoreData.name ?? "",
-                            color: UIColor(hex: trackerCoreData.color ?? "#FFFFFF"),
-                            emoji: trackerCoreData.emoji ?? "",
-                            schedule: (trackerCoreData.schedule as? Set<WeekdayCoreData>)?.compactMap {
-                                WeekdayStore(context: context).weekday(from: $0)
-                            } ?? [],
-                            category: coreData.title ?? "Без категории"
-                        )
+                    trackers: (coreData.trackers as? Set<TrackerCoreData>)?.compactMap {
+                        Tracker(coreDataTracker: $0, recordStore: recordStore)
                     } ?? []
                 )
             }
