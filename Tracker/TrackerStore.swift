@@ -53,6 +53,10 @@ final class TrackerStore: NSObject, NSFetchedResultsControllerDelegate {
         tracker.schedule.forEach { weekday in
             if let weekdayCoreData = WeekdayStore(context: context).fetchWeekdayCoreData(for: weekday) {
                 trackerCoreData.addToSchedule(weekdayCoreData)
+            } else {
+                if let newWeekdayCoreData = WeekdayStore(context: context).createWeekday(from: weekday) {
+                    trackerCoreData.addToSchedule(newWeekdayCoreData)
+                }
             }
         }
         CoreDataStack.shared.saveContext()
@@ -74,8 +78,10 @@ final class TrackerStore: NSObject, NSFetchedResultsControllerDelegate {
                     } ?? []
                 )
             }
+            print("✅ Загруженные трекеры из Core Data: \(trackers)")
             return trackers
         } catch {
+            print("❌ Ошибка загрузки трекеров из Core Data: \(error)")
             return []
         }
     }

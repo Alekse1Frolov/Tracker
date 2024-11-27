@@ -119,10 +119,13 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
         
         datePicker.addTarget(self, action: #selector(dateChanged(_:)), for: .valueChanged)
         datePicker.addTarget(self, action: #selector(datePickerValueChanged(_:)), for: .valueChanged)
+        
+        loadTrackersFromCoreData()
     }
     
     @objc private func datePickerValueChanged(_ sender: UIDatePicker) {
         currentDate = sender.date
+      //  loadTrackersFromCoreData()
     }
     
     private func setupNavigationBar() {
@@ -163,7 +166,7 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
     }
     
     private func filteredCategories() -> [TrackerCategory] {
-        print("Фильтруем категории для \(currentWeekday.displayName)")
+        print("📂 Фильтруем категории для \(currentWeekday.displayName)")
         return categories.compactMap { category in
             let filteredTrackers = category.trackers.filter { tracker in
                 tracker.schedule.contains(currentWeekday)
@@ -217,9 +220,26 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
         }
         return updatedCategories
     }
+    
+    private func loadTrackersFromCoreData() {
+        let storedTrackers = trackerStore.fetchAllTrackers()
+        categories = mapCategoriesFromCoreData(trackers: storedTrackers)
+        collectionView.reloadData()
+        updatePlaceholderVisibility()
+    }
+    
+    private func mapCategoriesFromCoreData(trackers: [Tracker]) -> [TrackerCategory] {
+        print("📂 Сопоставляем трекеры с категориями...")
+        let groupedTrackers = Dictionary(grouping: trackers) { $0.name }
+        //return groupedTrackers.map { TrackerCategory(title: $0.key, trackers: $0.value) }
+        let categories = groupedTrackers.map { TrackerCategory(title: $0.key, trackers: $0.value) }
+            print("✅ Сформированные категории: \(categories)")
+            return categories
+    }
 
     @objc private func addTracker(_ notification: Notification) {
         guard let tracker = notification.object as? Tracker else { return }
+        trackerStore.createTracker(from: tracker)
         categories = mapCategories(tracker: tracker)
         collectionView.reloadData()
         updatePlaceholderVisibility()
@@ -318,7 +338,9 @@ extension TrackersViewController: TrackerCellDelegate {
 extension TrackersViewController: UICollectionViewDataSource {
     
     func numberOfSections(in collectionView: UICollectionView) -> Int {
-        return categories.count
+        let count = filteredCategories().count
+            print("📊 Количество секций: \(count)")
+            return count
     }
     
     func collectionView(

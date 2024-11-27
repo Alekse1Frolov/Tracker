@@ -19,7 +19,7 @@ final class TrackerCell: UICollectionViewCell {
     
     private let emojiLabel: UILabel = {
         let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: 24)
+        label.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         label.clipsToBounds = true
         label.textAlignment = .center
         label.layer.cornerRadius = 12
