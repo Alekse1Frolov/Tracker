@@ -125,7 +125,6 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
     
     @objc private func datePickerValueChanged(_ sender: UIDatePicker) {
         currentDate = sender.date
-      //  loadTrackersFromCoreData()
     }
     
     private func setupNavigationBar() {
@@ -222,19 +221,10 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
     }
     
     private func loadTrackersFromCoreData() {
-        let storedTrackers = trackerStore.fetchAllTrackers()
-        categories = mapCategoriesFromCoreData(trackers: storedTrackers)
+        let trackerCategories = TrackerCategoryStore(context: CoreDataStack.shared.mainContext).fetchAllCategories()
+        categories = trackerCategories // Используем данные из Core Data
         collectionView.reloadData()
         updatePlaceholderVisibility()
-    }
-    
-    private func mapCategoriesFromCoreData(trackers: [Tracker]) -> [TrackerCategory] {
-        print("📂 Сопоставляем трекеры с категориями...")
-        let groupedTrackers = Dictionary(grouping: trackers) { $0.name }
-        //return groupedTrackers.map { TrackerCategory(title: $0.key, trackers: $0.value) }
-        let categories = groupedTrackers.map { TrackerCategory(title: $0.key, trackers: $0.value) }
-            print("✅ Сформированные категории: \(categories)")
-            return categories
     }
 
     @objc private func addTracker(_ notification: Notification) {

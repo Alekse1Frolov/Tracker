@@ -339,36 +339,21 @@ final class EventViewController: UIViewController {
         guard let trackerName = nameTextField.text, !trackerName.isEmpty else { return }
         guard let selectedEmojiIndex = selectedEmojiIndex else { return }
         guard let selectedColorIndex = selectedColorIndex else { return }
-        
-        if trackerType == .habit && selectedDays.isEmpty {
-                showError(message: "Необходимо выбрать хотя бы один день недели.")
-                return
-            }
 
         let selectedEmoji = emojis[selectedEmojiIndex.item]
         let selectedColor = colors[selectedColorIndex.item]
-  //      let selectedWeekdays = Weekday.allCases.filter { selectedDays.contains($0) }
 
         let newTracker = Tracker(
             id: UUID(),
             name: trackerName,
             color: selectedColor,
             emoji: selectedEmoji,
-            schedule: selectedDays
+            schedule: selectedDays, 
+            category: "Домашний уют"
         )
 
         NotificationCenter.default.post(name: .createdTracker, object: newTracker)
         dismiss(animated: true, completion: nil)
-    }
-
-    private func showError(message: String) {
-        let alertController = UIAlertController(
-            title: "Ошибка",
-            message: message,
-            preferredStyle: .alert
-        )
-        alertController.addAction(UIAlertAction(title: "ОК", style: .default, handler: nil))
-        present(alertController, animated: true, completion: nil)
     }
     
     private func updateCreateButtonState() {

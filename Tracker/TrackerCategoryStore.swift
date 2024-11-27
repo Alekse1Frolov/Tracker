@@ -34,10 +34,6 @@ final class TrackerCategoryStore: NSObject, NSFetchedResultsControllerDelegate {
         try? fetchedResultsController?.performFetch()
     }
     
-    func getAllCategories() -> [TrackerCategoryCoreData] {
-        return fetchedResultsController?.fetchedObjects ?? []
-    }
-    
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         didChangeContent?()
     }
@@ -47,7 +43,6 @@ final class TrackerCategoryStore: NSObject, NSFetchedResultsControllerDelegate {
         let categoryCoreData = TrackerCategoryCoreData(context: context)
         categoryCoreData.title = category.title
         
-        // Связываем Trackers с категорией
         category.trackers.forEach { tracker in
             let trackerStore = TrackerStore(context: context)
             trackerStore.createTracker(from: tracker)
@@ -57,6 +52,17 @@ final class TrackerCategoryStore: NSObject, NSFetchedResultsControllerDelegate {
     }
     
     // MARK: - Read
+    func fetchCategory(byTitle title: String) -> TrackerCategoryCoreData? {
+        let fetchRequest: NSFetchRequest<TrackerCategoryCoreData> = TrackerCategoryCoreData.fetchRequest()
+            fetchRequest.predicate = NSPredicate(format: "title == %@", title)
+            do {
+                return try context.fetch(fetchRequest).first
+            } catch {
+                print("Ошибка при загрузке категории \(title): \(error)")
+                return nil
+            }
+    }
+    
     func fetchAllCategories() -> [TrackerCategory] {
         let fetchRequest: NSFetchRequest<TrackerCategoryCoreData> = TrackerCategoryCoreData.fetchRequest()
         do {
@@ -72,7 +78,8 @@ final class TrackerCategoryStore: NSObject, NSFetchedResultsControllerDelegate {
                             emoji: trackerCoreData.emoji ?? "",
                             schedule: (trackerCoreData.schedule as? Set<WeekdayCoreData>)?.compactMap {
                                 WeekdayStore(context: context).weekday(from: $0)
-                            } ?? []
+                            } ?? [],
+                            category: coreData.title ?? "Без категории"
                         )
                     } ?? []
                 )

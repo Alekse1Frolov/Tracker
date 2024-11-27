@@ -34,10 +34,6 @@ final class TrackerStore: NSObject, NSFetchedResultsControllerDelegate {
         try? fetchedResultsController?.performFetch()
     }
     
-    func getAllTrackers() -> [TrackerCoreData] {
-        return fetchedResultsController?.fetchedObjects ?? []
-    }
-    
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         didChangeContent?()
     }
@@ -50,6 +46,15 @@ final class TrackerStore: NSObject, NSFetchedResultsControllerDelegate {
         trackerCoreData.color = tracker.color.hexString
         trackerCoreData.emoji = tracker.emoji
         
+        let categoryStore = TrackerCategoryStore(context: context)
+        if let homeCategory = categoryStore.fetchCategory(byTitle: "Домашний уют") {
+            trackerCoreData.category = homeCategory
+        } else {
+            let newCategory = TrackerCategory(title: "Домашний уют", trackers: [])
+            categoryStore.createCategory(from: newCategory)
+            trackerCoreData.category = categoryStore.fetchCategory(byTitle: "Домашний уют")
+        }
+        
         tracker.schedule.forEach { weekday in
             if let weekdayCoreData = WeekdayStore(context: context).fetchWeekdayCoreData(for: weekday) {
                 trackerCoreData.addToSchedule(weekdayCoreData)
@@ -60,44 +65,5 @@ final class TrackerStore: NSObject, NSFetchedResultsControllerDelegate {
             }
         }
         CoreDataStack.shared.saveContext()
-    }
-    
-    // MARK: - Read
-    func fetchAllTrackers() -> [Tracker] {
-        let fetchRequest: NSFetchRequest<TrackerCoreData> = TrackerCoreData.fetchRequest()
-        do {
-            let trackersCoreData = try context.fetch(fetchRequest)
-            let trackers = trackersCoreData.map { coreData in
-                Tracker(
-                    id: coreData.id ?? UUID(),
-                    name: coreData.name ?? "",
-                    color: UIColor(hex: coreData.color ?? "#FFFFFF"),
-                    emoji: coreData.emoji ?? "",
-                    schedule: (coreData.schedule as? Set<WeekdayCoreData>)?.compactMap {
-                        WeekdayStore(context: context).weekday(from: $0)
-                    } ?? []
-                )
-            }
-            print("✅ Загруженные трекеры из Core Data: \(trackers)")
-            return trackers
-        } catch {
-            print("❌ Ошибка загрузки трекеров из Core Data: \(error)")
-            return []
-        }
-    }
-    
-    // MARK: - Delete
-    func deleteTracker(with id: UUID) {
-        let fetchRequest: NSFetchRequest<TrackerCoreData> = TrackerCoreData.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "id == %@", id as CVarArg)
-        do {
-            let results = try context.fetch(fetchRequest)
-            for object in results {
-                context.delete(object)
-            }
-            CoreDataStack.shared.saveContext()
-        } catch {
-            print("Error deleting tracker: \(error)")
-        }
     }
 }

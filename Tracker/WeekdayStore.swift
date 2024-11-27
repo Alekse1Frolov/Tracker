@@ -34,10 +34,6 @@ final class WeekdayStore: NSObject, NSFetchedResultsControllerDelegate {
         try? fetchedResultsController?.performFetch()
     }
     
-    func getAllWeekdays() -> [WeekdayCoreData] {
-        return fetchedResultsController?.fetchedObjects ?? []
-    }
-    
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         didChangeContent?()
     }
@@ -49,33 +45,6 @@ final class WeekdayStore: NSObject, NSFetchedResultsControllerDelegate {
         return weekdayCoreData
     }
     
-    // MARK: - Read
-    func fetchAllWeekdays() -> [Weekday] {
-        let fetchRequest: NSFetchRequest<WeekdayCoreData> = WeekdayCoreData.fetchRequest()
-        do {
-            let weekdaysCoreData = try context.fetch(fetchRequest)
-            return weekdaysCoreData.compactMap { coreData in
-                weekday(from: coreData)
-            }
-        } catch {
-            print("Error fetching weekdays: \(error)")
-            return []
-        }
-    }
-    
-    func fetchWeekday(byName name: String) -> Weekday? {
-        let fetchRequest: NSFetchRequest<WeekdayCoreData> = WeekdayCoreData.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "name == %@", name)
-        do {
-            if let weekdayCoreData = try context.fetch(fetchRequest).first {
-                return weekday(from: weekdayCoreData)
-            }
-        } catch {
-            print("Error fetching weekday by name: \(error)")
-        }
-        return nil
-    }
-    
     func fetchWeekdayCoreData(for weekday: Weekday) -> WeekdayCoreData? {
         let fetchRequest: NSFetchRequest<WeekdayCoreData> = WeekdayCoreData.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "name == %@", weekdayName(from: weekday))
@@ -85,13 +54,6 @@ final class WeekdayStore: NSObject, NSFetchedResultsControllerDelegate {
             print("Error fetching WeekdayCoreData: \(error)")
             return nil
         }
-    }
-    
-    // MARK: - Delete
-    func deleteWeekday(_ weekday: Weekday) {
-        guard let weekdayCoreData = fetchWeekdayCoreData(for: weekday) else { return }
-        context.delete(weekdayCoreData)
-        CoreDataStack.shared.saveContext()
     }
     
     // MARK: - Helpers
