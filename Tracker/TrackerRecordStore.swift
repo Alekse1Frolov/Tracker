@@ -36,8 +36,19 @@ final class TrackerRecordStore {
             print("❌ Ошибка при добавлении записи: \(error)")
         }
         
-        CoreDataStack.shared.saveContext()
+    //CoreDataStack.shared.saveContext()
     }
+    
+    func fetchAllRecords() -> [TrackerRecordCoreData] {
+        let fetchRequest: NSFetchRequest<TrackerRecordCoreData> = TrackerRecordCoreData.fetchRequest()
+        do {
+            return try context.fetch(fetchRequest)
+        } catch {
+            print("❌ Ошибка при загрузке записей выполнения: \(error)")
+            return []
+        }
+    }
+
     
     func fetchRecords(for trackerId: UUID) -> [Date] {
         let fetchRequest: NSFetchRequest<TrackerRecordCoreData> = TrackerRecordCoreData.fetchRequest()

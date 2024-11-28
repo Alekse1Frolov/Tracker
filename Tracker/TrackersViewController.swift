@@ -221,6 +221,10 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
         print("🔍 Преобразуем категории в модель TrackerCategory...")
         categories = trackerCategories.map { TrackerCategory(coreDataCategory: $0) }
         
+        let recordStore = TrackerRecordStore(context: CoreDataStack.shared.mainContext)
+        let allRecords = recordStore.fetchAllRecords()
+        completedTrackers = Set(allRecords.map { TrackerRecord(coreDataRecord: $0) })
+        
         // Логируем содержимое категорий
         categories.forEach { category in
             print("Категория \(category.title) содержит \(category.trackers.count) трекеров")
@@ -228,6 +232,7 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
                 print("Трекер: \(tracker.name), Расписание: \(tracker.schedule.map { $0.displayName })")
             }
         }
+        print("✅ Загружено \(completedTrackers.count) записей выполнения")
         
         collectionView.reloadData()
         updatePlaceholderVisibility()
@@ -400,13 +405,11 @@ extension TrackersViewController: UICollectionViewDataSource {
             return UICollectionViewCell()
         }
         
-        let currentDateOnly = Calendar.current.startOfDay(for: currentDate)
-        let record = TrackerRecord(trackerId: tracker.id, date: currentDateOnly)
-        
-        let isCompleted = completedTrackers.contains(record)
         let completionCount = completedTrackers.filter { $0.trackerId == tracker.id }.count
+        let currentDateOnly = Calendar.current.startOfDay(for: currentDate)
+        let isCompletedToday = completedTrackers.contains(TrackerRecord(trackerId: tracker.id, date: currentDateOnly))
         
-        cell.configure(with: tracker, completed: isCompleted, completionCount: completionCount)
+        cell.configure(with: tracker, completed: isCompletedToday, completionCount: completionCount)
         cell.delegate = self
         
         return cell
