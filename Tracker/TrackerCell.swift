@@ -19,12 +19,18 @@ final class TrackerCell: UICollectionViewCell {
     
     private let emojiLabel: UILabel = {
         let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: 16, weight: .medium)
+        label.font = UIFont.systemFont(ofSize: 13, weight: .medium)
         label.clipsToBounds = true
         label.textAlignment = .center
-        label.layer.cornerRadius = 12
-        label.backgroundColor = Asset.ypWhite.color.withAlphaComponent(0.3)
+        label.baselineAdjustment = .alignCenters
         return label
+    }()
+    
+    private let emojiBackgroundView: UIView = {
+        let view = UIView()
+        view.layer.cornerRadius = 12
+        view.backgroundColor = Asset.ypWhite.color.withAlphaComponent(0.3)
+        return view
     }()
     
     private let trackerCellLabel: UILabel = {
@@ -80,7 +86,7 @@ final class TrackerCell: UICollectionViewCell {
     
     private func setupLayout() {
         
-        [emojiLabel, trackerCellLabel].forEach { element in
+        [emojiBackgroundView, trackerCellLabel].forEach { element in
             element.translatesAutoresizingMaskIntoConstraints = false
             backView.addSubview(element)
         }
@@ -90,6 +96,8 @@ final class TrackerCell: UICollectionViewCell {
             contentView.addSubview(element)
         }
         
+        setupEmoji()
+        
         NSLayoutConstraint.activate([
             
             // backView constraint
@@ -98,17 +106,18 @@ final class TrackerCell: UICollectionViewCell {
             backView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             backView.heightAnchor.constraint(equalToConstant: 90),
             
-            // emojiLabel constraint
-            emojiLabel.topAnchor.constraint(equalTo: backView.topAnchor, constant: 12),
-            emojiLabel.leadingAnchor.constraint(equalTo: backView.leadingAnchor, constant: 12),
-            emojiLabel.heightAnchor.constraint(equalToConstant: 24),
-            emojiLabel.widthAnchor.constraint(equalToConstant: 24),
+            // emojiBackgroundView constraint
+            emojiBackgroundView.topAnchor.constraint(equalTo: backView.topAnchor, constant: 12),
+            emojiBackgroundView.leadingAnchor.constraint(equalTo: backView.leadingAnchor, constant: 12),
+            emojiBackgroundView.heightAnchor.constraint(equalToConstant: 24),
+            emojiBackgroundView.widthAnchor.constraint(equalToConstant: 24),
             
             // trackerCellLabel constraint
-            trackerCellLabel.topAnchor.constraint(equalTo: emojiLabel.bottomAnchor, constant: 8),
-            trackerCellLabel.leadingAnchor.constraint(equalTo: emojiLabel.leadingAnchor),
+            trackerCellLabel.topAnchor.constraint(equalTo: emojiBackgroundView.bottomAnchor, constant: 8),
+            trackerCellLabel.leadingAnchor.constraint(equalTo: emojiBackgroundView.leadingAnchor),
             trackerCellLabel.centerXAnchor.constraint(equalTo: backView.centerXAnchor),
             trackerCellLabel.trailingAnchor.constraint(equalTo: backView.trailingAnchor, constant: -12),
+            trackerCellLabel.bottomAnchor.constraint(equalTo: backView.bottomAnchor, constant: -12),
             
             // counterLabel constraint
             counterLabel.topAnchor.constraint(equalTo: backView.bottomAnchor, constant: 16),
@@ -119,6 +128,18 @@ final class TrackerCell: UICollectionViewCell {
             plusButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -12),
             plusButton.widthAnchor.constraint(equalToConstant: 34),
             plusButton.heightAnchor.constraint(equalToConstant: 34)
+        ])
+    }
+    
+    private func setupEmoji() {
+        emojiBackgroundView.addSubview(emojiLabel)
+        emojiLabel.translatesAutoresizingMaskIntoConstraints = false
+        
+        NSLayoutConstraint.activate([
+            emojiLabel.centerXAnchor.constraint(equalTo: emojiBackgroundView.centerXAnchor),
+            emojiLabel.centerYAnchor.constraint(equalTo: emojiBackgroundView.centerYAnchor),
+            emojiLabel.heightAnchor.constraint(lessThanOrEqualTo: emojiBackgroundView.heightAnchor, multiplier: 0.9),
+            emojiLabel.widthAnchor.constraint(lessThanOrEqualTo: emojiBackgroundView.widthAnchor, multiplier: 0.9)
         ])
     }
     
