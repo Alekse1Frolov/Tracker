@@ -5,80 +5,58 @@
 //  Created by Aleksei Frolov on 26.11.2024.
 //
 
-import UIKit
 import CoreData
 
-final class TrackerCategoryStore: NSObject, NSFetchedResultsControllerDelegate {
-    
+final class TrackerCategoryStore {
     private let context: NSManagedObjectContext
-    private var fetchedResultsController: NSFetchedResultsController<TrackerCategoryCoreData>?
-    
-    var didChangeContent: (() -> Void)?
     
     init(context: NSManagedObjectContext = CoreDataStack.shared.mainContext) {
         self.context = context
-        super.init()
     }
     
-    func configureFetchedResultsController() {
-        let fetchRequest: NSFetchRequest<TrackerCategoryCoreData> = TrackerCategoryCoreData.fetchRequest()
-        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
-        
-        fetchedResultsController = NSFetchedResultsController(
-            fetchRequest: fetchRequest,
-            managedObjectContext: context,
-            sectionNameKeyPath: nil,
-            cacheName: nil
-        )
-        fetchedResultsController?.delegate = self
-        try? fetchedResultsController?.performFetch()
-    }
-    
-    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        didChangeContent?()
-    }
-    
-    // MARK: - Create
     func createCategory(from category: TrackerCategory) {
+        print("🟢 Создаём категорию: \(category.title)")
         let categoryCoreData = TrackerCategoryCoreData(context: context)
         categoryCoreData.title = category.title
         
         category.trackers.forEach { tracker in
-            let trackerStore = TrackerStore(context: context)
-            trackerStore.createTracker(from: tracker)
+            print("➡️ Добавляем трекер \(tracker.name) в категорию \(category.title)")
+            TrackerStore(context: context).createTracker(from: tracker)
         }
         
         CoreDataStack.shared.saveContext()
+        print("✅ Категория \(category.title) сохранена.")
     }
+
+
     
-    // MARK: - Read
     func fetchCategory(byTitle title: String) -> TrackerCategoryCoreData? {
         let fetchRequest: NSFetchRequest<TrackerCategoryCoreData> = TrackerCategoryCoreData.fetchRequest()
-            fetchRequest.predicate = NSPredicate(format: "title == %@", title)
-            do {
-                return try context.fetch(fetchRequest).first
-            } catch {
-                print("Ошибка при загрузке категории \(title): \(error)")
-                return nil
-            }
+        fetchRequest.predicate = NSPredicate(format: "title == %@", title)
+        
+        do {
+            return try context.fetch(fetchRequest).first
+        } catch {
+            print("Error fetching category: \(error)")
+            return nil
+        }
     }
     
-    func fetchAllCategories() -> [TrackerCategory] {
+    func fetchCategories() -> [TrackerCategoryCoreData] {
         let fetchRequest: NSFetchRequest<TrackerCategoryCoreData> = TrackerCategoryCoreData.fetchRequest()
+
         do {
-            let categoriesCoreData = try context.fetch(fetchRequest)
-            let recordStore = TrackerRecordStore(context: context)
-            return categoriesCoreData.map { coreData in
-                TrackerCategory(
-                    title: coreData.title ?? "",
-                    trackers: (coreData.trackers as? Set<TrackerCoreData>)?.compactMap {
-                        Tracker(coreDataTracker: $0, recordStore: recordStore)
-                    } ?? []
-                )
+            let categories = try context.fetch(fetchRequest)
+            print("✅ Найдено \(categories.count) категорий")
+            categories.forEach { category in
+                let trackers = (category.trackers as? Set<TrackerCoreData>)?.map { $0.name ?? "Без названия" } ?? []
+                print("🔍 Категория: \(category.title ?? "Без названия"), Трекеры: \(trackers)")
             }
+            return categories
         } catch {
-            print("Error fetching categories: \(error)")
+            print("❌ Ошибка при загрузке категорий: \(error)")
             return []
         }
     }
+
 }

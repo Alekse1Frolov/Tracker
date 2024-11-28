@@ -166,13 +166,27 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
     
     private func filteredCategories() -> [TrackerCategory] {
         print("📂 Фильтруем категории для \(currentWeekday.displayName)")
+        
         return categories.compactMap { category in
             let filteredTrackers = category.trackers.filter { tracker in
-                tracker.schedule.contains(currentWeekday)
+                let matchesSchedule = tracker.schedule.contains(currentWeekday)
+                print("🔍 Трекер \(tracker.name) - Расписание: \(tracker.schedule.map { $0.displayName }), Соответствие: \(matchesSchedule)")
+                return matchesSchedule
             }
             return filteredTrackers.isEmpty ? nil : TrackerCategory(title: category.title, trackers: filteredTrackers)
         }
     }
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     private func presentEventViewController(
         for trackerType: TrackerType,
@@ -197,43 +211,50 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
         present(navigationController, animated: true, completion: nil)
     }
     
-    private func mapCategories(tracker: Tracker) -> [TrackerCategory] {
-        print("Сопоставление трекера с категориями")
+    func loadTrackersFromCoreData() {
+        print("📥 Загружаем трекеры из Core Data...")
         
-        var trackerAdded = false
-        var updatedCategories = categories.map { category -> TrackerCategory in
-            if category.title == "Домашний уют" {
-                var trackers = category.trackers
-                trackers.append(tracker)
-                trackerAdded = true
-                print("Трекер добавлен в существующую категорию: \(category.title)")
-                return TrackerCategory(title: category.title, trackers: trackers)
+        // Загружаем категории из Core Data
+        let trackerCategories = TrackerCategoryStore(context: CoreDataStack.shared.mainContext).fetchCategories()
+        
+        // Преобразуем категории в модель TrackerCategory
+        print("🔍 Преобразуем категории в модель TrackerCategory...")
+        categories = trackerCategories.map { TrackerCategory(coreDataCategory: $0) }
+        
+        // Логируем содержимое категорий
+        categories.forEach { category in
+            print("Категория \(category.title) содержит \(category.trackers.count) трекеров")
+            category.trackers.forEach { tracker in
+                print("Трекер: \(tracker.name), Расписание: \(tracker.schedule.map { $0.displayName })")
             }
-            return category
         }
         
-        if !trackerAdded {
-            let newCategory = TrackerCategory(title: "Домашний уют", trackers: [tracker])
-            updatedCategories.append(newCategory)
-            print("Новая категория создана для трекера: \(tracker.name)")
-        }
-        return updatedCategories
-    }
-    
-    private func loadTrackersFromCoreData() {
-        let trackerCategories = TrackerCategoryStore(context: CoreDataStack.shared.mainContext).fetchAllCategories()
-        categories = trackerCategories // Используем данные из Core Data
         collectionView.reloadData()
         updatePlaceholderVisibility()
     }
+
+    
+    
+    
     
     @objc private func addTracker(_ notification: Notification) {
         guard let tracker = notification.object as? Tracker else { return }
+        print("🟢 Добавление трекера: \(tracker.name), ID: \(tracker.id)")
+        
+        // Проверяем, существует ли трекер уже в Core Data
+//        let existingTracker = trackerStore.fetchTracker(byID: tracker.id)
+//        if existingTracker != nil {
+//            print("⚠️ Трекер \(tracker.name) уже существует в Core Data, добавление пропущено.")
+//            return
+//        }
+        
+        // Сохраняем трекер в Core Data
         trackerStore.createTracker(from: tracker)
-        categories = mapCategories(tracker: tracker)
-        collectionView.reloadData()
-        updatePlaceholderVisibility()
+        
+        // Загружаем обновленные данные из Core Data
+        loadTrackersFromCoreData()
     }
+    
     
     @objc private func addButtonTapped() {
         presentTypeSelection()
@@ -292,24 +313,44 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
 
 extension TrackersViewController: TrackerCellDelegate {
     func toggleCompletion(for trackerID: UUID) {
-        guard findTracker(by: trackerID) != nil else { return }
-
-        let currentDateOnly = Calendar.current.startOfDay(for: currentDate)
-        guard currentDateOnly <= Calendar.current.startOfDay(for: Date()) else {
+        print("🟢 Переключение статуса для трекера ID \(trackerID)")
+        
+        guard let tracker = findTracker(by: trackerID) else {
+            print("⚠️ Трекер с ID \(trackerID) не найден")
             return
         }
-
+        
+        let currentDateOnly = Calendar.current.startOfDay(for: currentDate)
+        guard currentDateOnly <= Calendar.current.startOfDay(for: Date()) else {
+            print("⚠️ Нельзя завершить трекер на будущую дату")
+            return
+        }
+        
         let recordStore = TrackerRecordStore(context: CoreDataStack.shared.mainContext)
         let existingRecords = recordStore.fetchRecords(for: trackerID)
-
+        
         if existingRecords.contains(currentDateOnly) {
+            print("🟡 Удаляем запись для даты \(currentDateOnly)")
             recordStore.deleteRecord(for: trackerID, on: currentDateOnly)
         } else {
+            print("🟢 Добавляем запись для даты \(currentDateOnly)")
             recordStore.addRecord(for: trackerID, on: currentDateOnly)
         }
-        collectionView.reloadData()
+        
+        let updatedRecords = recordStore.fetchRecords(for: trackerID)
+        completedTrackers = Set(updatedRecords.map { TrackerRecord(trackerId: trackerID, date: $0) })
+        
+        print("✅ Записи для трекера \(tracker.name): \(updatedRecords)")
+        
+        // Заново загружаем данные из Core Data
+        loadTrackersFromCoreData()
     }
-
+    
+    
+    
+    
+    
+    
     
     private func findTracker(by id: UUID) -> Tracker? {
         return categories
@@ -363,9 +404,9 @@ extension TrackersViewController: UICollectionViewDataSource {
         let record = TrackerRecord(trackerId: tracker.id, date: currentDateOnly)
         
         let isCompleted = completedTrackers.contains(record)
-        let completionCount = tracker.completionCount
+        let completionCount = completedTrackers.filter { $0.trackerId == tracker.id }.count
         
-        cell.configure(with: tracker, completed: isCompleted, completionCount: tracker.completionCount)
+        cell.configure(with: tracker, completed: isCompleted, completionCount: completionCount)
         cell.delegate = self
         
         return cell

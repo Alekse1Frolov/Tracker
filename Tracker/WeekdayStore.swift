@@ -5,72 +5,36 @@
 //  Created by Aleksei Frolov on 26.11.2024.
 //
 
-import Foundation
 import CoreData
 
-final class WeekdayStore: NSObject, NSFetchedResultsControllerDelegate {
-    
+final class WeekdayStore {
     private let context: NSManagedObjectContext
-    private var fetchedResultsController: NSFetchedResultsController<WeekdayCoreData>?
-    
-    var didChangeContent: (() -> Void)?
     
     init(context: NSManagedObjectContext = CoreDataStack.shared.mainContext) {
         self.context = context
-        super.init()
     }
     
-    func configureFetchedResultsController() {
-        let fetchRequest: NSFetchRequest<WeekdayCoreData> = WeekdayCoreData.fetchRequest()
-        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "name", ascending: true)]
-        
-        fetchedResultsController = NSFetchedResultsController(
-            fetchRequest: fetchRequest,
-            managedObjectContext: context,
-            sectionNameKeyPath: nil,
-            cacheName: nil
-        )
-        fetchedResultsController?.delegate = self
-        try? fetchedResultsController?.performFetch()
-    }
-    
-    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        didChangeContent?()
-    }
-    // MARK: - Create
     func createWeekday(from weekday: Weekday) -> WeekdayCoreData? {
+        print("🟢 Создаём день недели: \(weekday.displayName)")
         let weekdayCoreData = WeekdayCoreData(context: context)
-        weekdayCoreData.name = weekdayName(from: weekday)
+        weekdayCoreData.name = weekday.displayName
+        weekdayCoreData.number = Int16(weekday.rawValue)
+        
         CoreDataStack.shared.saveContext()
+        print("✅ День недели \(weekday.displayName) сохранён.")
         return weekdayCoreData
     }
+
     
-    func fetchWeekdayCoreData(for weekday: Weekday) -> WeekdayCoreData? {
+    func fetchWeekday(for weekday: Weekday) -> WeekdayCoreData? {
         let fetchRequest: NSFetchRequest<WeekdayCoreData> = WeekdayCoreData.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "name == %@", weekdayName(from: weekday))
+        fetchRequest.predicate = NSPredicate(format: "number == %d", weekday.rawValue)
+        
         do {
             return try context.fetch(fetchRequest).first
         } catch {
-            print("Error fetching WeekdayCoreData: \(error)")
+            print("Failed to fetch weekday: \(error)")
             return nil
-        }
-    }
-    
-    // MARK: - Helpers
-    func weekday(from coreData: WeekdayCoreData) -> Weekday? {
-        guard let name = coreData.name else { return nil }
-        return Weekday.allCases.first { weekdayName(from: $0) == name }
-    }
-    
-    private func weekdayName(from weekday: Weekday) -> String {
-        switch weekday {
-        case .monday: return "Monday"
-        case .tuesday: return "Tuesday"
-        case .wednesday: return "Wednesday"
-        case .thursday: return "Thursday"
-        case .friday: return "Friday"
-        case .saturday: return "Saturday"
-        case .sunday: return "Sunday"
         }
     }
 }

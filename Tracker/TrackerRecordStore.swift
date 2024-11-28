@@ -5,52 +5,22 @@
 //  Created by Aleksei Frolov on 26.11.2024.
 //
 
-import Foundation
 import CoreData
 
-final class TrackerRecordStore: NSObject, NSFetchedResultsControllerDelegate {
-    
+final class TrackerRecordStore {
     private let context: NSManagedObjectContext
-    private var fetchedResultsController: NSFetchedResultsController<TrackerRecordCoreData>?
     
-    var didChangeContent: (() -> Void)?
-    
-    init(context: NSManagedObjectContext) {
+    init(context: NSManagedObjectContext = CoreDataStack.shared.mainContext) {
         self.context = context
-        super.init()
-    }
-    
-    convenience init(defaultContext: NSManagedObjectContext = CoreDataStack.shared.mainContext) {
-        self.init(context: defaultContext)
-    }
-
-    func weekday(from coreData: WeekdayCoreData) -> Weekday? {
-            guard let name = coreData.name else { return nil }
-            return Weekday.allCases.first { $0.abbreviation == name }
-        }
-    
-    func configureFetchedResultsController() {
-        let fetchRequest: NSFetchRequest<TrackerRecordCoreData> = TrackerRecordCoreData.fetchRequest()
-        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "date", ascending: true)]
-        
-        fetchedResultsController = NSFetchedResultsController(
-            fetchRequest: fetchRequest,
-            managedObjectContext: context,
-            sectionNameKeyPath: nil,
-            cacheName: nil
-        )
-        fetchedResultsController?.delegate = self
-        try? fetchedResultsController?.performFetch()
-    }
-    
-    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        didChangeContent?()
     }
     
     func addRecord(for trackerId: UUID, on date: Date) {
+        print("🟢 Добавляем запись: трекер ID \(trackerId), дата \(date)")
+        
         let record = TrackerRecordCoreData(context: context)
         record.date = date
-
+        record.trackerID = trackerId
+        
         let fetchRequest: NSFetchRequest<TrackerCoreData> = TrackerCoreData.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "id == %@", trackerId as CVarArg)
         do {
@@ -58,27 +28,32 @@ final class TrackerRecordStore: NSObject, NSFetchedResultsControllerDelegate {
             if let tracker = trackers.first {
                 record.tracker = tracker
                 CoreDataStack.shared.saveContext()
+                print("✅ Запись добавлена для трекера \(tracker.name ?? "Без имени")")
+            } else {
+                print("⚠️ Трекер с ID \(trackerId) не найден")
             }
         } catch {
-            print("Error adding record: \(error)")
+            print("❌ Ошибка при добавлении записи: \(error)")
         }
+        
+        CoreDataStack.shared.saveContext()
     }
     
     func fetchRecords(for trackerId: UUID) -> [Date] {
         let fetchRequest: NSFetchRequest<TrackerRecordCoreData> = TrackerRecordCoreData.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "tracker.id == %@", trackerId as CVarArg)
+        fetchRequest.predicate = NSPredicate(format: "trackerID == %@", trackerId as CVarArg)
+        
         do {
-            let records = try context.fetch(fetchRequest)
-            return records.compactMap { $0.date }
+            return try context.fetch(fetchRequest).compactMap { $0.date }
         } catch {
-            print("Error fetching records: \(error)")
+            print("Failed to fetch records: \(error)")
             return []
         }
     }
     
     func deleteRecord(for trackerId: UUID, on date: Date) {
         let fetchRequest: NSFetchRequest<TrackerRecordCoreData> = TrackerRecordCoreData.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "tracker.id == %@ AND date == %@", trackerId as CVarArg, date as CVarArg)
+        fetchRequest.predicate = NSPredicate(format: "trackerID == %@ AND date == %@", trackerId as CVarArg, date as CVarArg)
         do {
             let records = try context.fetch(fetchRequest)
             for record in records {

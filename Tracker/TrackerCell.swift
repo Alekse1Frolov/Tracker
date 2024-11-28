@@ -149,12 +149,15 @@ final class TrackerCell: UICollectionViewCell {
         emojiLabel.text = tracker.emoji
         trackerCellLabel.text = tracker.name
         
-        let color = tracker.color
+        if let color = UIColor(hex: tracker.color) {
+            backView.backgroundColor = color
+            plusButton.backgroundColor = color
+        } else {
+            backView.backgroundColor = Asset.ypRed.color
+            plusButton.backgroundColor = Asset.ypRed.color
+        }
         
-        backView.backgroundColor = color
-        plusButton.backgroundColor = color
         counterLabel.text = "\(formatDay(completionCount))"
-        
         self.trackerID = tracker.id
         self.isCompleted = completed
     }

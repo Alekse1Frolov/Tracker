@@ -5,78 +5,91 @@
 //  Created by Aleksei Frolov on 26.11.2024.
 //
 
-import UIKit
 import CoreData
 
-final class TrackerStore: NSObject, NSFetchedResultsControllerDelegate {
-    
+final class TrackerStore {
     private let context: NSManagedObjectContext
-    private var fetchedResultsController: NSFetchedResultsController<TrackerCoreData>?
-    
-    var didChangeContent: (() -> Void)?
     
     init(context: NSManagedObjectContext = CoreDataStack.shared.mainContext) {
         self.context = context
-        super.init()
     }
     
-    func configureFetchedResultsController() {
-        let fetchRequest: NSFetchRequest<TrackerCoreData> = TrackerCoreData.fetchRequest()
-        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "name", ascending: true)]
-        
-        fetchedResultsController = NSFetchedResultsController(
-            fetchRequest: fetchRequest,
-            managedObjectContext: context,
-            sectionNameKeyPath: nil,
-            cacheName: nil
-        )
-        fetchedResultsController?.delegate = self
-        try? fetchedResultsController?.performFetch()
-    }
-    
-    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        didChangeContent?()
-    }
-    
-    // MARK: - Create
     func createTracker(from tracker: Tracker) {
+        print("🟢 Создаём трекер: \(tracker.name), ID: \(tracker.id)")
+        
+        let fetchRequest: NSFetchRequest<TrackerCoreData> = TrackerCoreData.fetchRequest()
+            fetchRequest.predicate = NSPredicate(format: "id == %@", tracker.id as CVarArg)
+            if let existingTracker = try? context.fetch(fetchRequest).first {
+                print("⚠️ Трекер \(tracker.name) уже существует в Core Data, добавление пропущено.")
+                return
+            }
+        
         let trackerCoreData = TrackerCoreData(context: context)
         trackerCoreData.id = tracker.id
         trackerCoreData.name = tracker.name
-        trackerCoreData.color = tracker.color.hexString
+        trackerCoreData.color = tracker.color
         trackerCoreData.emoji = tracker.emoji
+        trackerCoreData.date = tracker.date
         
-        let categoryStore = TrackerCategoryStore(context: context)
-        if let homeCategory = categoryStore.fetchCategory(byTitle: "Домашний уют") {
-            trackerCoreData.category = homeCategory
-        } else {
-            let newCategory = TrackerCategory(title: "Домашний уют", trackers: [])
-            categoryStore.createCategory(from: newCategory)
-            trackerCoreData.category = categoryStore.fetchCategory(byTitle: "Домашний уют")
-        }
+        print("➡️ Устанавливаем категорию для трекера: \(tracker.category)")
+        if let category = TrackerCategoryStore(context: context).fetchCategory(byTitle: tracker.category) {
+                print("✅ Связь с категорией \(category.title ?? "Без названия") добавлена")
+                trackerCoreData.category = category
+            } else {
+                print("⚠️ Категория \(tracker.category) не найдена, создаём новую категорию")
+                let newCategory = TrackerCategoryCoreData(context: context)
+                newCategory.title = tracker.category
+                context.insert(newCategory)
+                trackerCoreData.category = newCategory
+                print("✅ Категория \(tracker.category) сохранена.")
+            }
+
         
         tracker.schedule.forEach { weekday in
-            if let weekdayCoreData = WeekdayStore(context: context).fetchWeekdayCoreData(for: weekday) {
-                trackerCoreData.addToSchedule(weekdayCoreData)
-            } else {
-                if let newWeekdayCoreData = WeekdayStore(context: context).createWeekday(from: weekday) {
-                    trackerCoreData.addToSchedule(newWeekdayCoreData)
+                if let weekdayCoreData = WeekdayStore(context: context).fetchWeekday(for: weekday) {
+                    trackerCoreData.addToSchedule(weekdayCoreData)
+                } else {
+                    let newWeekday = WeekdayCoreData(context: context)
+                    newWeekday.number = Int16(weekday.rawValue)
+                    newWeekday.name = weekday.displayName
+                    trackerCoreData.addToSchedule(newWeekday)
+                    print("✅ День недели \(weekday.displayName) сохранён.")
                 }
             }
-        }
-        CoreDataStack.shared.saveContext()
-    }
-    
-    func fetchAllTrackers() -> [Tracker] {
-        let fetchRequest: NSFetchRequest<TrackerCoreData> = TrackerCoreData.fetchRequest()
         do {
-            let trackersCoreData = try context.fetch(fetchRequest)
-            let recordStore = TrackerRecordStore(context: context)
-            return trackersCoreData.map { Tracker(coreDataTracker: $0, recordStore: recordStore) }
+                try context.save()
+                print("✅ Трекер \(tracker.name) сохранён.")
+            } catch {
+                print("❌ Ошибка при сохранении трекера \(tracker.name): \(error)")
+            }
+        }
+        
+    func fetchAllTrackers(for weekday: Weekday) -> [Tracker] {
+        let fetchRequest: NSFetchRequest<TrackerCoreData> = TrackerCoreData.fetchRequest()
+
+        do {
+            let results = try context.fetch(fetchRequest)
+            let trackers = results.compactMap { Tracker(coreDataTracker: $0) }
+            return trackers.filter { $0.schedule.contains(weekday) }
         } catch {
-            print("❌ Ошибка загрузки трекеров из Core Data: \(error)")
+            print("❌ Ошибка при загрузке трекеров: \(error)")
             return []
         }
     }
 
-}
+    
+    func fetchTracker(byID id: UUID) -> Tracker? {
+        let fetchRequest: NSFetchRequest<TrackerCoreData> = TrackerCoreData.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "id == %@", id as CVarArg)
+
+        do {
+            if let trackerCoreData = try context.fetch(fetchRequest).first {
+                return Tracker(coreDataTracker: trackerCoreData)
+            }
+        } catch {
+            print("⚠️ Ошибка при поиске трекера по ID \(id): \(error)")
+        }
+        return nil
+    }
+
+    }

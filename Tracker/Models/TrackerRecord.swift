@@ -19,4 +19,14 @@ struct TrackerRecord: Hashable {
     static func == (lhs: TrackerRecord, rhs: TrackerRecord) -> Bool {
         return lhs.trackerId == rhs.trackerId && lhs.date == rhs.date
     }
+    
+    init(trackerId: UUID, date: Date) {
+        self.trackerId = trackerId
+        self.date = date
+    }
+    
+    init(coreDataRecord: TrackerRecordCoreData) {
+        self.trackerId = coreDataRecord.trackerID ?? UUID()
+        self.date = coreDataRecord.date ?? Date()
+    }
 }

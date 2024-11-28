@@ -339,22 +339,23 @@ final class EventViewController: UIViewController {
         guard let trackerName = nameTextField.text, !trackerName.isEmpty else { return }
         guard let selectedEmojiIndex = selectedEmojiIndex else { return }
         guard let selectedColorIndex = selectedColorIndex else { return }
-
+        guard let selectedColor = colors[selectedColorIndex.item] else { return }
+        
         let selectedEmoji = emojis[selectedEmojiIndex.item]
-        let selectedColor = colors[selectedColorIndex.item]
-
+        
         let trackerStore = TrackerStore(context: CoreDataStack.shared.mainContext)
         let newTracker = Tracker(
             id: UUID(),
             name: trackerName,
-            color: selectedColor,
+            color: selectedColor.hexString,
             emoji: selectedEmoji,
-            schedule: selectedDays, 
+            schedule: selectedDays,
+            date: Date(),
             category: "Домашний уют"
         )
         
         trackerStore.createTracker(from: newTracker)
-
+        
         NotificationCenter.default.post(name: .createdTracker, object: newTracker)
         dismiss(animated: true, completion: nil)
     }
@@ -364,7 +365,7 @@ final class EventViewController: UIViewController {
         let isEmojiSelected = selectedEmojiIndex != nil
         let isColorSelected = selectedColorIndex != nil
         let isScheduleValid = trackerType == .irregularEvent || !selectedDays.isEmpty
-
+        
         createButton.isEnabled = isNameValid && isEmojiSelected && isColorSelected && isScheduleValid
         createButton.backgroundColor = createButton.isEnabled ? Asset.ypBlue.color : Asset.ypLightGray.color
     }
@@ -577,7 +578,9 @@ extension EventViewController: UICollectionViewDataSource, UICollectionViewDeleg
                 for: indexPath
             ) as? EventViewControllerCell else { return UICollectionViewCell() }
             
-            let color = colors[indexPath.item]
+            guard let color = colors[indexPath.item] else {
+                return UICollectionViewCell()
+            }
             let isSelected = indexPath == selectedColorIndex
             cell.configure(with: color, isSelected: isSelected)
             return cell
@@ -647,11 +650,11 @@ extension EventViewController: UITextFieldDelegate {
     func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
         return true
     }
-
+    
     func textFieldShouldEndEditing(_ textField: UITextField) -> Bool {
         return true
     }
-
+    
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
         guard let currentText = textField.text as NSString? else { return true }
         let updatedText = currentText.replacingCharacters(in: range, with: string)
