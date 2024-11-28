@@ -114,6 +114,7 @@ final class EventViewController: UIViewController {
         let button = UIButton(type: .system)
         button.setTitle(Constants.eventVcCancelButtonTitle, for: .normal)
         button.setTitleColor(Asset.ypRed.color, for: .normal)
+        button.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         button.layer.borderWidth = 1
         button.layer.borderColor = Asset.ypRed.color.cgColor
         button.layer.cornerRadius = 16
@@ -124,8 +125,9 @@ final class EventViewController: UIViewController {
     private let createButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle(Constants.eventVcCreateButtonTitle, for: .normal)
-        button.setTitleColor(Asset.ypGray.color, for: .normal)
-        button.backgroundColor = Asset.ypLightGray.color
+        button.setTitleColor(Asset.ypWhite.color, for: .normal)
+        button.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
+        button.backgroundColor = Asset.ypGray.color
         button.layer.cornerRadius = 16
         button.addTarget(self, action: #selector(createButtonTapped), for: .touchUpInside)
         return button
@@ -370,7 +372,7 @@ final class EventViewController: UIViewController {
         let isScheduleValid = trackerType == .irregularEvent || !selectedDays.isEmpty
         
         createButton.isEnabled = isNameValid && isEmojiSelected && isColorSelected && isScheduleValid
-        createButton.backgroundColor = createButton.isEnabled ? Asset.ypBlue.color : Asset.ypLightGray.color
+        createButton.backgroundColor = createButton.isEnabled ? Asset.ypBlack.color : Asset.ypLightGray.color
     }
     
     @objc private func nameTextFieldDidChange(_ textField: UITextField) {
