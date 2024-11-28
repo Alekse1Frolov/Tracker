@@ -20,6 +20,10 @@ enum MockData {
         ProjectColors.TrackersColosSet.colorSelection17, ProjectColors.TrackersColosSet.colorSelection18
     ]
     static let emojis = [ "🙂", "😻", "🌺", "🐶", "❤️", "😱", "😇", "😡", "🥶", "🤔", "🙌", "🍔", "🥦", "🏓", "🥇", "🎸", "🏝", "😪" ]
+    static let mockCategories = [
+        TrackerCategory(title: "Домашний уют", trackers: []),
+        TrackerCategory(title: "События", trackers: [])
+    ]
     
     // Перечисление дополняется
 }

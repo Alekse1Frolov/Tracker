@@ -169,14 +169,15 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
         
         return categories.compactMap { category in
             let filteredTrackers = category.trackers.filter { tracker in
-                let matchesSchedule = tracker.schedule.contains(currentWeekday)
-                print("🔍 Трекер \(tracker.name) - Расписание: \(tracker.schedule.map { $0.displayName }), Соответствие: \(matchesSchedule)")
-                return matchesSchedule
+                if tracker.schedule.isEmpty {
+                    return Calendar.current.isDate(tracker.date, inSameDayAs: currentDate)
+                }
+                return tracker.schedule.contains(currentWeekday)
             }
             return filteredTrackers.isEmpty ? nil : TrackerCategory(title: category.title, trackers: filteredTrackers)
         }
     }
-
+    
     
     
     
@@ -237,7 +238,7 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
         collectionView.reloadData()
         updatePlaceholderVisibility()
     }
-
+    
     
     
     
@@ -247,11 +248,11 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
         print("🟢 Добавление трекера: \(tracker.name), ID: \(tracker.id)")
         
         // Проверяем, существует ли трекер уже в Core Data
-//        let existingTracker = trackerStore.fetchTracker(byID: tracker.id)
-//        if existingTracker != nil {
-//            print("⚠️ Трекер \(tracker.name) уже существует в Core Data, добавление пропущено.")
-//            return
-//        }
+        //        let existingTracker = trackerStore.fetchTracker(byID: tracker.id)
+        //        if existingTracker != nil {
+        //            print("⚠️ Трекер \(tracker.name) уже существует в Core Data, добавление пропущено.")
+        //            return
+        //        }
         
         // Сохраняем трекер в Core Data
         trackerStore.createTracker(from: tracker)
