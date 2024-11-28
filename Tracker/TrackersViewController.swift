@@ -175,9 +175,11 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
                 }
                 return tracker.schedule.contains(currentWeekday)
             }
-            return filteredTrackers.isEmpty ? nil : TrackerCategory(title: category.title, trackers: filteredTrackers)
+            let sortedTrackers = filteredTrackers.sorted { $0.order < $1.order }
+            return sortedTrackers.isEmpty ? nil : TrackerCategory(title: category.title, trackers: sortedTrackers)
         }
     }
+
     
     
     
@@ -212,6 +214,16 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
         }
         present(navigationController, animated: true, completion: nil)
     }
+    
+    private func findIndexPath(for trackerID: UUID) -> IndexPath? {
+        for (sectionIndex, category) in filteredCategories().enumerated() {
+            if let itemIndex = category.trackers.firstIndex(where: { $0.id == trackerID }) {
+                return IndexPath(item: itemIndex, section: sectionIndex)
+            }
+        }
+        return nil
+    }
+    
     
     func loadTrackersFromCoreData() {
         print("📥 Загружаем трекеры из Core Data...")
@@ -344,13 +356,18 @@ extension TrackersViewController: TrackerCellDelegate {
             recordStore.addRecord(for: trackerID, on: currentDateOnly)
         }
         
-        let updatedRecords = recordStore.fetchRecords(for: trackerID)
-        completedTrackers = Set(updatedRecords.map { TrackerRecord(trackerId: trackerID, date: $0) })
+        completedTrackers = Set(recordStore.fetchAllRecords().map { TrackerRecord(coreDataRecord: $0) })
         
-        print("✅ Записи для трекера \(tracker.name): \(updatedRecords)")
-        
-        // Заново загружаем данные из Core Data
-        loadTrackersFromCoreData()
+        if let indexPath = findIndexPath(for: trackerID) {
+            collectionView.reloadItems(at: [indexPath])
+        }
+        //        let updatedRecords = recordStore.fetchRecords(for: trackerID)
+        //        completedTrackers = Set(updatedRecords.map { TrackerRecord(trackerId: trackerID, date: $0) })
+        //
+        //        print("✅ Записи для трекера \(tracker.name): \(updatedRecords)")
+        //
+        //        // Заново загружаем данные из Core Data
+        //        loadTrackersFromCoreData()
     }
     
     

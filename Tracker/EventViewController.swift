@@ -342,7 +342,7 @@ final class EventViewController: UIViewController {
         guard let selectedColor = colors[selectedColorIndex.item] else { return }
         
         let selectedEmoji = emojis[selectedEmojiIndex.item]
-        let trackerCategory = trackerType == .habit ? "Домашний уют" : "События"
+        let trackerCategory = trackerType == .habit ? "Привычки" : "События"
         let schedule = trackerType == .habit ? selectedDays : []
         
         let trackerStore = TrackerStore(context: CoreDataStack.shared.mainContext)
@@ -353,7 +353,8 @@ final class EventViewController: UIViewController {
             emoji: selectedEmoji,
             schedule: schedule,
             date: Date(),
-            category: trackerCategory
+            category: trackerCategory,
+            order: 0
         )
         
         trackerStore.createTracker(from: newTracker)

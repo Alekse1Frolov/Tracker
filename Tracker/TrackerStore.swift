@@ -35,6 +35,12 @@ final class TrackerStore {
         if let category = TrackerCategoryStore(context: context).fetchCategory(byTitle: tracker.category) {
                 print("✅ Связь с категорией \(category.title ?? "Без названия") добавлена")
                 trackerCoreData.category = category
+            
+            if let trackers = category.trackers as? Set<TrackerCoreData> {
+                trackerCoreData.order = Int16(trackers.count)
+            } else {
+                trackerCoreData.order = 0
+            }
             } else {
                 print("⚠️ Категория \(tracker.category) не найдена, создаём новую категорию")
                 let newCategory = TrackerCategoryCoreData(context: context)
@@ -42,6 +48,7 @@ final class TrackerStore {
                 context.insert(newCategory)
                 trackerCoreData.category = newCategory
                 print("✅ Категория \(tracker.category) сохранена.")
+                trackerCoreData.order = 0
             }
 
         
@@ -66,6 +73,9 @@ final class TrackerStore {
         
     func fetchAllTrackers(for weekday: Weekday) -> [Tracker] {
         let fetchRequest: NSFetchRequest<TrackerCoreData> = TrackerCoreData.fetchRequest()
+        
+        let sortDescriptor = NSSortDescriptor(key: "order", ascending: true)
+        fetchRequest.sortDescriptors = [sortDescriptor]
 
         do {
             let results = try context.fetch(fetchRequest)
