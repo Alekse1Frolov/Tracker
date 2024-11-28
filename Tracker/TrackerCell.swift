@@ -38,6 +38,8 @@ final class TrackerCell: UICollectionViewCell {
         label.font = UIFont.systemFont(ofSize: 12, weight: .medium)
         label.textColor = Asset.ypWhite.color
         label.numberOfLines = 2
+        label.textAlignment = .left
+        label.baselineAdjustment = .alignBaselines
         return label
     }()
     
@@ -113,11 +115,10 @@ final class TrackerCell: UICollectionViewCell {
             emojiBackgroundView.widthAnchor.constraint(equalToConstant: 24),
             
             // trackerCellLabel constraint
-            trackerCellLabel.topAnchor.constraint(equalTo: emojiBackgroundView.bottomAnchor, constant: 8),
             trackerCellLabel.leadingAnchor.constraint(equalTo: emojiBackgroundView.leadingAnchor),
-            trackerCellLabel.centerXAnchor.constraint(equalTo: backView.centerXAnchor),
             trackerCellLabel.trailingAnchor.constraint(equalTo: backView.trailingAnchor, constant: -12),
             trackerCellLabel.bottomAnchor.constraint(equalTo: backView.bottomAnchor, constant: -12),
+            trackerCellLabel.topAnchor.constraint(greaterThanOrEqualTo: emojiBackgroundView.bottomAnchor, constant: 8),
             
             // counterLabel constraint
             counterLabel.topAnchor.constraint(equalTo: backView.bottomAnchor, constant: 16),
