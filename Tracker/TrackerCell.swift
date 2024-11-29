@@ -8,8 +8,6 @@
 import UIKit
 
 protocol TrackerCellDelegate: AnyObject {
-    func completeTracker(id: UUID)
-    func uncompleteTracker(id: UUID)
     func toggleCompletion(for trackerID: UUID)
 }
 
@@ -60,7 +58,7 @@ final class TrackerCell: UICollectionViewCell {
     private let plusButton: UIButton = {
         let config = UIImage.SymbolConfiguration(pointSize: 12)
         let button = UIButton()
-        button.setImage(UIImage(systemName: "plus"), for: .normal)
+        button.setImage(UIImage(systemName: Constants.trackerCellPlusButtonSystemName), for: .normal)
         button.layer.cornerRadius = 18
         button.layer.masksToBounds = true
         button.tintColor = Asset.ypWhite.color
@@ -145,7 +143,7 @@ final class TrackerCell: UICollectionViewCell {
     }
     
     private func updateButton() {
-        let image = isCompleted ? Asset.doneImage.image : UIImage(systemName: "plus")
+        let image = isCompleted ? Asset.doneImage.image : UIImage(systemName: Constants.trackerCellPlusButtonSystemName)
         plusButton.setImage(image, for: .normal)
         plusButton.alpha = isCompleted ? 0.5 : 1.0
     }

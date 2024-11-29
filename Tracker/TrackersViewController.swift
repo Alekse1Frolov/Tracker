@@ -99,7 +99,6 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
     private var currentWeekday: Weekday {
         let weekdayIndex = Calendar.current.component(.weekday, from: currentDate)
         let correctedIndex = (weekdayIndex + 5) % 7 + 1
-        print("Сегодня \(Weekday(rawValue: correctedIndex)?.displayName ?? "ХЗ")")
         return Weekday(rawValue: correctedIndex) ?? .sunday
     }
     
@@ -107,6 +106,24 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        setupView()
+        loadTrackersFromCoreData()
+        trackerStore.setupFetchedResultsController()
+        
+        trackerStore.onDataChange = { [weak self] in
+            self?.collectionView.reloadData()
+        }
+        
+        trackerStore.fetchTrackers { [weak self] _ in
+            self?.collectionView.reloadData()
+        }
+    }
+    
+    @objc private func datePickerValueChanged(_ sender: UIDatePicker) {
+        currentDate = sender.date
+    }
+    
+    private func setupView() {
         searchBar.delegate = self
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         view.addGestureRecognizer(tapGesture)
@@ -119,35 +136,9 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
         
         datePicker.addTarget(self, action: #selector(dateChanged(_:)), for: .valueChanged)
         datePicker.addTarget(self, action: #selector(datePickerValueChanged(_:)), for: .valueChanged)
-        
-        loadTrackersFromCoreData()
-        
-        trackerStore.setupFetchedResultsController(
-            predicate: nil,
-            sortDescriptors: [NSSortDescriptor(key: "order", ascending: true)]
-        )
-        
-        trackerStore.onDataChange = { [weak self] in
-            print("🔄 Обновление данных от TrackerStore")
-            self?.collectionView.reloadData()
-        }
-        
-        trackerStore.fetchTrackers { [weak self] result in
-            switch result {
-            case .success:
-                self?.collectionView.reloadData()
-            case .failure(let error):
-                print("❌ Ошибка загрузки трекеров: \(error)")
-            }
-        }
-    }
-    
-    @objc private func datePickerValueChanged(_ sender: UIDatePicker) {
-        currentDate = sender.date
     }
     
     private func setupNavigationBar() {
-        
         let addButtonItem = UIBarButtonItem(customView: addButton)
         let datePickerItem = UIBarButtonItem(customView: datePicker)
         
@@ -184,49 +175,21 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
     
     
     private func filteredCategories() -> [TrackerCategory] {
-        print("📂 Фильтруем категории для \(currentWeekday.displayName)")
-        
-        let filtered = categories.compactMap { category in
-            let filteredTrackers = category.trackers.filter { tracker in
-                if tracker.schedule.isEmpty {
-                    return Calendar.current.isDate(tracker.date, inSameDayAs: currentDate)
+        let filtered: [TrackerCategory] = categories.compactMap { category in
+                let trackers = category.trackers.filter {
+                    $0.schedule.isEmpty
+                    ? Calendar.current.isDate($0.date, inSameDayAs: currentDate)
+                    : $0.schedule.contains(currentWeekday)
                 }
-                return tracker.schedule.contains(currentWeekday)
+                guard !trackers.isEmpty else { return nil }
+                return TrackerCategory(
+                    title: category.title,
+                    trackers: trackers.sorted { $0.order < $1.order },
+                    type: category.type
+                )
             }
-            let sortedTrackers = filteredTrackers.sorted { $0.order < $1.order }
-            return sortedTrackers.isEmpty ? nil : TrackerCategory(
-                title: category.title,
-                trackers: sortedTrackers,
-                type: category.type
-            )
-        }
-        
-        // Добавьте сортировку здесь:
-        let sortedCategories = filtered.sorted {
-            if $0.type == $1.type {
-                return $0.title < $1.title // Сортируем по названию, если типы совпадают
-            }
-            return $0.type == .habit // .habit всегда выше
-        }
-        
-        print("📊 Отсортированные категории: \(sortedCategories.map { "\($0.title) (\($0.type))" })")
-        return sortedCategories
+            return sortCategories(filtered)
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     
     private func presentEventViewController(
         for trackerType: TrackerType,
@@ -251,6 +214,15 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
         present(navigationController, animated: true, completion: nil)
     }
     
+    private func sortCategories(_ categories: [TrackerCategory]) -> [TrackerCategory] {
+        return categories.sorted {
+            if $0.type == $1.type {
+                return $0.title < $1.title
+            }
+            return $0.type == .habit
+        }
+    }
+    
     private func findIndexPath(for trackerID: UUID) -> IndexPath? {
         for (sectionIndex, category) in filteredCategories().enumerated() {
             if let itemIndex = category.trackers.firstIndex(where: { $0.id == trackerID }) {
@@ -260,23 +232,12 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
         return nil
     }
     
-    
     func loadTrackersFromCoreData() {
-        print("📥 Загружаем трекеры из Core Data...")
-        
         let trackerCategories = TrackerCategoryStore(context: CoreDataStack.shared.mainContext).fetchCategories()
-        categories = trackerCategories.map { TrackerCategory(coreDataCategory: $0) }
-        
-        categories.sort {
-            if $0.type == $1.type {
-                return $0.title < $1.title
-            }
-            return $0.type == .habit
-        }
+        categories = sortCategories(trackerCategories.map { TrackerCategory(coreDataCategory: $0) })
         
         let recordStore = TrackerRecordStore(context: CoreDataStack.shared.mainContext)
-        let allRecords = recordStore.fetchAllRecords()
-        completedTrackers = Set(allRecords.map { TrackerRecord(coreDataRecord: $0) })
+        completedTrackers = Set(recordStore.fetchAllRecords().map { TrackerRecord(coreDataRecord: $0) })
         
         collectionView.reloadData()
         updatePlaceholderVisibility()
@@ -284,29 +245,18 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
     
     @objc private func addTracker(_ notification: Notification) {
         guard let tracker = notification.object as? Tracker else { return }
-        print("🟢 Добавление трекера: \(tracker.name), ID: \(tracker.id)")
-        
         if let existingCategoryIndex = categories.firstIndex(where: { $0.title == tracker.category }) {
-            let existingCategory = categories[existingCategoryIndex]
-            let updatedCategory = TrackerCategory(
-                title: existingCategory.title,
-                trackers: existingCategory.trackers + [tracker],
-                type: existingCategory.type
+            let category = categories[existingCategoryIndex]
+            categories[existingCategoryIndex] = TrackerCategory(
+                title: category.title,
+                trackers: category.trackers + [tracker],
+                type: category.type
             )
-            categories[existingCategoryIndex] = updatedCategory
         } else {
             let type: TrackerType = tracker.schedule.isEmpty ? .irregularEvent : .habit
-            let newCategory = TrackerCategory(title: tracker.category, trackers: [tracker], type: type)
-            categories.append(newCategory)
+            categories.append(TrackerCategory(title: tracker.category, trackers: [tracker], type: type))
         }
-        
-        categories.sort {
-            if $0.type == $1.type {
-                return $0.title < $1.title
-            }
-            return $0.type == .habit
-        }
-        
+        categories = sortCategories(categories)
         collectionView.reloadData()
         updatePlaceholderVisibility()
     }
@@ -368,32 +318,58 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
 
 extension TrackersViewController: TrackerCellDelegate {
     func toggleCompletion(for trackerID: UUID) {
-        print("🟢 Переключение статуса для трекера ID \(trackerID)")
+        guard findTracker(by: trackerID) != nil else { return }
         
-        guard let tracker = findTracker(by: trackerID) else {
-            print("⚠️ Трекер с ID \(trackerID) не найден")
-            return
-        }
-        
-        let currentDateOnly = Calendar.current.startOfDay(for: currentDate)
-        guard currentDateOnly <= Calendar.current.startOfDay(for: Date()) else {
-            print("⚠️ Нельзя завершить трекер на будущую дату")
-            return
-        }
+        if isFutureDate(currentDate) { return }
         
         let recordStore = TrackerRecordStore(context: CoreDataStack.shared.mainContext)
-        let existingRecords = recordStore.fetchRecords(for: trackerID)
+        let currentDateOnly = Calendar.current.startOfDay(for: currentDate)
         
-        if existingRecords.contains(currentDateOnly) {
-            print("🟡 Удаляем запись для даты \(currentDateOnly)")
-            recordStore.deleteRecord(for: trackerID, on: currentDateOnly)
+        if isTrackerCompleted(trackerID: trackerID, on: currentDateOnly, using: recordStore) {
+            removeCompletion(for: trackerID, on: currentDateOnly, using: recordStore)
         } else {
-            print("🟢 Добавляем запись для даты \(currentDateOnly)")
-            recordStore.addRecord(for: trackerID, on: currentDateOnly)
+            addCompletion(for: trackerID, on: currentDateOnly, using: recordStore)
         }
         
-        completedTrackers = Set(recordStore.fetchAllRecords().map { TrackerRecord(coreDataRecord: $0) })
-        
+        updateCompletedTrackers(using: recordStore)
+        reloadTrackerCell(for: trackerID)
+    }
+    
+    private func isFutureDate(_ date: Date) -> Bool {
+        let today = Calendar.current.startOfDay(for: Date())
+        let selectedDate = Calendar.current.startOfDay(for: date)
+        return selectedDate > today
+    }
+    
+    private func isTrackerCompleted(
+        trackerID: UUID,
+        on date: Date,
+        using store: TrackerRecordStore
+    ) -> Bool {
+        store.fetchRecords(for: trackerID).contains(date)
+    }
+    
+    private func addCompletion(
+        for trackerID: UUID,
+        on date: Date,
+        using store: TrackerRecordStore
+    ) {
+        store.addRecord(for: trackerID, on: date)
+    }
+    
+    private func removeCompletion(
+        for trackerID: UUID,
+        on date: Date,
+        using store: TrackerRecordStore
+    ) {
+        store.deleteRecord(for: trackerID, on: date)
+    }
+    
+    private func updateCompletedTrackers(using store: TrackerRecordStore) {
+        completedTrackers = Set(store.fetchAllRecords().map { TrackerRecord(coreDataRecord: $0) })
+    }
+    
+    private func reloadTrackerCell(for trackerID: UUID) {
         if let indexPath = findIndexPath(for: trackerID) {
             collectionView.reloadItems(at: [indexPath])
         }
@@ -404,21 +380,12 @@ extension TrackersViewController: TrackerCellDelegate {
             .flatMap { $0.trackers }
             .first(where: { $0.id == id })
     }
-    
-    func completeTracker(id: UUID) {
-        // TO DO: Добавить новый трекер в список завершенных
-    }
-    func uncompleteTracker(id: UUID) {
-        // TO DO: Удалять незавершенный трекер из списка завершенных
-    }
 }
 
 extension TrackersViewController: UICollectionViewDataSource {
     
     func numberOfSections(in collectionView: UICollectionView) -> Int {
-        let count = filteredCategories().count
-        print("📊 Количество секций: \(count)")
-        return count
+        filteredCategories().count
     }
     
     func collectionView(

@@ -10,7 +10,6 @@ import UIKit
 final class ScheduleViewController: UIViewController {
     
     private var selectedDays: [Bool]
-    
     var onDaysSelected: (([Weekday]) -> Void)?
     
     private let scrollView = UIScrollView()

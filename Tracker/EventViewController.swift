@@ -49,7 +49,7 @@ final class EventViewController: UIViewController {
     
     private let clearButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setImage(UIImage(systemName: "xmark.circle.fill"), for: .normal)
+        button.setImage(UIImage(systemName: Constants.eventVcClearButtonSystemName), for: .normal)
         button.tintColor = Asset.ypGray.color
         button.addTarget(self, action: #selector(clearNameTextField), for: .touchUpInside)
         button.isHidden = true
@@ -344,7 +344,7 @@ final class EventViewController: UIViewController {
         guard let selectedColor = colors[selectedColorIndex.item] else { return }
         
         let selectedEmoji = emojis[selectedEmojiIndex.item]
-        let trackerCategory = trackerType == .habit ? "Привычки" : "События"
+        let trackerCategory = trackerType == .habit ? MockData.habitMockCategory.title : MockData.irregulatEventMockCategory.title
         let schedule = trackerType == .habit ? selectedDays : []
         
         let trackerStore = TrackerStore(context: CoreDataStack.shared.mainContext)
@@ -660,7 +660,11 @@ extension EventViewController: UITextFieldDelegate {
         return true
     }
     
-    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+    func textField(
+        _ textField: UITextField,
+        shouldChangeCharactersIn range: NSRange,
+        replacementString string: String
+    ) -> Bool {
         guard let currentText = textField.text as NSString? else { return true }
         let updatedText = currentText.replacingCharacters(in: range, with: string)
         
