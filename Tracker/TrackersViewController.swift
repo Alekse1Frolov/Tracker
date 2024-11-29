@@ -157,13 +157,12 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
     }
     
     private func updatePlaceholderVisibility() {
-        let hasTrackersForCurrentDate = categories.contains { category in
-            category.trackers.contains { $0.schedule.contains(currentWeekday) }
-        }
+        let hasTrackersForCurrentDate = !filteredCategories().isEmpty
         placeholderImageView.isHidden = hasTrackersForCurrentDate
         placeholderLabel.isHidden = hasTrackersForCurrentDate
         collectionView.isHidden = !hasTrackersForCurrentDate
     }
+
     
     private func filteredCategories() -> [TrackerCategory] {
         print("📂 Фильтруем категории для \(currentWeekday.displayName)")
@@ -179,6 +178,7 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
             return sortedTrackers.isEmpty ? nil : TrackerCategory(title: category.title, trackers: sortedTrackers)
         }
     }
+
 
     
     
@@ -243,7 +243,7 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
         categories.forEach { category in
             print("Категория \(category.title) содержит \(category.trackers.count) трекеров")
             category.trackers.forEach { tracker in
-                print("Трекер: \(tracker.name), Расписание: \(tracker.schedule.map { $0.displayName })")
+                print("Трекер: \(tracker.name), Тип: \(tracker.schedule.isEmpty ? "irregularEvent" : "habit")")
             }
         }
         print("✅ Загружено \(completedTrackers.count) записей выполнения")
@@ -251,6 +251,7 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
         collectionView.reloadData()
         updatePlaceholderVisibility()
     }
+
     
     
     
@@ -260,19 +261,27 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
         guard let tracker = notification.object as? Tracker else { return }
         print("🟢 Добавление трекера: \(tracker.name), ID: \(tracker.id)")
         
-        // Проверяем, существует ли трекер уже в Core Data
-        //        let existingTracker = trackerStore.fetchTracker(byID: tracker.id)
-        //        if existingTracker != nil {
-        //            print("⚠️ Трекер \(tracker.name) уже существует в Core Data, добавление пропущено.")
-        //            return
-        //        }
+        // Проверяем, существует ли категория для нового трекера
+        if let existingCategoryIndex = categories.firstIndex(where: { $0.title == tracker.category }) {
+            // Добавляем трекер в существующую категорию
+            let existingCategory = categories[existingCategoryIndex]
+            let updatedCategory = TrackerCategory(
+                title: existingCategory.title,
+                trackers: existingCategory.trackers + [tracker]
+            )
+            categories[existingCategoryIndex] = updatedCategory
+        } else {
+            // Создаём новую категорию и добавляем трекер
+            let newCategory = TrackerCategory(title: tracker.category, trackers: [tracker])
+            categories.append(newCategory)
+        }
         
-        // Сохраняем трекер в Core Data
-        trackerStore.createTracker(from: tracker)
-        
-        // Загружаем обновленные данные из Core Data
-        loadTrackersFromCoreData()
+        // Перезагрузка коллекции без полной перезагрузки Core Data
+        collectionView.reloadData()
+        updatePlaceholderVisibility()
     }
+
+
     
     
     @objc private func addButtonTapped() {
