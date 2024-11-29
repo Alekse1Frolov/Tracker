@@ -14,6 +14,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool { true }
+    
+    func applicationWillTerminate(_ application: UIApplication) {
+        CoreDataStack.shared.saveContext()
+    }
 
     // MARK: UISceneSession Lifecycle
 
