@@ -121,6 +121,25 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
         datePicker.addTarget(self, action: #selector(datePickerValueChanged(_:)), for: .valueChanged)
         
         loadTrackersFromCoreData()
+        
+        trackerStore.setupFetchedResultsController(
+            predicate: nil,
+            sortDescriptors: [NSSortDescriptor(key: "order", ascending: true)]
+        )
+        
+        trackerStore.onDataChange = { [weak self] in
+            print("🔄 Обновление данных от TrackerStore")
+            self?.collectionView.reloadData()
+        }
+        
+        trackerStore.fetchTrackers { [weak self] result in
+            switch result {
+            case .success:
+                self?.collectionView.reloadData()
+            case .failure(let error):
+                print("❌ Ошибка загрузки трекеров: \(error)")
+            }
+        }
     }
     
     @objc private func datePickerValueChanged(_ sender: UIDatePicker) {
