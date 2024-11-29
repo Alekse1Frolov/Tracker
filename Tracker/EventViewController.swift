@@ -334,7 +334,10 @@ final class EventViewController: UIViewController {
     
     // MARK: - Actions
     @objc private func cancelButtonTapped() {
-        navigationController?.popViewController(animated: true)
+        if let tabBarVC = self.presentingViewController as? UITabBarController {
+            tabBarVC.selectedIndex = 0
+        }
+        self.dismiss(animated: true, completion: nil)
     }
     
     @objc private func createButtonTapped() {
