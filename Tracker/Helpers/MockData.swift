@@ -21,8 +21,8 @@ enum MockData {
     ]
     static let emojis = [ "🙂", "😻", "🌺", "🐶", "❤️", "😱", "😇", "😡", "🥶", "🤔", "🙌", "🍔", "🥦", "🏓", "🥇", "🎸", "🏝", "😪" ]
     static let mockCategories = [
-        TrackerCategory(title: "Привычки", trackers: []),
-        TrackerCategory(title: "События", trackers: [])
+        TrackerCategory(title: "Привычки", trackers: [], type: .habit),
+        TrackerCategory(title: "События", trackers: [], type: .irregularEvent)
     ]
     
     // Перечисление дополняется

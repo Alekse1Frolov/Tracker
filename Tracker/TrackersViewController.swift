@@ -181,12 +181,12 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
         placeholderLabel.isHidden = hasTrackersForCurrentDate
         collectionView.isHidden = !hasTrackersForCurrentDate
     }
-
+    
     
     private func filteredCategories() -> [TrackerCategory] {
         print("📂 Фильтруем категории для \(currentWeekday.displayName)")
         
-        return categories.compactMap { category in
+        let filtered = categories.compactMap { category in
             let filteredTrackers = category.trackers.filter { tracker in
                 if tracker.schedule.isEmpty {
                     return Calendar.current.isDate(tracker.date, inSameDayAs: currentDate)
@@ -194,11 +194,28 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
                 return tracker.schedule.contains(currentWeekday)
             }
             let sortedTrackers = filteredTrackers.sorted { $0.order < $1.order }
-            return sortedTrackers.isEmpty ? nil : TrackerCategory(title: category.title, trackers: sortedTrackers)
+            return sortedTrackers.isEmpty ? nil : TrackerCategory(
+                title: category.title,
+                trackers: sortedTrackers,
+                type: category.type
+            )
         }
+        
+        // Добавьте сортировку здесь:
+        let sortedCategories = filtered.sorted {
+            if $0.type == $1.type {
+                return $0.title < $1.title // Сортируем по названию, если типы совпадают
+            }
+            return $0.type == .habit // .habit всегда выше
+        }
+        
+        print("📊 Отсортированные категории: \(sortedCategories.map { "\($0.title) (\($0.type))" })")
+        return sortedCategories
     }
-
-
+    
+    
+    
+    
     
     
     
@@ -247,61 +264,52 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
     func loadTrackersFromCoreData() {
         print("📥 Загружаем трекеры из Core Data...")
         
-        // Загружаем категории из Core Data
         let trackerCategories = TrackerCategoryStore(context: CoreDataStack.shared.mainContext).fetchCategories()
-        
-        // Преобразуем категории в модель TrackerCategory
-        print("🔍 Преобразуем категории в модель TrackerCategory...")
         categories = trackerCategories.map { TrackerCategory(coreDataCategory: $0) }
+        
+        categories.sort {
+            if $0.type == $1.type {
+                return $0.title < $1.title
+            }
+            return $0.type == .habit
+        }
         
         let recordStore = TrackerRecordStore(context: CoreDataStack.shared.mainContext)
         let allRecords = recordStore.fetchAllRecords()
         completedTrackers = Set(allRecords.map { TrackerRecord(coreDataRecord: $0) })
         
-        // Логируем содержимое категорий
-        categories.forEach { category in
-            print("Категория \(category.title) содержит \(category.trackers.count) трекеров")
-            category.trackers.forEach { tracker in
-                print("Трекер: \(tracker.name), Тип: \(tracker.schedule.isEmpty ? "irregularEvent" : "habit")")
-            }
-        }
-        print("✅ Загружено \(completedTrackers.count) записей выполнения")
-        
         collectionView.reloadData()
         updatePlaceholderVisibility()
     }
-
-    
-    
-    
-    
     
     @objc private func addTracker(_ notification: Notification) {
         guard let tracker = notification.object as? Tracker else { return }
         print("🟢 Добавление трекера: \(tracker.name), ID: \(tracker.id)")
         
-        // Проверяем, существует ли категория для нового трекера
         if let existingCategoryIndex = categories.firstIndex(where: { $0.title == tracker.category }) {
-            // Добавляем трекер в существующую категорию
             let existingCategory = categories[existingCategoryIndex]
             let updatedCategory = TrackerCategory(
                 title: existingCategory.title,
-                trackers: existingCategory.trackers + [tracker]
+                trackers: existingCategory.trackers + [tracker],
+                type: existingCategory.type
             )
             categories[existingCategoryIndex] = updatedCategory
         } else {
-            // Создаём новую категорию и добавляем трекер
-            let newCategory = TrackerCategory(title: tracker.category, trackers: [tracker])
+            let type: TrackerType = tracker.schedule.isEmpty ? .irregularEvent : .habit
+            let newCategory = TrackerCategory(title: tracker.category, trackers: [tracker], type: type)
             categories.append(newCategory)
         }
         
-        // Перезагрузка коллекции без полной перезагрузки Core Data
+        categories.sort {
+            if $0.type == $1.type {
+                return $0.title < $1.title
+            }
+            return $0.type == .habit
+        }
+        
         collectionView.reloadData()
         updatePlaceholderVisibility()
     }
-
-
-    
     
     @objc private func addButtonTapped() {
         presentTypeSelection()
@@ -389,20 +397,7 @@ extension TrackersViewController: TrackerCellDelegate {
         if let indexPath = findIndexPath(for: trackerID) {
             collectionView.reloadItems(at: [indexPath])
         }
-        //        let updatedRecords = recordStore.fetchRecords(for: trackerID)
-        //        completedTrackers = Set(updatedRecords.map { TrackerRecord(trackerId: trackerID, date: $0) })
-        //
-        //        print("✅ Записи для трекера \(tracker.name): \(updatedRecords)")
-        //
-        //        // Заново загружаем данные из Core Data
-        //        loadTrackersFromCoreData()
     }
-    
-    
-    
-    
-    
-    
     
     private func findTracker(by id: UUID) -> Tracker? {
         return categories

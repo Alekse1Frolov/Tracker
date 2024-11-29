@@ -20,15 +20,18 @@ final class TrackerStore: NSObject {
     func setupFetchedResultsController(predicate: NSPredicate? = nil, sortDescriptors: [NSSortDescriptor]? = nil) {
         let fetchRequest: NSFetchRequest<TrackerCoreData> = TrackerCoreData.fetchRequest()
         fetchRequest.predicate = predicate
-        fetchRequest.sortDescriptors = sortDescriptors ?? [NSSortDescriptor(key: "order", ascending: true)]
+        fetchRequest.sortDescriptors = sortDescriptors ?? [
+            NSSortDescriptor(key: "category.type", ascending: false),
+            NSSortDescriptor(key: "category.title", ascending: true),
+            NSSortDescriptor(key: "order", ascending: true)
+        ]
         
         fetchedResultsController = NSFetchedResultsController(
             fetchRequest: fetchRequest,
             managedObjectContext: context,
-            sectionNameKeyPath: "category.title", // Группируем по категориям
+            sectionNameKeyPath: "category.title",
             cacheName: nil
         )
-        fetchedResultsController?.delegate = self
     }
     
     func createTracker(from tracker: Tracker) {
@@ -68,7 +71,6 @@ final class TrackerStore: NSObject {
             trackerCoreData.order = 0
         }
         
-        
         tracker.schedule.forEach { weekday in
             if let weekdayCoreData = WeekdayStore(context: context).fetchWeekday(for: weekday) {
                 trackerCoreData.addToSchedule(weekdayCoreData)
@@ -103,7 +105,6 @@ final class TrackerStore: NSObject {
             return []
         }
     }
-    
     
     func fetchTracker(byID id: UUID) -> Tracker? {
         let fetchRequest: NSFetchRequest<TrackerCoreData> = TrackerCoreData.fetchRequest()
