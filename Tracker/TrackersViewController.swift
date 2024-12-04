@@ -72,7 +72,7 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
     private let placeholderLabel: UILabel = {
         let label = UILabel()
         label.text = Constants.trackersVcPlaceholderLabel
-        label.font = UIFont.systemFont(ofSize: 12)
+        label.font = UIFont.systemFont(ofSize: 12, weight: .medium)
         label.textColor = Asset.ypBlack.color
         return label
     }()

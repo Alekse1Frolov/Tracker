@@ -529,7 +529,10 @@ extension EventViewController: UITableViewDelegate {
     ) {
         tableView.deselectRow(at: indexPath, animated: true)
         
-        if indexPath.row == 1 {
+        if indexPath.row == 0 {
+            let categoryVC = CategoryViewController()
+            navigationController?.pushViewController(categoryVC, animated: true)
+        } else if indexPath.row == 1 {
             view.endEditing(true)
             
             let scheduleVC = ScheduleViewController(selectedDays: Weekday.allCases.map {

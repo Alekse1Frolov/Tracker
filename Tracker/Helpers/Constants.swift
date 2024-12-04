@@ -41,6 +41,11 @@ enum Constants {
     static let eventVcMaxNameLengthErrorText = "Ограничение 38 символов"
     static let eventVcClearButtonSystemName = "xmark.circle.fill"
     
+    static let categoryVcPlaceholderLabel = "Привычки и события можно \n объединить по смыслу"
+    static let categoryVcAddButtonTitle = "Добавить категорию"
+    static let newCategoryVcTitle = "Новая категория"
+    static let newCategoryVcPlaceholder = "Введите название категории"
+    
     static let coreDataStackModelName = "TrackerModel"
     
     // Перечисление дополняется
