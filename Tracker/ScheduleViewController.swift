@@ -10,7 +10,6 @@ import UIKit
 final class ScheduleViewController: UIViewController {
     
     private var selectedDays: [Bool]
-    
     var onDaysSelected: (([Weekday]) -> Void)?
     
     private let scrollView = UIScrollView()
@@ -117,7 +116,7 @@ final class ScheduleViewController: UIViewController {
     }
     
     @objc private func readyButtonTapped() {
-        let selectedDaysNames = MockData.days.enumerated().compactMap { index, _ in
+        let selectedDaysNames = Weekday.allCases.enumerated().compactMap { index, _ in
             selectedDays[index] ? Weekday(rawValue: index + 1) : nil
         }
         
@@ -136,7 +135,7 @@ extension ScheduleViewController: UITableViewDataSource, UITableViewDelegate {
         _ tableView: UITableView,
         numberOfRowsInSection section: Int
     ) -> Int {
-        MockData.days.count
+        Weekday.allCases.count
     }
     
     func tableView(
@@ -183,11 +182,11 @@ extension ScheduleViewController: UITableViewDataSource, UITableViewDelegate {
             return UITableViewCell()
         }
         
-        let day = MockData.days[indexPath.row]
+        let weekday = Weekday.allCases[indexPath.row]
         let isSelected = selectedDays[indexPath.row]
         
         cell.configure(
-            with: day,
+            with: weekday.displayName,
             isSelected: isSelected,
             tag: indexPath.row,
             target: self,

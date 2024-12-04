@@ -8,8 +8,6 @@
 import UIKit
 
 protocol TrackerCellDelegate: AnyObject {
-    func completeTracker(id: UUID)
-    func uncompleteTracker(id: UUID)
     func toggleCompletion(for trackerID: UUID)
 }
 
@@ -19,12 +17,18 @@ final class TrackerCell: UICollectionViewCell {
     
     private let emojiLabel: UILabel = {
         let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: 24)
+        label.font = UIFont.systemFont(ofSize: 13, weight: .medium)
         label.clipsToBounds = true
         label.textAlignment = .center
-        label.layer.cornerRadius = 12
-        label.backgroundColor = Asset.ypWhite.color.withAlphaComponent(0.3)
+        label.baselineAdjustment = .alignCenters
         return label
+    }()
+    
+    private let emojiBackgroundView: UIView = {
+        let view = UIView()
+        view.layer.cornerRadius = 12
+        view.backgroundColor = Asset.ypWhite.color.withAlphaComponent(0.3)
+        return view
     }()
     
     private let trackerCellLabel: UILabel = {
@@ -32,6 +36,8 @@ final class TrackerCell: UICollectionViewCell {
         label.font = UIFont.systemFont(ofSize: 12, weight: .medium)
         label.textColor = Asset.ypWhite.color
         label.numberOfLines = 2
+        label.textAlignment = .left
+        label.baselineAdjustment = .alignBaselines
         return label
     }()
     
@@ -52,7 +58,7 @@ final class TrackerCell: UICollectionViewCell {
     private let plusButton: UIButton = {
         let config = UIImage.SymbolConfiguration(pointSize: 12)
         let button = UIButton()
-        button.setImage(UIImage(systemName: "plus"), for: .normal)
+        button.setImage(UIImage(systemName: Constants.trackerCellPlusButtonSystemName), for: .normal)
         button.layer.cornerRadius = 18
         button.layer.masksToBounds = true
         button.tintColor = Asset.ypWhite.color
@@ -80,7 +86,7 @@ final class TrackerCell: UICollectionViewCell {
     
     private func setupLayout() {
         
-        [emojiLabel, trackerCellLabel].forEach { element in
+        [emojiBackgroundView, trackerCellLabel].forEach { element in
             element.translatesAutoresizingMaskIntoConstraints = false
             backView.addSubview(element)
         }
@@ -90,6 +96,8 @@ final class TrackerCell: UICollectionViewCell {
             contentView.addSubview(element)
         }
         
+        setupEmoji()
+        
         NSLayoutConstraint.activate([
             
             // backView constraint
@@ -98,17 +106,17 @@ final class TrackerCell: UICollectionViewCell {
             backView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             backView.heightAnchor.constraint(equalToConstant: 90),
             
-            // emojiLabel constraint
-            emojiLabel.topAnchor.constraint(equalTo: backView.topAnchor, constant: 12),
-            emojiLabel.leadingAnchor.constraint(equalTo: backView.leadingAnchor, constant: 12),
-            emojiLabel.heightAnchor.constraint(equalToConstant: 24),
-            emojiLabel.widthAnchor.constraint(equalToConstant: 24),
+            // emojiBackgroundView constraint
+            emojiBackgroundView.topAnchor.constraint(equalTo: backView.topAnchor, constant: 12),
+            emojiBackgroundView.leadingAnchor.constraint(equalTo: backView.leadingAnchor, constant: 12),
+            emojiBackgroundView.heightAnchor.constraint(equalToConstant: 24),
+            emojiBackgroundView.widthAnchor.constraint(equalToConstant: 24),
             
             // trackerCellLabel constraint
-            trackerCellLabel.topAnchor.constraint(equalTo: emojiLabel.bottomAnchor, constant: 8),
-            trackerCellLabel.leadingAnchor.constraint(equalTo: emojiLabel.leadingAnchor),
-            trackerCellLabel.centerXAnchor.constraint(equalTo: backView.centerXAnchor),
+            trackerCellLabel.leadingAnchor.constraint(equalTo: emojiBackgroundView.leadingAnchor),
             trackerCellLabel.trailingAnchor.constraint(equalTo: backView.trailingAnchor, constant: -12),
+            trackerCellLabel.bottomAnchor.constraint(equalTo: backView.bottomAnchor, constant: -12),
+            trackerCellLabel.topAnchor.constraint(greaterThanOrEqualTo: emojiBackgroundView.bottomAnchor, constant: 8),
             
             // counterLabel constraint
             counterLabel.topAnchor.constraint(equalTo: backView.bottomAnchor, constant: 16),
@@ -122,8 +130,20 @@ final class TrackerCell: UICollectionViewCell {
         ])
     }
     
+    private func setupEmoji() {
+        emojiBackgroundView.addSubview(emojiLabel)
+        emojiLabel.translatesAutoresizingMaskIntoConstraints = false
+        
+        NSLayoutConstraint.activate([
+            emojiLabel.centerXAnchor.constraint(equalTo: emojiBackgroundView.centerXAnchor),
+            emojiLabel.centerYAnchor.constraint(equalTo: emojiBackgroundView.centerYAnchor),
+            emojiLabel.heightAnchor.constraint(lessThanOrEqualTo: emojiBackgroundView.heightAnchor, multiplier: 0.9),
+            emojiLabel.widthAnchor.constraint(lessThanOrEqualTo: emojiBackgroundView.widthAnchor, multiplier: 0.9)
+        ])
+    }
+    
     private func updateButton() {
-        let image = isCompleted ? Asset.doneImage.image : UIImage(systemName: "plus")
+        let image = isCompleted ? Asset.doneImage.image : UIImage(systemName: Constants.trackerCellPlusButtonSystemName)
         plusButton.setImage(image, for: .normal)
         plusButton.alpha = isCompleted ? 0.5 : 1.0
     }
@@ -149,12 +169,15 @@ final class TrackerCell: UICollectionViewCell {
         emojiLabel.text = tracker.emoji
         trackerCellLabel.text = tracker.name
         
-        let color = tracker.color
+        if let color = UIColor(hex: tracker.color) {
+            backView.backgroundColor = color
+            plusButton.backgroundColor = color
+        } else {
+            backView.backgroundColor = Asset.ypRed.color
+            plusButton.backgroundColor = Asset.ypRed.color
+        }
         
-        backView.backgroundColor = color
-        plusButton.backgroundColor = color
         counterLabel.text = "\(formatDay(completionCount))"
-        
         self.trackerID = tracker.id
         self.isCompleted = completed
     }

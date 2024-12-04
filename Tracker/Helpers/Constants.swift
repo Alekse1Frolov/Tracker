@@ -20,6 +20,7 @@ enum Constants {
     static let trackerTypeSelectionVcTitle = "Создание трекера"
     static let trackerTypeSelectionVcHabit = "Привычка"
     static let trackerTypeSelectionVcIrregularEvent = "Нерегулярное событие"
+    static let trackerCellPlusButtonSystemName = "plus"
     
     static let scheduleVcTitle = "Расписание"
     static let scheduleVcReadyButtonTitle = "Готово"
@@ -36,6 +37,11 @@ enum Constants {
     static let eventVcTableViewCellId = "tableCell"
     static let eventVcEmojiCollectionCellId = "emojiCell"
     static let eventVcColorCollectionCellId = "colorCell"
+    static let eventVcMaxNameLength = 38
+    static let eventVcMaxNameLengthErrorText = "Ограничение 38 символов"
+    static let eventVcClearButtonSystemName = "xmark.circle.fill"
+    
+    static let coreDataStackModelName = "TrackerModel"
     
     // Перечисление дополняется
     

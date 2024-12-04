@@ -7,14 +7,17 @@
 
 import UIKit
 
-final class EventViewController: UIViewController, UITextFieldDelegate {
+final class EventViewController: UIViewController {
     
     // MARK: - Properties
     private let trackerType: TrackerType
     private let emojis = MockData.emojis
     private let colors = MockData.trackersColors
-    private var selectedDays: [Bool] = Array(repeating: false, count: MockData.days.count)
+    private var selectedDays: [Weekday] = []
     private var selectedDaysText = ""
+    private var errorLabelHeightConstraint: NSLayoutConstraint!
+    private var selectedEmojiIndex: IndexPath?
+    private var selectedColorIndex: IndexPath?
     
     // MARK: - UI Elements
     private let scrollView = UIScrollView()
@@ -42,6 +45,25 @@ final class EventViewController: UIViewController, UITextFieldDelegate {
         textField.leftView = padding
         textField.leftViewMode = .always
         return textField
+    }()
+    
+    private let clearButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setImage(UIImage(systemName: Constants.eventVcClearButtonSystemName), for: .normal)
+        button.tintColor = Asset.ypGray.color
+        button.addTarget(self, action: #selector(clearNameTextField), for: .touchUpInside)
+        button.isHidden = true
+        return button
+    }()
+    
+    private let errorLabel: UILabel = {
+        let label = UILabel()
+        label.text = Constants.eventVcMaxNameLengthErrorText
+        label.font = .systemFont(ofSize: 17, weight: .regular)
+        label.textColor = Asset.ypRed.color
+        label.textAlignment = .center
+        label.isHidden = true
+        return label
     }()
     
     private let tableView: UITableView = {
@@ -92,6 +114,7 @@ final class EventViewController: UIViewController, UITextFieldDelegate {
         let button = UIButton(type: .system)
         button.setTitle(Constants.eventVcCancelButtonTitle, for: .normal)
         button.setTitleColor(Asset.ypRed.color, for: .normal)
+        button.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         button.layer.borderWidth = 1
         button.layer.borderColor = Asset.ypRed.color.cgColor
         button.layer.cornerRadius = 16
@@ -102,8 +125,9 @@ final class EventViewController: UIViewController, UITextFieldDelegate {
     private let createButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle(Constants.eventVcCreateButtonTitle, for: .normal)
-        button.setTitleColor(Asset.ypGray.color, for: .normal)
-        button.backgroundColor = Asset.ypLightGray.color
+        button.setTitleColor(Asset.ypWhite.color, for: .normal)
+        button.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
+        button.backgroundColor = Asset.ypGray.color
         button.layer.cornerRadius = 16
         button.addTarget(self, action: #selector(createButtonTapped), for: .touchUpInside)
         return button
@@ -140,6 +164,7 @@ final class EventViewController: UIViewController, UITextFieldDelegate {
         setupTableView()
         setupCollectionView()
         setupScrollViewContent()
+        setupClearButton()
     }
     
     private func setupTableView() {
@@ -216,11 +241,13 @@ final class EventViewController: UIViewController, UITextFieldDelegate {
     
     private func setupScrollViewContent() {
         
-        [nameTextField, tableView, emojiLabel, emojiCollectionView,
+        [nameTextField, errorLabel, tableView, emojiLabel, emojiCollectionView,
          colorLabel, colorCollectionView].forEach { element in
             element.translatesAutoresizingMaskIntoConstraints = false
             contentView.addSubview(element)
         }
+        
+        errorLabelHeightConstraint = errorLabel.heightAnchor.constraint(equalToConstant: 0)
         
         NSLayoutConstraint.activate([
             // nameTextField constraints
@@ -230,7 +257,14 @@ final class EventViewController: UIViewController, UITextFieldDelegate {
             nameTextField.heightAnchor.constraint(equalToConstant: 75),
             
             // tableView constraints
-            tableView.topAnchor.constraint(equalTo: nameTextField.bottomAnchor, constant: 24),
+            errorLabel.topAnchor.constraint(equalTo: nameTextField.bottomAnchor, constant: 8),
+            errorLabel.leadingAnchor.constraint(equalTo: nameTextField.leadingAnchor),
+            errorLabel.trailingAnchor.constraint(equalTo: nameTextField.trailingAnchor),
+            errorLabel.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+            errorLabelHeightConstraint,
+            
+            // tableView constraints
+            tableView.topAnchor.constraint(equalTo: errorLabel.bottomAnchor, constant: 24),
             tableView.leadingAnchor.constraint(equalTo: nameTextField.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: nameTextField.trailingAnchor),
             tableView.heightAnchor.constraint(equalToConstant: trackerType == .habit ? 150 : 75),
@@ -270,27 +304,89 @@ final class EventViewController: UIViewController, UITextFieldDelegate {
             contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
             contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor)
         ])
+        view.layoutIfNeeded()
+    }
+    
+    private func setupClearButton() {
+        let rightViewContainer = UIView()
+        [rightViewContainer, clearButton].forEach { element in
+            element.translatesAutoresizingMaskIntoConstraints = false
+        }
+        
+        rightViewContainer.addSubview(clearButton)
+        
+        NSLayoutConstraint.activate([
+            rightViewContainer.widthAnchor.constraint(equalToConstant: 41),
+            rightViewContainer.heightAnchor.constraint(equalToConstant: 75)
+        ])
+        
+        NSLayoutConstraint.activate([
+            clearButton.widthAnchor.constraint(equalToConstant: 17),
+            clearButton.heightAnchor.constraint(equalToConstant: 17),
+            clearButton.centerYAnchor.constraint(equalTo: rightViewContainer.centerYAnchor),
+            clearButton.centerXAnchor.constraint(equalTo: rightViewContainer.centerXAnchor)
+        ])
+        
+        nameTextField.rightView = rightViewContainer
+        nameTextField.rightViewMode = .whileEditing
+        nameTextField.addTarget(self, action: #selector(nameTextFieldDidChange), for: .editingChanged)
     }
     
     // MARK: - Actions
     @objc private func cancelButtonTapped() {
-        navigationController?.popViewController(animated: true)
+        if let tabBarVC = self.presentingViewController as? UITabBarController {
+            tabBarVC.selectedIndex = 0
+        }
+        self.dismiss(animated: true, completion: nil)
     }
     
     @objc private func createButtonTapped() {
-        guard let trackerName = nameTextField.text, !trackerName.isEmpty else {
-            return
-        }
+        guard let trackerName = nameTextField.text, !trackerName.isEmpty else { return }
+        guard let selectedEmojiIndex = selectedEmojiIndex else { return }
+        guard let selectedColorIndex = selectedColorIndex else { return }
+        guard let selectedColor = colors[selectedColorIndex.item] else { return }
         
+        let selectedEmoji = emojis[selectedEmojiIndex.item]
+        let trackerCategory = trackerType == .habit ? MockData.habitMockCategory.title : MockData.irregulatEventMockCategory.title
+        let schedule = trackerType == .habit ? selectedDays : []
+        
+        let trackerStore = TrackerStore(context: CoreDataStack.shared.mainContext)
         let newTracker = Tracker(
             id: UUID(),
             name: trackerName,
-            color: ProjectColors.TrackersColosSet.colorSelection5,
-            emoji: "🌱",
-            schedule: [.monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday]
+            color: selectedColor.hexString,
+            emoji: selectedEmoji,
+            schedule: schedule,
+            date: Date(),
+            category: trackerCategory,
+            order: 0
         )
+        
+        trackerStore.createTracker(from: newTracker)
+        
         NotificationCenter.default.post(name: .createdTracker, object: newTracker)
         dismiss(animated: true, completion: nil)
+    }
+    
+    private func updateCreateButtonState() {
+        let isNameValid = !(nameTextField.text?.isEmpty ?? true)
+        let isEmojiSelected = selectedEmojiIndex != nil
+        let isColorSelected = selectedColorIndex != nil
+        let isScheduleValid = trackerType == .irregularEvent || !selectedDays.isEmpty
+        
+        createButton.isEnabled = isNameValid && isEmojiSelected && isColorSelected && isScheduleValid
+        createButton.backgroundColor = createButton.isEnabled ? Asset.ypBlack.color : Asset.ypLightGray.color
+    }
+    
+    @objc private func nameTextFieldDidChange(_ textField: UITextField) {
+        clearButton.isHidden = nameTextField.text?.isEmpty ?? true
+        updateCreateButtonState()
+    }
+    
+    @objc private func clearNameTextField() {
+        nameTextField.text = ""
+        clearButton.isHidden = true
+        updateErrorLabelVisibility(isVisible: false)
     }
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
@@ -300,6 +396,14 @@ final class EventViewController: UIViewController, UITextFieldDelegate {
     
     func textFieldDidBeginEditing(_ textField: UITextField) {
         textField.becomeFirstResponder()
+    }
+    
+    func updateErrorLabelVisibility(isVisible: Bool) {
+        errorLabel.isHidden = !isVisible
+        errorLabelHeightConstraint.constant = isVisible ? 22 : 0
+        UIView.animate(withDuration: 0.25) {
+            self.contentView.layoutIfNeeded()
+        }
     }
 }
 
@@ -428,15 +532,15 @@ extension EventViewController: UITableViewDelegate {
         if indexPath.row == 1 {
             view.endEditing(true)
             
-            let scheduleVC = ScheduleViewController(selectedDays: selectedDays)
+            let scheduleVC = ScheduleViewController(selectedDays: Weekday.allCases.map {
+                selectedDays.contains($0)
+            })
             scheduleVC.onDaysSelected = { [weak self] selectedWeekdays in
                 guard let self else { return }
-                self.selectedDays = MockData.days.enumerated().map { index, _ in
-                    selectedWeekdays.contains(where: { $0.rawValue == index + 1 })
-                }
-                let selectedDayNames = selectedWeekdays.map { MockData.dayAbbreviations[MockData.days[$0.rawValue - 1]] ?? ""
-                }
+                self.selectedDays = selectedWeekdays
+                let selectedDayNames = selectedWeekdays.map { $0.abbreviation }
                 self.selectedDaysText = selectedDayNames.joined(separator: ", ")
+                self.updateCreateButtonState()
                 self.tableView.reloadRows(at: [indexPath], with: .automatic)
             }
             present(scheduleVC, animated: true, completion: nil)
@@ -465,15 +569,28 @@ extension EventViewController: UICollectionViewDataSource, UICollectionViewDeleg
             
             let emoji = emojis[indexPath.item]
             cell.configure(with: emoji)
+            
+            if indexPath == selectedEmojiIndex {
+                cell.contentView.backgroundColor = Asset.ypLightGray.color
+                cell.contentView.layer.cornerRadius = 16
+                cell.contentView.layer.masksToBounds = true
+            } else {
+                cell.contentView.backgroundColor = .clear
+            }
+            
             return cell
+            
         } else if collectionView == colorCollectionView {
             guard let cell = collectionView.dequeueReusableCell(
                 withReuseIdentifier: Constants.eventVcColorCollectionCellId,
                 for: indexPath
             ) as? EventViewControllerCell else { return UICollectionViewCell() }
             
-            let color = colors[indexPath.item]
-            cell.configure(with: color)
+            guard let color = colors[indexPath.item] else {
+                return UICollectionViewCell()
+            }
+            let isSelected = indexPath == selectedColorIndex
+            cell.configure(with: color, isSelected: isSelected)
             return cell
         }
         return UICollectionViewCell()
@@ -500,6 +617,19 @@ extension EventViewController: UICollectionViewDelegateFlowLayout {
     
     func collectionView(
         _ collectionView: UICollectionView,
+        didSelectItemAt indexPath: IndexPath
+    ) {
+        if collectionView == emojiCollectionView {
+            selectedEmojiIndex = indexPath
+        } else if collectionView == colorCollectionView {
+            selectedColorIndex = indexPath
+        }
+        updateCreateButtonState()
+        collectionView.reloadData()
+    }
+    
+    func collectionView(
+        _ collectionView: UICollectionView,
         layout collectionViewLayout: UICollectionViewLayout,
         insetForSectionAt section: Int
     ) -> UIEdgeInsets {
@@ -520,5 +650,33 @@ extension EventViewController: UICollectionViewDelegateFlowLayout {
         minimumLineSpacingForSectionAt section: Int
     ) -> CGFloat {
         0
+    }
+}
+
+// MARK: - UITextFieldDelegate
+extension EventViewController: UITextFieldDelegate {
+    func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
+        return true
+    }
+    
+    func textFieldShouldEndEditing(_ textField: UITextField) -> Bool {
+        return true
+    }
+    
+    func textField(
+        _ textField: UITextField,
+        shouldChangeCharactersIn range: NSRange,
+        replacementString string: String
+    ) -> Bool {
+        guard let currentText = textField.text as NSString? else { return true }
+        let updatedText = currentText.replacingCharacters(in: range, with: string)
+        
+        if updatedText.count > Constants.eventVcMaxNameLength {
+            updateErrorLabelVisibility(isVisible: true)
+            return false
+        } else {
+            updateErrorLabelVisibility(isVisible: false)
+        }
+        return true
     }
 }
