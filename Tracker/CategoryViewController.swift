@@ -11,6 +11,7 @@ final class CategoryViewController: UIViewController {
     
     // MARK: - Properties
     private let viewModel = CategoryViewModel()
+    private var selectedIndexPath: IndexPath?
     
     // MARK: - UI Elements
     private let titleLabel: UILabel = {
@@ -55,6 +56,13 @@ final class CategoryViewController: UIViewController {
         setupView()
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        viewModel.loadCategories()
+        tableView.reloadData()
+        updatePaceholderVisibility()
+    }
+    
     private func setupBindings() {
         viewModel.onCategoriesUpdated = { [weak self] in
             self?.tableView.reloadData()
@@ -79,8 +87,10 @@ final class CategoryViewController: UIViewController {
         
         tableView.dataSource = self
         tableView.delegate = self
+        tableView.isHidden = true
         
-        [titleLabel, placeholderImageView, placeholderLabel, addCategoryButton].forEach { element in
+        [titleLabel, placeholderImageView, placeholderLabel,
+         tableView, addCategoryButton].forEach { element in
             view.addSubview(element)
             element.translatesAutoresizingMaskIntoConstraints = false
         }
@@ -100,6 +110,12 @@ final class CategoryViewController: UIViewController {
             placeholderLabel.topAnchor.constraint(equalTo: placeholderImageView.bottomAnchor, constant: 8),
             placeholderLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             
+            // tableView constraints
+            tableView.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 38),
+            tableView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
+            tableView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
+            tableView.bottomAnchor.constraint(equalTo: addCategoryButton.topAnchor, constant: -24),
+            
             // addCategoryButton constraints
             addCategoryButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16),
             addCategoryButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -20),
@@ -111,14 +127,97 @@ final class CategoryViewController: UIViewController {
 }
 
 extension CategoryViewController: UITableViewDataSource, UITableViewDelegate {
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return viewModel.numberOfCategories
+    func tableView(
+        _ tableView: UITableView,
+        numberOfRowsInSection section: Int
+    ) -> Int {
+        viewModel.numberOfCategories
     }
     
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    func tableView(
+        _ tableView: UITableView,
+        cellForRowAt indexPath: IndexPath
+    ) -> UITableViewCell {
         let cell = UITableViewCell(style: .default, reuseIdentifier: nil)
+        
         cell.textLabel?.text = viewModel.category(at: indexPath.row)
+        cell.textLabel?.font = UIFont.systemFont(ofSize: 17,weight: .regular)
+        cell.textLabel?.textColor = Asset.ypBlack.color
+        cell.backgroundColor = Asset.ypLightGray.color.withAlphaComponent(0.3)
+        
+        tableView.separatorStyle = .none
+        
+        configureRoundedCorners(for: cell, at: indexPath)
+        
+        cell.accessoryType = (indexPath == selectedIndexPath) ? .checkmark : .none
         return cell
     }
     
+    func tableView(
+        _ tableView: UITableView,
+        didSelectRowAt indexPAth: IndexPath
+    ) {
+        selectedIndexPath = indexPAth
+        tableView.reloadData()
+    }
+    
+    func tableView(
+        _ tableView: UITableView,
+        heightForRowAt indexPath: IndexPath
+    ) -> CGFloat {
+        75
+    }
+    
+    func tableView(
+        _ tableView: UITableView,
+        willDisplay cell: UITableViewCell,
+        forRowAt indexPath: IndexPath
+    ) {
+        let separatorHeight: CGFloat = 0.5
+        let separatorColor = Asset.ypGray.color
+        
+        cell.subviews.forEach { subview in
+            if subview.tag == 444 { subview.removeFromSuperview() }
+        }
+        
+        if indexPath.row != viewModel.numberOfCategories - 1 {
+            let separator = UIView()
+            separator.backgroundColor = separatorColor
+            separator.translatesAutoresizingMaskIntoConstraints = false
+            separator.tag = 444
+            cell.addSubview(separator)
+            
+            NSLayoutConstraint.activate([
+                separator.leadingAnchor.constraint(equalTo: cell.leadingAnchor, constant: 16),
+                separator.trailingAnchor.constraint(equalTo: cell.trailingAnchor, constant: -16),
+                separator.bottomAnchor.constraint(equalTo: cell.bottomAnchor),
+                separator.heightAnchor.constraint(equalToConstant: separatorHeight)
+            ])
+        }
+    }
+    
+    private func configureRoundedCorners(
+        for cell: UITableViewCell,
+        at indexPath: IndexPath
+    ) {
+        cell.layer.cornerRadius = 0
+        cell.layer.maskedCorners = []
+        cell.layer.masksToBounds = false
+        
+        let rowCount = viewModel.numberOfCategories
+        
+        if rowCount == 1 {
+            cell.layer.cornerRadius = 16
+            cell.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner, .layerMinXMaxYCorner, .layerMaxXMaxYCorner]
+            cell.layer.masksToBounds = true
+        } else if indexPath.row == 0 {
+            cell.layer.cornerRadius = 16
+            cell.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
+            cell.layer.masksToBounds = true
+        } else if indexPath.row == rowCount - 1 {
+            cell.layer.cornerRadius = 16
+            cell.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
+            cell.layer.masksToBounds = true
+        }
+    }
 }
