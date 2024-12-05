@@ -12,6 +12,7 @@ final class CategoryViewController: UIViewController {
     // MARK: - Properties
     private let viewModel = CategoryViewModel()
     private var selectedIndexPath: IndexPath?
+    var onCategorySelected: ((String) -> Void)?
     
     // MARK: - UI Elements
     private let titleLabel: UILabel = {
@@ -78,8 +79,21 @@ final class CategoryViewController: UIViewController {
     }
     
     @objc private func addCategoryButtonTapped() {
-        let newCategoryVC = NewCategoryViewController(viewModel: viewModel)
-        navigationController?.pushViewController(newCategoryVC, animated: true)
+        if viewModel.numberOfCategories == 0 || selectedIndexPath == nil {
+            let newCategoryVC = NewCategoryViewController(viewModel: viewModel)
+            newCategoryVC.onCategoryCreated = { [weak self] in
+                guard let self = self else { return }
+                self.viewModel.loadCategories()
+                self.tableView.reloadData()
+                self.updatePaceholderVisibility()
+            }
+            navigationController?.pushViewController(newCategoryVC, animated: true)
+        } else {
+            guard let selectedIndexPath = selectedIndexPath else { return }
+            let selectedCategory = viewModel.category(at: selectedIndexPath.row)
+            onCategorySelected?(selectedCategory)
+            navigationController?.popViewController(animated: true)
+        }
     }
     
     private func setupView() {

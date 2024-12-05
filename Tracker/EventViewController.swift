@@ -531,6 +531,10 @@ extension EventViewController: UITableViewDelegate {
         
         if indexPath.row == 0 {
             let categoryVC = CategoryViewController()
+            categoryVC.onCategorySelected = { [weak self] selectedCategory in
+                guard let self = self else { return }
+                self.updateCategoryCell(with: selectedCategory)
+            }
             navigationController?.pushViewController(categoryVC, animated: true)
         } else if indexPath.row == 1 {
             view.endEditing(true)
@@ -547,6 +551,18 @@ extension EventViewController: UITableViewDelegate {
                 self.tableView.reloadRows(at: [indexPath], with: .automatic)
             }
             present(scheduleVC, animated: true, completion: nil)
+        }
+    }
+    
+    private func updateCategoryCell(with category: String) {
+        let indexPath = IndexPath(row: 0, section: 0)
+        if let cell = tableView.cellForRow(at: indexPath) {
+            configureCellText(
+                cell,
+                mainText: Constants.eventVcCategoryTitle,
+                detailText: category,
+                mainTextColor: Asset.ypBlack.color,
+                detailTextColor: Asset.ypGray.color)
         }
     }
 }

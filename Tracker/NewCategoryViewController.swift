@@ -12,6 +12,7 @@ final class NewCategoryViewController: UIViewController {
     // MARK: - Properties
     private let viewModel: NewCategoryViewModel
     private var errorLabelHeightConstraint: NSLayoutConstraint!
+    var onCategoryCreated: (() -> Void)?
     
     // MARK: - UI Elements
     private let titleLabel: UILabel = {
@@ -186,6 +187,7 @@ final class NewCategoryViewController: UIViewController {
     @objc private func readyButtonTapped() {
         guard let category = nameTextField.text, !category.isEmpty else { return }
         viewModel.addCategory(category)
+        onCategoryCreated?()
         navigationController?.popViewController(animated: true)
     }
 }
