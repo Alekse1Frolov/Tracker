@@ -35,6 +35,12 @@ final class TrackerCategoryStore {
     func fetchCategories() -> [TrackerCategoryCoreData] {
         let fetchRequest: NSFetchRequest<TrackerCategoryCoreData> = TrackerCategoryCoreData.fetchRequest()
         
-        return (try? context.fetch(fetchRequest)) ?? []
+        do {
+            return try context.fetch(fetchRequest)
+        } catch {
+            print("Ошибка при получении категорий: \(error)")
+            return []
+        }
     }
+
 }

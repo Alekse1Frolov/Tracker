@@ -55,6 +55,8 @@ final class CategoryViewController: UIViewController {
         super.viewDidLoad()
         
         setupView()
+        setupBindings()
+        viewModel.loadCategories()
     }
     
     override func viewWillAppear(_ animated: Bool) {

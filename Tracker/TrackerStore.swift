@@ -34,10 +34,6 @@ final class TrackerStore: NSObject {
     }
     
     func createTracker(from tracker: Tracker) {
-        let fetchRequest: NSFetchRequest<TrackerCoreData> = TrackerCoreData.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "id == %@", tracker.id as CVarArg)
-        if (try? context.fetch(fetchRequest).first) != nil { return }
-        
         let trackerCoreData = TrackerCoreData(context: context)
         trackerCoreData.id = tracker.id
         trackerCoreData.name = tracker.name
@@ -51,7 +47,6 @@ final class TrackerStore: NSObject {
         } else {
             let newCategory = TrackerCategoryCoreData(context: context)
             newCategory.title = tracker.category
-            context.insert(newCategory)
             trackerCoreData.category = newCategory
             trackerCoreData.order = 0
         }
@@ -66,10 +61,11 @@ final class TrackerStore: NSObject {
                 trackerCoreData.addToSchedule(newWeekday)
             }
         }
+        
         do {
             try context.save()
         } catch {
-            print("Error saving tracker: \(error)")
+            print("Трекер не сохранен: \(error)")
         }
     }
     

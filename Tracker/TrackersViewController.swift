@@ -167,7 +167,7 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
     }
     
     private func updatePlaceholderVisibility() {
-        let hasTrackersForCurrentDate = !filteredCategories().isEmpty
+        let hasTrackersForCurrentDate = !categories.flatMap { $0.trackers }.isEmpty
         placeholderImageView.isHidden = hasTrackersForCurrentDate
         placeholderLabel.isHidden = hasTrackersForCurrentDate
         collectionView.isHidden = !hasTrackersForCurrentDate
@@ -175,20 +175,19 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
     
     
     private func filteredCategories() -> [TrackerCategory] {
-        let filtered: [TrackerCategory] = categories.compactMap { category in
-                let trackers = category.trackers.filter {
-                    $0.schedule.isEmpty
-                    ? Calendar.current.isDate($0.date, inSameDayAs: currentDate)
-                    : $0.schedule.contains(currentWeekday)
-                }
-                guard !trackers.isEmpty else { return nil }
-                return TrackerCategory(
-                    title: category.title,
-                    trackers: trackers.sorted { $0.order < $1.order },
-                    type: category.type
-                )
+        return categories.compactMap { category in
+            let trackers = category.trackers.filter {
+                $0.schedule.isEmpty
+                ? Calendar.current.isDate($0.date, inSameDayAs: currentDate)
+                : $0.schedule.contains(currentWeekday)
             }
-            return sortCategories(filtered)
+            guard !trackers.isEmpty else { return nil }
+            return TrackerCategory(
+                title: category.title,
+                trackers: trackers
+                //            type: category.type
+            )
+        }.sorted { $0.title < $1.title }
     }
     
     private func presentEventViewController(
@@ -215,12 +214,7 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
     }
     
     private func sortCategories(_ categories: [TrackerCategory]) -> [TrackerCategory] {
-        return categories.sorted {
-            if $0.type == $1.type {
-                return $0.title < $1.title
-            }
-            return $0.type == .habit
-        }
+        categories.sorted { $0.title < $1.title }
     }
     
     private func findIndexPath(for trackerID: UUID) -> IndexPath? {
@@ -233,8 +227,18 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
     }
     
     func loadTrackersFromCoreData() {
-        let trackerCategories = TrackerCategoryStore(context: CoreDataStack.shared.mainContext).fetchCategories()
-        categories = sortCategories(trackerCategories.map { TrackerCategory(coreDataCategory: $0) })
+        let categoryStore = TrackerCategoryStore(context: CoreDataStack.shared.mainContext)
+        let coreDataCategories = categoryStore.fetchCategories()
+        
+        categories = coreDataCategories.map { coreDataCategory in
+            let coreDataTrackers = coreDataCategory.trackers as? Set<TrackerCoreData> ?? []
+            let trackers = coreDataTrackers.map { Tracker(coreDataTracker: $0) }
+            
+            return TrackerCategory(
+                title: coreDataCategory.title ?? "",
+                trackers: trackers
+            )
+        }
         
         let recordStore = TrackerRecordStore(context: CoreDataStack.shared.mainContext)
         completedTrackers = Set(recordStore.fetchAllRecords().map { TrackerRecord(coreDataRecord: $0) })
@@ -245,21 +249,27 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
     
     @objc private func addTracker(_ notification: Notification) {
         guard let tracker = notification.object as? Tracker else { return }
+        
         if let existingCategoryIndex = categories.firstIndex(where: { $0.title == tracker.category }) {
-            let category = categories[existingCategoryIndex]
+            var updatedTrackers = categories[existingCategoryIndex].trackers
+            updatedTrackers.append(tracker)
+            
             categories[existingCategoryIndex] = TrackerCategory(
-                title: category.title,
-                trackers: category.trackers + [tracker],
-                type: category.type
+                title: categories[existingCategoryIndex].title,
+                trackers: updatedTrackers
             )
         } else {
-            let type: TrackerType = tracker.schedule.isEmpty ? .irregularEvent : .habit
-            categories.append(TrackerCategory(title: tracker.category, trackers: [tracker], type: type))
+            let newCategory = TrackerCategory(
+                title: tracker.category,
+                trackers: [tracker]
+            )
+            categories.append(newCategory)
         }
-        categories = sortCategories(categories)
+        
         collectionView.reloadData()
         updatePlaceholderVisibility()
     }
+    
     
     @objc private func addButtonTapped() {
         presentTypeSelection()

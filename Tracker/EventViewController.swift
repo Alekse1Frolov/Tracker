@@ -344,21 +344,21 @@ final class EventViewController: UIViewController {
         guard let trackerName = nameTextField.text, !trackerName.isEmpty else { return }
         guard let selectedEmojiIndex = selectedEmojiIndex else { return }
         guard let selectedColorIndex = selectedColorIndex else { return }
-        guard let selectedColor = colors[selectedColorIndex.item] else { return }
+        guard let selectedCategory = tableView.cellForRow(at: IndexPath(row: 0, section: 0))?.detailTextLabel?.text else { return }
         
         let selectedEmoji = emojis[selectedEmojiIndex.item]
-        let trackerCategory = trackerType == .habit ? MockData.habitMockCategory.title : MockData.irregulatEventMockCategory.title
+        let selectedColor = colors[selectedColorIndex.item]
         let schedule = trackerType == .habit ? selectedDays : []
         
         let trackerStore = TrackerStore(context: CoreDataStack.shared.mainContext)
         let newTracker = Tracker(
             id: UUID(),
             name: trackerName,
-            color: selectedColor.hexString,
+            color: selectedColor?.hexString ?? "",
             emoji: selectedEmoji,
             schedule: schedule,
             date: Date(),
-            category: trackerCategory,
+            category: selectedCategory,
             order: 0
         )
         

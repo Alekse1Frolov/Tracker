@@ -186,6 +186,11 @@ final class NewCategoryViewController: UIViewController {
     
     @objc private func readyButtonTapped() {
         guard let category = nameTextField.text, !category.isEmpty else { return }
+        
+        let categoryStore = TrackerCategoryStore(context: CoreDataStack.shared.mainContext)
+        let newCategory = TrackerCategory(title: category, trackers: [])
+        categoryStore.createCategory(from: newCategory)
+        
         viewModel.addCategory(category)
         onCategoryCreated?()
         navigationController?.popViewController(animated: true)

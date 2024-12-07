@@ -32,6 +32,8 @@ final class CategoryViewModel {
     }
     
     func loadCategories() {
-        // TO DO
+        let categoryStore = TrackerCategoryStore(context: CoreDataStack.shared.mainContext)
+        let fetchedCategories = categoryStore.fetchCategories()
+        categories = fetchedCategories.map { $0.title ?? "Без категории" }
     }
 }
