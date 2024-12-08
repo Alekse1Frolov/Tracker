@@ -12,6 +12,11 @@ final class CategoryViewController: UIViewController {
     // MARK: - Properties
     private let viewModel = CategoryViewModel()
     private var selectedIndexPath: IndexPath?
+    private var blurEffectView: UIVisualEffectView!
+    private var optionsTableView: UITableView!
+    private var selectedCategoryIndex: Int?
+    private var hiddenSeparators: [UIView] = []
+    
     var onCategorySelected: ((String) -> Void)?
     
     // MARK: - UI Elements
@@ -80,6 +85,81 @@ final class CategoryViewController: UIViewController {
         tableView.isHidden = isEmpty
     }
     
+    private func showOptionsTable(at indexPath: IndexPath) {
+        guard let cell = tableView.cellForRow(at: indexPath) else { return }
+        let cellFrame = tableView.convert(cell.frame, to: view)
+        let optionsTableTop = cellFrame.maxY + 12
+        
+        addBlurEffect(except: cell)
+        
+        optionsTableView = UITableView(frame: .zero, style: .plain)
+        optionsTableView.delegate = self
+        optionsTableView.dataSource = self
+        optionsTableView.layer.cornerRadius = 16
+        optionsTableView.isScrollEnabled = false
+        optionsTableView.translatesAutoresizingMaskIntoConstraints = false
+        
+        optionsTableView.separatorStyle = .singleLine
+        optionsTableView.separatorColor = Asset.ypLightGray.color
+        optionsTableView.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
+        
+        view.addSubview(optionsTableView)
+        
+        NSLayoutConstraint.activate([
+            optionsTableView.widthAnchor.constraint(equalToConstant: 250),
+            optionsTableView.heightAnchor.constraint(equalToConstant: 95),
+            optionsTableView.leadingAnchor.constraint(equalTo: tableView.leadingAnchor),
+            optionsTableView.topAnchor.constraint(equalTo: view.topAnchor, constant: optionsTableTop)
+        ])
+    }
+    
+    private func addBlurEffect(except cell: UITableViewCell) {
+        blurEffectView = UIVisualEffectView(effect: UIBlurEffect(style: .light))
+        blurEffectView.frame = view.bounds
+        blurEffectView.alpha = 4.0
+        
+        let path = UIBezierPath(rect: view.bounds)
+        let cellFrame = tableView.convert(cell.frame, to: view)
+        let excludedPath = UIBezierPath(roundedRect: cellFrame, cornerRadius: 16)
+        path.append(excludedPath)
+        path.usesEvenOddFillRule = true
+        
+        let maskLayer = CAShapeLayer()
+        maskLayer.path = path.cgPath
+        maskLayer.fillRule = .evenOdd
+        blurEffectView.layer.mask = maskLayer
+        
+        cell.subviews.forEach { subview in
+                if subview.frame.height <= 1.0 {
+                    subview.isHidden = true
+                    hiddenSeparators.append(subview)
+                }
+            }
+        
+        view.addSubview(blurEffectView)
+        
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissOptionTable))
+        blurEffectView.addGestureRecognizer(tapGesture)
+    }
+    
+    @objc private func dismissOptionTable() {
+        blurEffectView.removeFromSuperview()
+        optionsTableView.removeFromSuperview()
+        
+        hiddenSeparators.forEach { $0.isHidden = false }
+        hiddenSeparators.removeAll()
+    }
+    
+    @objc private func longPressOnCategory(_ gesture: UILongPressGestureRecognizer) {
+        let location = gesture.location(in: tableView)
+        guard let indexPath = tableView.indexPathForRow(at: location) else { return }
+        
+        if gesture.state == .began {
+            selectedCategoryIndex = indexPath.row
+            showOptionsTable(at: indexPath)
+        }
+    }
+    
     @objc private func addCategoryButtonTapped() {
         if viewModel.numberOfCategories == 0 || selectedIndexPath == nil {
             let newCategoryVC = NewCategoryViewController(viewModel: viewModel)
@@ -104,6 +184,9 @@ final class CategoryViewController: UIViewController {
         tableView.dataSource = self
         tableView.delegate = self
         tableView.isHidden = true
+        
+        let longPressGesture = UILongPressGestureRecognizer(target: self, action: #selector(longPressOnCategory))
+        tableView.addGestureRecognizer(longPressGesture)
         
         [titleLabel, placeholderImageView, placeholderLabel,
          tableView, addCategoryButton].forEach { element in
@@ -147,7 +230,7 @@ extension CategoryViewController: UITableViewDataSource, UITableViewDelegate {
         _ tableView: UITableView,
         numberOfRowsInSection section: Int
     ) -> Int {
-        viewModel.numberOfCategories
+        tableView == optionsTableView ? 2 : viewModel.numberOfCategories
     }
     
     func tableView(
@@ -155,33 +238,54 @@ extension CategoryViewController: UITableViewDataSource, UITableViewDelegate {
         cellForRowAt indexPath: IndexPath
     ) -> UITableViewCell {
         let cell = UITableViewCell(style: .default, reuseIdentifier: nil)
-        
-        cell.textLabel?.text = viewModel.category(at: indexPath.row)
-        cell.textLabel?.font = UIFont.systemFont(ofSize: 17,weight: .regular)
-        cell.textLabel?.textColor = Asset.ypBlack.color
-        cell.backgroundColor = Asset.ypLightGray.color.withAlphaComponent(0.3)
-        
-        tableView.separatorStyle = .none
-        
-        configureRoundedCorners(for: cell, at: indexPath)
-        
-        cell.accessoryType = (indexPath == selectedIndexPath) ? .checkmark : .none
-        return cell
+        cell.selectionStyle = .none
+        if tableView == optionsTableView {
+            cell.textLabel?.text = indexPath.row == 0 ? "Редактировать" : "Удалить"
+            cell.textLabel?.textColor = indexPath.row == 0 ? Asset.ypBlack.color : Asset.ypRed.color
+            cell.textLabel?.font = UIFont.systemFont(ofSize: 17, weight: .regular)
+            cell.textLabel?.textAlignment = .left
+            cell.leadingAnchor.constraint(equalTo: cell.leadingAnchor, constant: 16).isActive = true
+            cell.backgroundColor = .white
+            cell.layer.cornerRadius = 8
+            cell.layer.masksToBounds = true
+            return cell
+        } else if tableView == tableView {
+            cell.textLabel?.text = viewModel.category(at: indexPath.row)
+            cell.textLabel?.font = UIFont.systemFont(ofSize: 17,weight: .regular)
+            cell.textLabel?.textColor = Asset.ypBlack.color
+            cell.backgroundColor = Asset.ypLightGray.color.withAlphaComponent(0.3)
+            tableView.separatorStyle = .none
+            
+            configureRoundedCorners(for: cell, at: indexPath)
+            
+            cell.accessoryType = (indexPath == selectedIndexPath) ? .checkmark : .none
+            return cell
+        }
+        return UITableViewCell()
     }
     
     func tableView(
         _ tableView: UITableView,
         didSelectRowAt indexPAth: IndexPath
     ) {
-        selectedIndexPath = indexPAth
-        tableView.reloadData()
+        if tableView == optionsTableView {
+            if indexPAth.row == 0 {
+                print("Редактировать категорию \(selectedCategoryIndex ?? -1)")
+            } else {
+                print("Удалить категорию \(selectedCategoryIndex ?? -1)")
+            }
+            dismissOptionTable()
+        } else {
+            selectedIndexPath = indexPAth
+            tableView.reloadData()
+        }
     }
     
     func tableView(
         _ tableView: UITableView,
         heightForRowAt indexPath: IndexPath
     ) -> CGFloat {
-        75
+        tableView == optionsTableView ? 48 : 75
     }
     
     func tableView(
@@ -189,26 +293,36 @@ extension CategoryViewController: UITableViewDataSource, UITableViewDelegate {
         willDisplay cell: UITableViewCell,
         forRowAt indexPath: IndexPath
     ) {
-        let separatorHeight: CGFloat = 0.5
-        let separatorColor = Asset.ypGray.color
-        
-        cell.subviews.forEach { subview in
-            if subview.tag == 444 { subview.removeFromSuperview() }
-        }
-        
-        if indexPath.row != viewModel.numberOfCategories - 1 {
-            let separator = UIView()
-            separator.backgroundColor = separatorColor
-            separator.translatesAutoresizingMaskIntoConstraints = false
-            separator.tag = 444
-            cell.addSubview(separator)
+        if tableView == optionsTableView {
+            cell.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
+            tableView.separatorColor = UIColor.lightGray
             
-            NSLayoutConstraint.activate([
-                separator.leadingAnchor.constraint(equalTo: cell.leadingAnchor, constant: 16),
-                separator.trailingAnchor.constraint(equalTo: cell.trailingAnchor, constant: -16),
-                separator.bottomAnchor.constraint(equalTo: cell.bottomAnchor),
-                separator.heightAnchor.constraint(equalToConstant: separatorHeight)
-            ])
+            if indexPath.row == tableView.numberOfRows(inSection: indexPath.section) - 1 {
+                cell.separatorInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: UIScreen.main.bounds.width)
+            }
+        } else {
+            let separatorHeight: CGFloat = 0.5
+            let separatorColor = Asset.ypGray.color
+            
+            cell.subviews.forEach { subview in
+                if subview.tag == 444 { subview.removeFromSuperview() }
+            }
+            
+            if indexPath.row != viewModel.numberOfCategories - 1 {
+                let separator = UIView()
+                separator.backgroundColor = separatorColor
+                separator.translatesAutoresizingMaskIntoConstraints = false
+                separator.tag = 444
+                cell.addSubview(separator)
+                
+                NSLayoutConstraint.activate([
+                    separator.leadingAnchor.constraint(equalTo: cell.leadingAnchor, constant: 16),
+                    separator.trailingAnchor.constraint(equalTo: cell.trailingAnchor, constant: -16),
+                    separator.bottomAnchor.constraint(equalTo: cell.bottomAnchor),
+                    separator.heightAnchor.constraint(equalToConstant: separatorHeight)
+                ])
+            }
+            cell.selectionStyle = .none
         }
     }
     
