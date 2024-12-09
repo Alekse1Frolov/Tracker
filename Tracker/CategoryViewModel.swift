@@ -36,4 +36,9 @@ final class CategoryViewModel {
         let fetchedCategories = categoryStore.fetchCategories()
         categories = fetchedCategories.map { $0.title ?? "Без категории" }
     }
+    
+    func removeCategory(at index: Int) {
+        guard index >= 0 && index < categories.count else { return }
+        categories.remove(at: index)
+    }
 }

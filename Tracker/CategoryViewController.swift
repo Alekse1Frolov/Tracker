@@ -88,7 +88,12 @@ final class CategoryViewController: UIViewController {
     private func showOptionsTable(at indexPath: IndexPath) {
         guard let cell = tableView.cellForRow(at: indexPath) else { return }
         let cellFrame = tableView.convert(cell.frame, to: view)
-        let optionsTableTop = cellFrame.maxY + 12
+        
+        let availableSpaceBelow = view.bounds.height - cellFrame.maxY
+        let optionsTableHeight: CGFloat = 96 + 12
+            
+        let isSpaceBelowEnough = availableSpaceBelow >= optionsTableHeight
+        let optionsTableTop = isSpaceBelowEnough ? cellFrame.maxY + 12 : cellFrame.minY - optionsTableHeight
         
         addBlurEffect(except: cell)
         
@@ -132,7 +137,6 @@ final class CategoryViewController: UIViewController {
         cell.subviews.forEach { subview in
                 if subview.frame.height <= 1.0 {
                     subview.isHidden = true
-                    hiddenSeparators.append(subview)
                 }
             }
         
@@ -148,6 +152,14 @@ final class CategoryViewController: UIViewController {
         
         hiddenSeparators.forEach { $0.isHidden = false }
         hiddenSeparators.removeAll()
+        
+        for visibleCell in tableView.visibleCells {
+                visibleCell.subviews.forEach { subview in
+                    if subview.frame.height <= 1.0 { 
+                        subview.isHidden = false
+                    }
+                }
+            }
     }
     
     @objc private func longPressOnCategory(_ gesture: UILongPressGestureRecognizer) {
@@ -272,7 +284,17 @@ extension CategoryViewController: UITableViewDataSource, UITableViewDelegate {
             if indexPAth.row == 0 {
                 print("Редактировать категорию \(selectedCategoryIndex ?? -1)")
             } else {
-                print("Удалить категорию \(selectedCategoryIndex ?? -1)")
+                guard let selectedCategoryIndex = selectedCategoryIndex else { return }
+                let categoryToDelete = viewModel.category(at: selectedCategoryIndex)
+                
+                let categoryStore = TrackerCategoryStore(context: CoreDataStack.shared.mainContext)
+                if categoryStore.deleteCategory(byTitle: categoryToDelete) {
+                    viewModel.removeCategory(at: selectedCategoryIndex)
+                    tableView.reloadData()
+                    updatePaceholderVisibility()
+                } else {
+                    print("Не получилось удалить категорию из Core Data")
+                }
             }
             dismissOptionTable()
         } else {

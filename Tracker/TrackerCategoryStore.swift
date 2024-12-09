@@ -42,5 +42,21 @@ final class TrackerCategoryStore {
             return []
         }
     }
+    
+    func deleteCategory(byTitle title: String) -> Bool {
+        let fetchRequest: NSFetchRequest<TrackerCategoryCoreData> = TrackerCategoryCoreData.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "title == %@", title)
+        
+        do {
+            if let categoryToDelete = try context.fetch(fetchRequest).first {
+                context.delete(categoryToDelete)
+                try context.save()
+                return true
+            }
+        } catch {
+            print("Не получилось удалить категорию \(error)")
+        }
+        return false
+    }
 
 }
