@@ -12,6 +12,7 @@ final class NewCategoryViewController: UIViewController {
     // MARK: - Properties
     private let viewModel: NewCategoryViewModel
     private var errorLabelHeightConstraint: NSLayoutConstraint!
+    private var originalCategoryName: String?
     var onCategoryCreated: (() -> Void)?
     
     // MARK: - UI Elements
@@ -162,6 +163,12 @@ final class NewCategoryViewController: UIViewController {
         }
     }
     
+    func setEditingMode(with category: String) {
+        titleLabel.text = "Редактирование категории"
+        nameTextField.text = category
+        originalCategoryName = category
+    }
+    
     private func setupObservers() {
         nameTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
     }
@@ -185,13 +192,18 @@ final class NewCategoryViewController: UIViewController {
     }
     
     @objc private func readyButtonTapped() {
-        guard let category = nameTextField.text, !category.isEmpty else { return }
-        
+        guard let newCategoryName = nameTextField.text, !newCategoryName.isEmpty else { return }
         let categoryStore = TrackerCategoryStore(context: CoreDataStack.shared.mainContext)
-        let newCategory = TrackerCategory(title: category, trackers: [])
-        categoryStore.createCategory(from: newCategory)
         
-        viewModel.addCategory(category)
+        if let oldCategoryName = originalCategoryName {
+            if categoryStore.updateCategory(oldTitle: oldCategoryName, newTitle: newCategoryName) {
+                viewModel.updateCategory(oldTitle: oldCategoryName, newTitle: newCategoryName)
+            }
+        } else {
+            let newCategory = TrackerCategory(title: newCategoryName, trackers: [])
+            categoryStore.createCategory(from: newCategory)
+            viewModel.addCategory(newCategoryName)
+        }
         onCategoryCreated?()
         navigationController?.popViewController(animated: true)
     }

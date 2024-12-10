@@ -43,6 +43,22 @@ final class TrackerCategoryStore {
         }
     }
     
+    func updateCategory(oldTitle: String, newTitle: String) -> Bool {
+        let fetchRequest: NSFetchRequest<TrackerCategoryCoreData> = TrackerCategoryCoreData.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "title == %@", oldTitle)
+        
+        do {
+            if let categoryToUpdate = try context.fetch(fetchRequest).first {
+                categoryToUpdate.title = newTitle
+                try context.save()
+                return true
+            }
+        } catch {
+            print("Ошибка при изменении категории: \(error)")
+        }
+        return false
+    }
+    
     func deleteCategory(byTitle title: String) -> Bool {
         let fetchRequest: NSFetchRequest<TrackerCategoryCoreData> = TrackerCategoryCoreData.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "title == %@", title)

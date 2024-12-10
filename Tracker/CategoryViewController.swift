@@ -282,7 +282,12 @@ extension CategoryViewController: UITableViewDataSource, UITableViewDelegate {
     ) {
         if tableView == optionsTableView {
             if indexPAth.row == 0 {
-                print("Редактировать категорию \(selectedCategoryIndex ?? -1)")
+                guard let selectedCategoryIndex = selectedCategoryIndex else { return }
+                let categoryToEdit = viewModel.category(at: selectedCategoryIndex)
+                
+                let editCategoryVC = NewCategoryViewController(viewModel: viewModel)
+                editCategoryVC.setEditingMode(with: categoryToEdit)
+                navigationController?.pushViewController(editCategoryVC, animated: true)
             } else {
                 guard let selectedCategoryIndex = selectedCategoryIndex else { return }
                 let categoryToDelete = viewModel.category(at: selectedCategoryIndex)

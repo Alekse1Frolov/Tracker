@@ -31,6 +31,13 @@ final class CategoryViewModel {
         categories.append(category)
     }
     
+    func updateCategory(oldTitle: String, newTitle: String) {
+            if let index = categories.firstIndex(of: oldTitle) {
+                categories[index] = newTitle
+                onCategoriesUpdated?()
+            }
+        }
+    
     func loadCategories() {
         let categoryStore = TrackerCategoryStore(context: CoreDataStack.shared.mainContext)
         let fetchedCategories = categoryStore.fetchCategories()
