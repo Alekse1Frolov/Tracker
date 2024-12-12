@@ -531,6 +531,7 @@ extension EventViewController: UITableViewDelegate {
         
         if indexPath.row == 0 {
             let categoryVC = CategoryViewController()
+            categoryVC.currentCategory = tableView.cellForRow(at: IndexPath(row: 0, section: 0))?.detailTextLabel?.text
             categoryVC.onCategorySelected = { [weak self] selectedCategory in
                 guard let self = self else { return }
                 self.updateCategoryCell(with: selectedCategory)

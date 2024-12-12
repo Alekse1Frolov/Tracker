@@ -27,6 +27,10 @@ final class CategoryViewModel {
         return categories[index]
     }
     
+    func indexOfCategory(named categoryName: String) -> Int? {
+        return categories.firstIndex(of: categoryName)
+    }
+    
     func addCategory(_ category: String) {
         categories.append(category)
     }

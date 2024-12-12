@@ -18,6 +18,7 @@ final class CategoryViewController: UIViewController {
     private var hiddenSeparators: [UIView] = []
     
     var onCategorySelected: ((String) -> Void)?
+    var currentCategory: String?
     
     // MARK: - UI Elements
     private let titleLabel: UILabel = {
@@ -69,6 +70,7 @@ final class CategoryViewController: UIViewController {
         viewModel.loadCategories()
         tableView.reloadData()
         updatePaceholderVisibility()
+        updateSelectedIndexPath()
     }
     
     private func setupBindings() {
@@ -85,13 +87,25 @@ final class CategoryViewController: UIViewController {
         tableView.isHidden = isEmpty
     }
     
+    private func updateSelectedIndexPath() {
+        guard let currentCategory = currentCategory else {
+            selectedIndexPath = nil
+            return
+        }
+        if let index = viewModel.indexOfCategory(named: currentCategory) {
+            selectedIndexPath = IndexPath(row: index, section: 0)
+        } else {
+            selectedIndexPath = nil
+        }
+    }
+    
     private func showOptionsTable(at indexPath: IndexPath) {
         guard let cell = tableView.cellForRow(at: indexPath) else { return }
         let cellFrame = tableView.convert(cell.frame, to: view)
         
         let availableSpaceBelow = view.bounds.height - cellFrame.maxY
         let optionsTableHeight: CGFloat = 96 + 12
-            
+        
         let isSpaceBelowEnough = availableSpaceBelow >= optionsTableHeight
         let optionsTableTop = isSpaceBelowEnough ? cellFrame.maxY + 12 : cellFrame.minY - optionsTableHeight
         
@@ -135,10 +149,10 @@ final class CategoryViewController: UIViewController {
         blurEffectView.layer.mask = maskLayer
         
         cell.subviews.forEach { subview in
-                if subview.frame.height <= 1.0 {
-                    subview.isHidden = true
-                }
+            if subview.frame.height <= 1.0 {
+                subview.isHidden = true
             }
+        }
         
         view.addSubview(blurEffectView)
         
@@ -154,12 +168,12 @@ final class CategoryViewController: UIViewController {
         hiddenSeparators.removeAll()
         
         for visibleCell in tableView.visibleCells {
-                visibleCell.subviews.forEach { subview in
-                    if subview.frame.height <= 1.0 { 
-                        subview.isHidden = false
-                    }
+            visibleCell.subviews.forEach { subview in
+                if subview.frame.height <= 1.0 {
+                    subview.isHidden = false
                 }
             }
+        }
     }
     
     @objc private func longPressOnCategory(_ gesture: UILongPressGestureRecognizer) {
@@ -278,10 +292,10 @@ extension CategoryViewController: UITableViewDataSource, UITableViewDelegate {
     
     func tableView(
         _ tableView: UITableView,
-        didSelectRowAt indexPAth: IndexPath
+        didSelectRowAt indexPath: IndexPath
     ) {
         if tableView == optionsTableView {
-            if indexPAth.row == 0 {
+            if indexPath.row == 0 {
                 guard let selectedCategoryIndex = selectedCategoryIndex else { return }
                 let categoryToEdit = viewModel.category(at: selectedCategoryIndex)
                 
@@ -297,13 +311,16 @@ extension CategoryViewController: UITableViewDataSource, UITableViewDelegate {
                     viewModel.removeCategory(at: selectedCategoryIndex)
                     tableView.reloadData()
                     updatePaceholderVisibility()
-                } else {
-                    print("Не получилось удалить категорию из Core Data")
                 }
             }
             dismissOptionTable()
         } else {
-            selectedIndexPath = indexPAth
+            if selectedIndexPath == indexPath {
+                selectedIndexPath = nil
+            } else {
+                selectedIndexPath = indexPath
+            }
+            
             tableView.reloadData()
         }
     }
