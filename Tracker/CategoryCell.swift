@@ -9,6 +9,7 @@ import UIKit
 
 final class CategoryCell: UITableViewCell {
     static let reuseIdentifier = "CategoryCell"
+    private var separator: UIView?
     
     func configure(with categoryName: String, isSelected: Bool, isFirst: Bool, isLast: Bool) {
         textLabel?.text = categoryName
@@ -18,6 +19,7 @@ final class CategoryCell: UITableViewCell {
         accessoryType = isSelected ? .checkmark : .none
         
         configureRoundedCorners(isFirst: isFirst, isLast: isLast)
+        configureSeparator(isLast: isLast)
     }
     
     private func configureRoundedCorners(isFirst: Bool, isLast: Bool) {
@@ -33,5 +35,28 @@ final class CategoryCell: UITableViewCell {
             layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
         }
         layer.masksToBounds = true
+    }
+    
+    private func configureSeparator(isLast: Bool) {
+        separator?.removeFromSuperview()
+        
+        guard !isLast else { return }
+        
+        let separatorHeight: CGFloat = 0.5
+        let separatorColor = Asset.ypGray.color
+        
+        let newSeparator = UIView()
+        newSeparator.backgroundColor = separatorColor
+        newSeparator.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(newSeparator)
+        
+        NSLayoutConstraint.activate([
+            newSeparator.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
+            newSeparator.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
+            newSeparator.bottomAnchor.constraint(equalTo: bottomAnchor),
+            newSeparator.heightAnchor.constraint(equalToConstant: separatorHeight)
+        ])
+        
+        self.separator = newSeparator
     }
 }

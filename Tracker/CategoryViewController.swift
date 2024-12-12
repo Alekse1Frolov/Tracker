@@ -209,6 +209,8 @@ final class CategoryViewController: UIViewController {
         tableView.dataSource = self
         tableView.delegate = self
         tableView.isHidden = true
+        tableView.separatorStyle = .none
+        tableView.tableFooterView = UIView(frame: .zero)
         
         let longPressGesture = UILongPressGestureRecognizer(target: self, action: #selector(longPressOnCategory))
         tableView.addGestureRecognizer(longPressGesture)
@@ -311,44 +313,6 @@ extension CategoryViewController: UITableViewDataSource, UITableViewDelegate {
         heightForRowAt indexPath: IndexPath
     ) -> CGFloat {
         tableView == optionsTableView ? 48 : 75
-    }
-    
-    func tableView(
-        _ tableView: UITableView,
-        willDisplay cell: UITableViewCell,
-        forRowAt indexPath: IndexPath
-    ) {
-        if tableView == optionsTableView {
-            cell.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
-            tableView.separatorColor = UIColor.lightGray
-            
-            if indexPath.row == tableView.numberOfRows(inSection: indexPath.section) - 1 {
-                cell.separatorInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: UIScreen.main.bounds.width)
-            }
-        } else {
-            let separatorHeight: CGFloat = 0.5
-            let separatorColor = Asset.ypGray.color
-            
-            cell.subviews.forEach { subview in
-                if subview.tag == 444 { subview.removeFromSuperview() }
-            }
-            
-            if indexPath.row != viewModel.numberOfCategories - 1 {
-                let separator = UIView()
-                separator.backgroundColor = separatorColor
-                separator.translatesAutoresizingMaskIntoConstraints = false
-                separator.tag = 444
-                cell.addSubview(separator)
-                
-                NSLayoutConstraint.activate([
-                    separator.leadingAnchor.constraint(equalTo: cell.leadingAnchor, constant: 16),
-                    separator.trailingAnchor.constraint(equalTo: cell.trailingAnchor, constant: -16),
-                    separator.bottomAnchor.constraint(equalTo: cell.bottomAnchor),
-                    separator.heightAnchor.constraint(equalToConstant: separatorHeight)
-                ])
-            }
-            cell.selectionStyle = .none
-        }
     }
     
     private func handleOptionsSelection(at indexPath: IndexPath) {
