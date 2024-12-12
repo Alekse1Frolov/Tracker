@@ -28,8 +28,12 @@ final class TrackerCategoryStore {
     func fetchCategory(byTitle title: String) -> TrackerCategoryCoreData? {
         let fetchRequest: NSFetchRequest<TrackerCategoryCoreData> = TrackerCategoryCoreData.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "title == %@", title)
-        
-        return try? context.fetch(fetchRequest).first
+        do {
+            return try context.fetch(fetchRequest).first
+        } catch {
+            print("Ошибка при получении категории с названием \(title): \(error.localizedDescription)")
+            return nil
+        }
     }
     
     func fetchCategories() -> [TrackerCategoryCoreData] {
@@ -74,5 +78,4 @@ final class TrackerCategoryStore {
         }
         return false
     }
-
 }

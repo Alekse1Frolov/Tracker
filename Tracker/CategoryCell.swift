@@ -8,7 +8,7 @@
 import UIKit
 
 final class CategoryCell: UITableViewCell {
-    static let reuseIdentifier = "CategoryCell"
+    static let reuseIdentifier = Constants.categoryVcCategoryCell
     private var separator: UIView?
     
     func configure(

@@ -41,12 +41,25 @@ enum Constants {
     static let eventVcMaxNameLengthErrorText = "Ограничение 38 символов"
     static let eventVcClearButtonSystemName = "xmark.circle.fill"
     
-    static let categoryVcPlaceholderLabel = "Привычки и события можно \n объединить по смыслу"
+    static let categoryVcPlaceholderLabel = "Привычки и события можно \nобъединить по смыслу"
     static let categoryVcAddButtonTitle = "Добавить категорию"
+    static let categoryVcCategoryCell = "CategoryCell"
+    static let categoryVcEditOptionTitle = "Редактировать"
+    static let categoryVcDeleteOptionTitle = "Удалить"
+    
     static let newCategoryVcTitle = "Новая категория"
     static let newCategoryVcPlaceholder = "Введите название категории"
+    static let newCategoryVcEditingCategoryTitle = "Редактирование категории"
     
     static let coreDataStackModelName = "TrackerModel"
+    
+    static let onboardingPageButton = "Вот это технологии!"
+    
+    static let onboardingPageBlueScreenImageName = "BlueBackground"
+    static let onboardingPageBlueScreenTitle = "Отслеживайте\nтолько то, что\nхотите"
+    static let onboardingPageRedScreenImageName = "RedBackground"
+    static let onboardingPageRedScreenTitle = "Даже если это\nне литры воды \nи йога"
+    static let onboardingPageUserDefaultsKey = "hasSeenOnboarding"
     
     // Перечисление дополняется
     

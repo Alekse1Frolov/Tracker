@@ -29,7 +29,7 @@ class OnboardingPageViewController: UIViewController {
     
     private let skipButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Вот это технологии!", for: .normal)
+        button.setTitle(Constants.onboardingPageButton, for: .normal)
         button.backgroundColor = Asset.ypBlack.color
         button.setTitleColor(Asset.ypWhite.color, for: .normal)
         button.layer.cornerRadius = 16
@@ -68,16 +68,16 @@ class OnboardingPageViewController: UIViewController {
         ])
         
         if pageIndex == 0 {
-            titleLabel.text = "Отслеживайте\nтолько то, что\nхотите"
-            imageView.image = UIImage(named: "BlueBackground")
+            titleLabel.text = Constants.onboardingPageBlueScreenTitle
+            imageView.image = UIImage(named: Constants.onboardingPageBlueScreenImageName)
         } else if pageIndex == 1 {
-            titleLabel.text = "Даже если это\nне литры воды \nи йога"
-            imageView.image = UIImage(named: "RedBackground")
+            titleLabel.text = Constants.onboardingPageRedScreenTitle
+            imageView.image = UIImage(named: Constants.onboardingPageRedScreenImageName)
         }
     }
     
     @objc private func skipOnboarding() {
-        UserDefaults.standard.set(true, forKey: "hasSeenOnboarding")
+        UserDefaults.standard.set(true, forKey: Constants.onboardingPageUserDefaultsKey)
         
         if let sceneDelegate = view.window?.windowScene?.delegate as? SceneDelegate {
             let trackersVC = TrackersViewController()

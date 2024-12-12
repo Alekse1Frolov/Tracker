@@ -53,7 +53,7 @@ final class NewCategoryViewController: UIViewController {
     private let readyButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle(Constants.scheduleVcReadyButtonTitle, for: .normal)
-        button.setTitleColor(.white, for: .normal)
+        button.setTitleColor(Asset.ypWhite.color, for: .normal)
         button.backgroundColor = .gray
         button.layer.cornerRadius = 16
         button.addTarget(self, action: #selector(readyButtonTapped), for: .touchUpInside)
@@ -92,7 +92,7 @@ final class NewCategoryViewController: UIViewController {
     
     // MARK: - Private Methods
     private func setupUI() {
-        view.backgroundColor = .white
+        view.backgroundColor = Asset.ypWhite.color
         
         [titleLabel, nameTextField, errorLabel, readyButton].forEach { element in
             view.addSubview(element)
@@ -164,7 +164,7 @@ final class NewCategoryViewController: UIViewController {
     }
     
     func setEditingMode(with category: String) {
-        titleLabel.text = "Редактирование категории"
+        titleLabel.text = Constants.newCategoryVcEditingCategoryTitle
         nameTextField.text = category
         originalCategoryName = category
     }
@@ -183,7 +183,7 @@ final class NewCategoryViewController: UIViewController {
     @objc private func textFieldDidChange() {
         let isTextValid = !(nameTextField.text?.isEmpty ?? true)
         readyButton.isEnabled = isTextValid
-        readyButton.backgroundColor = isTextValid ? .black : .gray
+        readyButton.backgroundColor = isTextValid ? Asset.ypBlack.color : Asset.ypGray.color
     }
     
     @objc private func nameTextFieldDidChange(_ textField: UITextField) {

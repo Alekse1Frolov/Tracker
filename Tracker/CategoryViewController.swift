@@ -40,6 +40,9 @@ final class CategoryViewController: UIViewController {
         let label = UILabel()
         label.text = Constants.categoryVcPlaceholderLabel
         label.font = UIFont.systemFont(ofSize: 12, weight: .medium)
+        label.numberOfLines = 0
+        label.lineBreakMode = .byWordWrapping
+        label.textAlignment = .center
         label.textColor = Asset.ypBlack.color
         return label
     }()
@@ -266,11 +269,11 @@ extension CategoryViewController: UITableViewDataSource, UITableViewDelegate {
     ) -> UITableViewCell {
         if tableView == optionsTableView {
             let cell = UITableViewCell(style: .default, reuseIdentifier: nil)
-            cell.textLabel?.text = indexPath.row == 0 ? "Редактировать" : "Удалить"
+            cell.textLabel?.text = indexPath.row == 0 ? Constants.categoryVcEditOptionTitle : Constants.categoryVcDeleteOptionTitle
             cell.textLabel?.textColor = indexPath.row == 0 ? Asset.ypBlack.color : Asset.ypRed.color
             cell.textLabel?.font = UIFont.systemFont(ofSize: 17, weight: .regular)
             cell.textLabel?.textAlignment = .left
-            cell.backgroundColor = .white
+            cell.backgroundColor = Asset.ypWhite.color
             cell.layer.cornerRadius = 8
             cell.layer.masksToBounds = true
             return cell
@@ -278,7 +281,8 @@ extension CategoryViewController: UITableViewDataSource, UITableViewDelegate {
             guard let cell = tableView.dequeueReusableCell(
                 withIdentifier: CategoryCell.reuseIdentifier, for: indexPath
             ) as? CategoryCell else {
-                fatalError("Failed to dequeue CategoryCell")
+                assertionFailure("Failed to dequeue CategoryCell")
+                return UITableViewCell()
             }
             
             let categoryName = viewModel.categoryName(at: indexPath)
