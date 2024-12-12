@@ -59,6 +59,7 @@ final class CategoryViewController: UIViewController {
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
+        tableView.register(CategoryCell.self, forCellReuseIdentifier: CategoryCell.reuseIdentifier)
         
         setupView()
         setupBindings()
@@ -92,10 +93,8 @@ final class CategoryViewController: UIViewController {
             selectedIndexPath = nil
             return
         }
-        if let index = viewModel.indexOfCategory(named: currentCategory) {
-            selectedIndexPath = IndexPath(row: index, section: 0)
-        } else {
-            selectedIndexPath = nil
+        selectedIndexPath = viewModel.indexOfCategory(named: currentCategory).map {
+            IndexPath(row: $0, section: 0)
         }
     }
     
@@ -188,7 +187,7 @@ final class CategoryViewController: UIViewController {
     
     @objc private func addCategoryButtonTapped() {
         if viewModel.numberOfCategories == 0 || selectedIndexPath == nil {
-            let newCategoryVC = NewCategoryViewController(viewModel: viewModel)
+            let newCategoryVC = NewCategoryViewController(viewModel: NewCategoryViewModel())
             newCategoryVC.onCategoryCreated = { [weak self] in
                 guard let self = self else { return }
                 self.viewModel.loadCategories()
@@ -263,31 +262,31 @@ extension CategoryViewController: UITableViewDataSource, UITableViewDelegate {
         _ tableView: UITableView,
         cellForRowAt indexPath: IndexPath
     ) -> UITableViewCell {
-        let cell = UITableViewCell(style: .default, reuseIdentifier: nil)
-        cell.selectionStyle = .none
         if tableView == optionsTableView {
+            let cell = UITableViewCell(style: .default, reuseIdentifier: nil)
             cell.textLabel?.text = indexPath.row == 0 ? "Редактировать" : "Удалить"
             cell.textLabel?.textColor = indexPath.row == 0 ? Asset.ypBlack.color : Asset.ypRed.color
             cell.textLabel?.font = UIFont.systemFont(ofSize: 17, weight: .regular)
             cell.textLabel?.textAlignment = .left
-            cell.leadingAnchor.constraint(equalTo: cell.leadingAnchor, constant: 16).isActive = true
             cell.backgroundColor = .white
             cell.layer.cornerRadius = 8
             cell.layer.masksToBounds = true
             return cell
-        } else if tableView == tableView {
-            cell.textLabel?.text = viewModel.category(at: indexPath.row)
-            cell.textLabel?.font = UIFont.systemFont(ofSize: 17,weight: .regular)
-            cell.textLabel?.textColor = Asset.ypBlack.color
-            cell.backgroundColor = Asset.ypLightGray.color.withAlphaComponent(0.3)
-            tableView.separatorStyle = .none
+        } else {
+            guard let cell = tableView.dequeueReusableCell(
+                withIdentifier: CategoryCell.reuseIdentifier, for: indexPath
+            ) as? CategoryCell else {
+                fatalError("Failed to dequeue CategoryCell")
+            }
             
-            configureRoundedCorners(for: cell, at: indexPath)
+            let categoryName = viewModel.categoryName(at: indexPath)
+            let isSelected = indexPath == selectedIndexPath
+            let isFirst = indexPath.row == 0
+            let isLast = indexPath.row == viewModel.numberOfCategories - 1
             
-            cell.accessoryType = (indexPath == selectedIndexPath) ? .checkmark : .none
+            cell.configure(with: categoryName, isSelected: isSelected, isFirst: isFirst, isLast: isLast)
             return cell
         }
-        return UITableViewCell()
     }
     
     func tableView(
@@ -295,32 +294,14 @@ extension CategoryViewController: UITableViewDataSource, UITableViewDelegate {
         didSelectRowAt indexPath: IndexPath
     ) {
         if tableView == optionsTableView {
-            if indexPath.row == 0 {
-                guard let selectedCategoryIndex = selectedCategoryIndex else { return }
-                let categoryToEdit = viewModel.category(at: selectedCategoryIndex)
-                
-                let editCategoryVC = NewCategoryViewController(viewModel: viewModel)
-                editCategoryVC.setEditingMode(with: categoryToEdit)
-                navigationController?.pushViewController(editCategoryVC, animated: true)
-            } else {
-                guard let selectedCategoryIndex = selectedCategoryIndex else { return }
-                let categoryToDelete = viewModel.category(at: selectedCategoryIndex)
-                
-                let categoryStore = TrackerCategoryStore(context: CoreDataStack.shared.mainContext)
-                if categoryStore.deleteCategory(byTitle: categoryToDelete) {
-                    viewModel.removeCategory(at: selectedCategoryIndex)
-                    tableView.reloadData()
-                    updatePaceholderVisibility()
-                }
-            }
-            dismissOptionTable()
+            handleOptionsSelection(at: indexPath)
         } else {
-            if selectedIndexPath == indexPath {
-                selectedIndexPath = nil
+            selectedIndexPath = selectedIndexPath == indexPath ? nil : indexPath
+            if let selectedIndexPath = selectedIndexPath {
+                currentCategory = viewModel.categoryName(at: selectedIndexPath)
             } else {
-                selectedIndexPath = indexPath
+                currentCategory = nil
             }
-            
             tableView.reloadData()
         }
     }
@@ -370,28 +351,23 @@ extension CategoryViewController: UITableViewDataSource, UITableViewDelegate {
         }
     }
     
-    private func configureRoundedCorners(
-        for cell: UITableViewCell,
-        at indexPath: IndexPath
-    ) {
-        cell.layer.cornerRadius = 0
-        cell.layer.maskedCorners = []
-        cell.layer.masksToBounds = false
-        
-        let rowCount = viewModel.numberOfCategories
-        
-        if rowCount == 1 {
-            cell.layer.cornerRadius = 16
-            cell.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner, .layerMinXMaxYCorner, .layerMaxXMaxYCorner]
-            cell.layer.masksToBounds = true
-        } else if indexPath.row == 0 {
-            cell.layer.cornerRadius = 16
-            cell.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
-            cell.layer.masksToBounds = true
-        } else if indexPath.row == rowCount - 1 {
-            cell.layer.cornerRadius = 16
-            cell.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
-            cell.layer.masksToBounds = true
+    private func handleOptionsSelection(at indexPath: IndexPath) {
+        if indexPath.row == 0 {
+            guard let selectedCategoryIndex = selectedCategoryIndex else { return }
+            let categoryToEdit = viewModel.category(at: selectedCategoryIndex)
+            let editCategoryVC = NewCategoryViewController(viewModel: NewCategoryViewModel())
+            editCategoryVC.setEditingMode(with: categoryToEdit)
+            navigationController?.pushViewController(editCategoryVC, animated: true)
+        } else {
+            guard let selectedCategoryIndex = selectedCategoryIndex else { return }
+            let categoryToDelete = viewModel.category(at: selectedCategoryIndex)
+            let categoryStore = TrackerCategoryStore(context: CoreDataStack.shared.mainContext)
+            if categoryStore.deleteCategory(byTitle: categoryToDelete) {
+                viewModel.removeCategory(at: selectedCategoryIndex)
+                tableView.reloadData()
+                updatePaceholderVisibility()
+            }
         }
+        dismissOptionTable()
     }
 }

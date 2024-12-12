@@ -8,7 +8,8 @@
 import Foundation
 
 final class CategoryViewModel {
-    private var categories: [String] = [] {
+    private let categoryStore: TrackerCategoryStore
+    private(set) var categories: [TrackerCategory] = [] {
         didSet {
             onCategoriesUpdated?()
         }
@@ -16,40 +17,51 @@ final class CategoryViewModel {
     
     var onCategoriesUpdated: (() -> Void)?
     var isEmpty: Bool {
-        return categories.isEmpty
+        categories.isEmpty
     }
     
     var numberOfCategories: Int {
-        return categories.count
+        categories.count
+    }
+    
+    init(categoryStore: TrackerCategoryStore = TrackerCategoryStore(context: CoreDataStack.shared.mainContext)) {
+        self.categoryStore = categoryStore
+    }
+    
+    func categoryName(at indexPath: IndexPath) -> String {
+        categories[indexPath.row].title
+    }
+    
+    func isCategorySelected(at indexPath: IndexPath, currentCategory: String?) -> Bool {
+        guard let currentCategory = currentCategory else { return false }
+        return categories[indexPath.row].title == currentCategory
     }
     
     func category(at index: Int) -> String {
-        return categories[index]
+        categories[index].title
     }
     
     func indexOfCategory(named categoryName: String) -> Int? {
-        return categories.firstIndex(of: categoryName)
+        categories.firstIndex { $0.title == categoryName }
     }
     
-    func addCategory(_ category: String) {
-        categories.append(category)
+    func addCategory(_ title: String) {
+        categoryStore.createCategory(from: TrackerCategory(title: title, trackers: []))
+        loadCategories()
     }
     
     func updateCategory(oldTitle: String, newTitle: String) {
-            if let index = categories.firstIndex(of: oldTitle) {
-                categories[index] = newTitle
-                onCategoriesUpdated?()
-            }
-        }
+        _ = categoryStore.updateCategory(oldTitle: oldTitle, newTitle: newTitle)
+        loadCategories()
+    }
     
     func loadCategories() {
-        let categoryStore = TrackerCategoryStore(context: CoreDataStack.shared.mainContext)
-        let fetchedCategories = categoryStore.fetchCategories()
-        categories = fetchedCategories.map { $0.title ?? "Без категории" }
+        categories = categoryStore.fetchCategories().map { TrackerCategory(coreDataCategory: $0) }
     }
     
     func removeCategory(at index: Int) {
-        guard index >= 0 && index < categories.count else { return }
-        categories.remove(at: index)
+        let title = categories[index].title
+        categoryStore.deleteCategory(byTitle: title)
+        loadCategories()
     }
 }

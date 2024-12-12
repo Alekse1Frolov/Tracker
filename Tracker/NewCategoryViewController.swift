@@ -71,8 +71,8 @@ final class NewCategoryViewController: UIViewController {
     }()
     
     // MARK: - Initializer
-    init(viewModel: CategoryViewModel) {
-        self.viewModel = NewCategoryViewModel(categoryViewModel: viewModel)
+    init(viewModel: NewCategoryViewModel) {
+        self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -193,18 +193,7 @@ final class NewCategoryViewController: UIViewController {
     
     @objc private func readyButtonTapped() {
         guard let newCategoryName = nameTextField.text, !newCategoryName.isEmpty else { return }
-        let categoryStore = TrackerCategoryStore(context: CoreDataStack.shared.mainContext)
-        
-        if let oldCategoryName = originalCategoryName {
-            if categoryStore.updateCategory(oldTitle: oldCategoryName, newTitle: newCategoryName) {
-                viewModel.updateCategory(oldTitle: oldCategoryName, newTitle: newCategoryName)
-            }
-        } else {
-            let newCategory = TrackerCategory(title: newCategoryName, trackers: [])
-            categoryStore.createCategory(from: newCategory)
-            viewModel.addCategory(newCategoryName)
-        }
-        onCategoryCreated?()
+        viewModel.saveCategory(title: newCategoryName, originalTitle: originalCategoryName)
         navigationController?.popViewController(animated: true)
     }
 }

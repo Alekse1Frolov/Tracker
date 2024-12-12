@@ -8,25 +8,17 @@
 import Foundation
 
 final class NewCategoryViewModel {
-    private let categoryViewModel: CategoryViewModel
+    private let categoryStore: TrackerCategoryStore
     
-    var numberOfCategories: Int {
-        return categoryViewModel.numberOfCategories
+    init(categoryStore: TrackerCategoryStore = TrackerCategoryStore(context: CoreDataStack.shared.mainContext)) {
+        self.categoryStore = categoryStore
     }
     
-    init(categoryViewModel: CategoryViewModel) {
-        self.categoryViewModel = categoryViewModel
-    }
-    
-    func addCategory(_ category: String) {
-        categoryViewModel.addCategory(category)
-    }
-    
-    func updateCategory(oldTitle: String, newTitle: String) {
-        categoryViewModel.updateCategory(oldTitle: oldTitle, newTitle: newTitle)
-    }
-    
-    func category(at index: Int) -> String {
-        return categoryViewModel.category(at: index)
+    func saveCategory(title: String, originalTitle: String?) {
+        if let originalTitle = originalTitle {
+            _ = categoryStore.updateCategory(oldTitle: originalTitle, newTitle: title)
+        } else {
+            categoryStore.createCategory(from: TrackerCategory(title: title, trackers: []))
+        }
     }
 }
