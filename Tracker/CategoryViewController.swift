@@ -285,8 +285,9 @@ extension CategoryViewController: UITableViewDataSource, UITableViewDelegate {
             let isSelected = indexPath == selectedIndexPath
             let isFirst = indexPath.row == 0
             let isLast = indexPath.row == viewModel.numberOfCategories - 1
+            let isSingle = viewModel.numberOfCategories == 1
             
-            cell.configure(with: categoryName, isSelected: isSelected, isFirst: isFirst, isLast: isLast)
+            cell.configure(with: categoryName, isSelected: isSelected, isSingle: isSingle, isFirst: isFirst, isLast: isLast)
             return cell
         }
     }

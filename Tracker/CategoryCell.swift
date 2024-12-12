@@ -11,23 +11,34 @@ final class CategoryCell: UITableViewCell {
     static let reuseIdentifier = "CategoryCell"
     private var separator: UIView?
     
-    func configure(with categoryName: String, isSelected: Bool, isFirst: Bool, isLast: Bool) {
+    func configure(
+        with categoryName: String,
+        isSelected: Bool,
+        isSingle: Bool,
+        isFirst: Bool,
+        isLast: Bool
+    ) {
         textLabel?.text = categoryName
         textLabel?.font = UIFont.systemFont(ofSize: 17, weight: .regular)
         textLabel?.textColor = Asset.ypBlack.color
         backgroundColor = Asset.ypLightGray.color.withAlphaComponent(0.3)
         accessoryType = isSelected ? .checkmark : .none
         
-        configureRoundedCorners(isFirst: isFirst, isLast: isLast)
+        configureRoundedCorners(isFirst: isFirst, isLast: isLast, isSingle: isSingle)
         configureSeparator(isLast: isLast)
     }
     
-    private func configureRoundedCorners(isFirst: Bool, isLast: Bool) {
+    private func configureRoundedCorners(isFirst: Bool, isLast: Bool, isSingle: Bool) {
         layer.cornerRadius = 0
         layer.maskedCorners = []
         layer.masksToBounds = false
         
-        if isFirst {
+        if isSingle {
+            layer.cornerRadius = 16
+            layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner,
+                                   .layerMinXMaxYCorner, .layerMaxXMaxYCorner]
+        }
+        else if isFirst {
             layer.cornerRadius = 16
             layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
         } else if isLast {
