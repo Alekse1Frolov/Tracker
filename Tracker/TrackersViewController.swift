@@ -185,7 +185,6 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
             return TrackerCategory(
                 title: category.title,
                 trackers: trackers
-                //            type: category.type
             )
         }.sorted { $0.title < $1.title }
     }
