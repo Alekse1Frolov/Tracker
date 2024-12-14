@@ -476,7 +476,7 @@ extension EventViewController: UITableViewDataSource {
         mainText: String,
         detailText: String? = nil,
         mainTextColor: UIColor = Asset.ypBlack.color,
-        detailTextColor: UIColor = .gray,
+        detailTextColor: UIColor = Asset.ypGray.color,
         alignment: NSTextAlignment = .right
     ) {
         cell.textLabel?.attributedText = NSAttributedString(
@@ -496,7 +496,9 @@ extension EventViewController: UITableViewDataSource {
         configureCellText(
             cell,
             mainText: Constants.eventVcCategoryTitle,
-            mainTextColor: Asset.ypBlack.color
+            mainTextColor: Asset.ypBlack.color,
+            detailTextColor: Asset.ypGray.color,
+            alignment: .left
         )
     }
     
@@ -510,7 +512,7 @@ extension EventViewController: UITableViewDataSource {
                 mainText: Constants.scheduleVcTitle,
                 detailText: selectedDaysText,
                 mainTextColor: Asset.ypBlack.color,
-                detailTextColor: .gray
+                detailTextColor: Asset.ypGray.color
             )
         default:
             break
