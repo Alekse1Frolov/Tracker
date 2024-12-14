@@ -373,8 +373,9 @@ final class EventViewController: UIViewController {
         let isEmojiSelected = selectedEmojiIndex != nil
         let isColorSelected = selectedColorIndex != nil
         let isScheduleValid = trackerType == .irregularEvent || !selectedDays.isEmpty
+        let isCategorySelected = tableView.cellForRow(at: IndexPath(row: 0, section: 0))?.detailTextLabel?.text?.isEmpty == false
         
-        createButton.isEnabled = isNameValid && isEmojiSelected && isColorSelected && isScheduleValid
+        createButton.isEnabled = isNameValid && isEmojiSelected && isColorSelected && isScheduleValid && isCategorySelected
         createButton.backgroundColor = createButton.isEnabled ? Asset.ypBlack.color : Asset.ypLightGray.color
     }
     
@@ -565,6 +566,7 @@ extension EventViewController: UITableViewDelegate {
                 mainTextColor: Asset.ypBlack.color,
                 detailTextColor: Asset.ypGray.color)
         }
+        updateCreateButtonState()
     }
 }
 
