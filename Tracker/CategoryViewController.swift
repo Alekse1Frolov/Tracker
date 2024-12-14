@@ -330,13 +330,37 @@ extension CategoryViewController: UITableViewDataSource, UITableViewDelegate {
         } else {
             guard let selectedCategoryIndex = selectedCategoryIndex else { return }
             let categoryToDelete = viewModel.category(at: selectedCategoryIndex)
-            let categoryStore = TrackerCategoryStore(context: CoreDataStack.shared.mainContext)
-            if categoryStore.deleteCategory(byTitle: categoryToDelete) {
-                viewModel.removeCategory(at: selectedCategoryIndex)
-                tableView.reloadData()
-                updatePaceholderVisibility()
-            }
+            showDeleteConfirmationAlert(for: categoryToDelete, at: selectedCategoryIndex)
         }
         dismissOptionTable()
+    }
+    
+    private func showDeleteConfirmationAlert(for category: String, at index: Int) {
+        let alert = UIAlertController(
+            title: Constants.categoryVcDeleteConfirmationAlertTitle,
+            message: nil,
+            preferredStyle: .actionSheet
+        )
+        
+        let deleteAction = UIAlertAction(
+            title: Constants.categoryVcDeleteConfirmationAlertDeleteOption,
+            style: .destructive
+        ) {
+            [weak self] _ in
+            guard let self else { return }
+            self.viewModel.removeCategory(at: index)
+            self.tableView.reloadData()
+            self.updatePaceholderVisibility()
+        }
+        
+        let cancelAction = UIAlertAction(
+            title: Constants.categoryVcDeleteConfirmationAlertCancelOption,
+            style: .cancel,
+            handler: nil)
+        
+        alert.addAction(deleteAction)
+        alert.addAction(cancelAction)
+        
+        present(alert, animated: true, completion: nil)
     }
 }

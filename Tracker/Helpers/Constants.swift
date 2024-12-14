@@ -46,6 +46,9 @@ enum Constants {
     static let categoryVcCategoryCell = "CategoryCell"
     static let categoryVcEditOptionTitle = "Редактировать"
     static let categoryVcDeleteOptionTitle = "Удалить"
+    static let categoryVcDeleteConfirmationAlertTitle = "Эта категория точно не нужна?"
+    static let categoryVcDeleteConfirmationAlertDeleteOption = "Удалить"
+    static let categoryVcDeleteConfirmationAlertCancelOption = "Отмена"
     
     static let newCategoryVcTitle = "Новая категория"
     static let newCategoryVcPlaceholder = "Введите название категории"
@@ -54,7 +57,6 @@ enum Constants {
     static let coreDataStackModelName = "TrackerModel"
     
     static let onboardingPageButton = "Вот это технологии!"
-    
     static let onboardingPageBlueScreenImageName = "BlueBackground"
     static let onboardingPageBlueScreenTitle = "Отслеживайте\nтолько то, что\nхотите"
     static let onboardingPageRedScreenImageName = "RedBackground"
