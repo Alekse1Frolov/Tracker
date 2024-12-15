@@ -194,6 +194,8 @@ final class NewCategoryViewController: UIViewController {
     @objc private func readyButtonTapped() {
         guard let newCategoryName = nameTextField.text, !newCategoryName.isEmpty else { return }
         viewModel.saveCategory(title: newCategoryName, originalTitle: originalCategoryName)
+        
+        onCategoryCreated?()
         navigationController?.popViewController(animated: true)
     }
 }

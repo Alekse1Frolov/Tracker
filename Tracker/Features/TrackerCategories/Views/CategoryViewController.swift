@@ -314,13 +314,10 @@ extension CategoryViewController: UITableViewDataSource, UITableViewDelegate {
         if tableView == optionsTableView {
             handleOptionsSelection(at: indexPath)
         } else {
-            selectedIndexPath = selectedIndexPath == indexPath ? nil : indexPath
-            if let selectedIndexPath = selectedIndexPath {
-                currentCategory = viewModel.categoryName(at: selectedIndexPath)
-            } else {
-                currentCategory = nil
-            }
-            tableView.reloadData()
+            selectedIndexPath = indexPath
+            let selectedCategory = viewModel.categoryName(at: indexPath)
+            onCategorySelected?(selectedCategory)
+            navigationController?.popViewController(animated: true)
         }
     }
     
