@@ -57,7 +57,7 @@ class OnboardingPageViewController: UIViewController {
             imageView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             imageView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             
-            titleLabel.topAnchor.constraint(equalTo: imageView.topAnchor, constant: view.frame.height / 2.2),
+            titleLabel.topAnchor.constraint(equalTo: imageView.topAnchor, constant: view.frame.height / 1.9),
             titleLabel.leadingAnchor.constraint(equalTo: imageView.leadingAnchor, constant: 16),
             titleLabel.trailingAnchor.constraint(equalTo: imageView.trailingAnchor, constant: -16),
             

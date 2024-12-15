@@ -58,9 +58,9 @@ enum Constants {
     
     static let onboardingPageButton = "Вот это технологии!"
     static let onboardingPageBlueScreenImageName = "BlueBackground"
-    static let onboardingPageBlueScreenTitle = "Отслеживайте\nтолько то, что\nхотите"
+    static let onboardingPageBlueScreenTitle = "Отслеживайте только то, что хотите"
     static let onboardingPageRedScreenImageName = "RedBackground"
-    static let onboardingPageRedScreenTitle = "Даже если это\nне литры воды \nи йога"
+    static let onboardingPageRedScreenTitle = "Даже если это не литры воды и йога"
     static let onboardingPageUserDefaultsKey = "hasSeenOnboarding"
     
     // Перечисление дополняется

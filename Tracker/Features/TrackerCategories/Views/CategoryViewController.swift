@@ -292,6 +292,9 @@ extension CategoryViewController: UITableViewDataSource, UITableViewDelegate {
             let isSingle = viewModel.numberOfCategories == 1
             
             cell.configure(with: categoryName, isSelected: isSelected, isSingle: isSingle, isFirst: isFirst, isLast: isLast)
+            
+            cell.selectionStyle = .none
+            
             return cell
         }
     }
