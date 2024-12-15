@@ -49,6 +49,7 @@ enum Constants {
     static let categoryVcDeleteConfirmationAlertTitle = "Эта категория точно не нужна?"
     static let categoryVcDeleteConfirmationAlertDeleteOption = "Удалить"
     static let categoryVcDeleteConfirmationAlertCancelOption = "Отмена"
+    static let categoryVcLastSelectedCategoryKey = "lastSelectedCategory"
     
     static let newCategoryVcTitle = "Новая категория"
     static let newCategoryVcPlaceholder = "Введите название категории"

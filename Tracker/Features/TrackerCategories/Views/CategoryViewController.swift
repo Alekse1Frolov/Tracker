@@ -71,6 +71,11 @@ final class CategoryViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        
+        if currentCategory == nil {
+            currentCategory = UserDefaults.standard.string(forKey: Constants.categoryVcLastSelectedCategoryKey)
+        }
+        
         viewModel.loadCategories()
         tableView.reloadData()
         updatePaceholderVisibility()
@@ -287,11 +292,14 @@ extension CategoryViewController: UITableViewDataSource, UITableViewDelegate {
             
             let categoryName = viewModel.categoryName(at: indexPath)
             let isSelected = indexPath == selectedIndexPath
-            let isFirst = indexPath.row == 0
-            let isLast = indexPath.row == viewModel.numberOfCategories - 1
-            let isSingle = viewModel.numberOfCategories == 1
             
-            cell.configure(with: categoryName, isSelected: isSelected, isSingle: isSingle, isFirst: isFirst, isLast: isLast)
+            cell.configure(
+                with: categoryName,
+                isSelected: isSelected,
+                isSingle: viewModel.numberOfCategories == 1,
+                isFirst: indexPath.row == 0,
+                isLast: indexPath.row == viewModel.numberOfCategories - 1
+            )
             
             cell.selectionStyle = .none
             
