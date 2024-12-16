@@ -344,24 +344,25 @@ final class EventViewController: UIViewController {
         guard let trackerName = nameTextField.text, !trackerName.isEmpty else { return }
         guard let selectedEmojiIndex = selectedEmojiIndex else { return }
         guard let selectedColorIndex = selectedColorIndex else { return }
-        guard let selectedColor = colors[selectedColorIndex.item] else { return }
+        guard let selectedCategory = tableView.cellForRow(at: IndexPath(row: 0, section: 0))?.detailTextLabel?.text else { return }
         
         let selectedEmoji = emojis[selectedEmojiIndex.item]
-        let trackerCategory = trackerType == .habit ? MockData.habitMockCategory.title : MockData.irregulatEventMockCategory.title
+        let selectedColor = colors[selectedColorIndex.item]
         let schedule = trackerType == .habit ? selectedDays : []
         
         let trackerStore = TrackerStore(context: CoreDataStack.shared.mainContext)
         let newTracker = Tracker(
             id: UUID(),
             name: trackerName,
-            color: selectedColor.hexString,
+            color: selectedColor?.hexString ?? "",
             emoji: selectedEmoji,
             schedule: schedule,
             date: Date(),
-            category: trackerCategory,
+            category: selectedCategory,
             order: 0
         )
         
+        UserDefaults.standard.set(selectedCategory, forKey: Constants.categoryVcLastSelectedCategoryKey)
         trackerStore.createTracker(from: newTracker)
         
         NotificationCenter.default.post(name: .createdTracker, object: newTracker)
@@ -373,8 +374,9 @@ final class EventViewController: UIViewController {
         let isEmojiSelected = selectedEmojiIndex != nil
         let isColorSelected = selectedColorIndex != nil
         let isScheduleValid = trackerType == .irregularEvent || !selectedDays.isEmpty
+        let isCategorySelected = tableView.cellForRow(at: IndexPath(row: 0, section: 0))?.detailTextLabel?.text?.isEmpty == false
         
-        createButton.isEnabled = isNameValid && isEmojiSelected && isColorSelected && isScheduleValid
+        createButton.isEnabled = isNameValid && isEmojiSelected && isColorSelected && isScheduleValid && isCategorySelected
         createButton.backgroundColor = createButton.isEnabled ? Asset.ypBlack.color : Asset.ypLightGray.color
     }
     
@@ -475,7 +477,7 @@ extension EventViewController: UITableViewDataSource {
         mainText: String,
         detailText: String? = nil,
         mainTextColor: UIColor = Asset.ypBlack.color,
-        detailTextColor: UIColor = .gray,
+        detailTextColor: UIColor = Asset.ypGray.color,
         alignment: NSTextAlignment = .right
     ) {
         cell.textLabel?.attributedText = NSAttributedString(
@@ -495,7 +497,9 @@ extension EventViewController: UITableViewDataSource {
         configureCellText(
             cell,
             mainText: Constants.eventVcCategoryTitle,
-            mainTextColor: Asset.ypBlack.color
+            mainTextColor: Asset.ypBlack.color,
+            detailTextColor: Asset.ypGray.color,
+            alignment: .left
         )
     }
     
@@ -509,7 +513,7 @@ extension EventViewController: UITableViewDataSource {
                 mainText: Constants.scheduleVcTitle,
                 detailText: selectedDaysText,
                 mainTextColor: Asset.ypBlack.color,
-                detailTextColor: .gray
+                detailTextColor: Asset.ypGray.color
             )
         default:
             break
@@ -529,7 +533,15 @@ extension EventViewController: UITableViewDelegate {
     ) {
         tableView.deselectRow(at: indexPath, animated: true)
         
-        if indexPath.row == 1 {
+        if indexPath.row == 0 {
+            let categoryVC = CategoryViewController()
+            categoryVC.currentCategory = tableView.cellForRow(at: IndexPath(row: 0, section: 0))?.detailTextLabel?.text
+            categoryVC.onCategorySelected = { [weak self] selectedCategory in
+                guard let self = self else { return }
+                self.updateCategoryCell(with: selectedCategory)
+            }
+            navigationController?.pushViewController(categoryVC, animated: true)
+        } else if indexPath.row == 1 {
             view.endEditing(true)
             
             let scheduleVC = ScheduleViewController(selectedDays: Weekday.allCases.map {
@@ -545,6 +557,19 @@ extension EventViewController: UITableViewDelegate {
             }
             present(scheduleVC, animated: true, completion: nil)
         }
+    }
+    
+    private func updateCategoryCell(with category: String) {
+        let indexPath = IndexPath(row: 0, section: 0)
+        if let cell = tableView.cellForRow(at: indexPath) {
+            configureCellText(
+                cell,
+                mainText: Constants.eventVcCategoryTitle,
+                detailText: category,
+                mainTextColor: Asset.ypBlack.color,
+                detailTextColor: Asset.ypGray.color)
+        }
+        updateCreateButtonState()
     }
 }
 

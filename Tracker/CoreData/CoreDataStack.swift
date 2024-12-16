@@ -5,7 +5,6 @@
 //  Created by Aleksei Frolov on 26.11.2024.
 //
 
-import Foundation
 import CoreData
 
 final class CoreDataStack {
@@ -16,7 +15,7 @@ final class CoreDataStack {
         let container = NSPersistentContainer(name: modelName)
         container.loadPersistentStores { description, error in
             if let error = error {
-                fatalError("Error loading Core Data stack: \(error)")
+                assertionFailure("Error loading Core Data stack: \(error)")
             }
         }
         return container
@@ -33,7 +32,7 @@ final class CoreDataStack {
                 try context.save()
             } catch {
                 let nserror = error as NSError
-                fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
+                assertionFailure("Unresolved error \(nserror), \(nserror.userInfo)")
             }
         }
     }
