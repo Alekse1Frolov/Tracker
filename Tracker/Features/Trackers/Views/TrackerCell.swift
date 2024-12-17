@@ -65,6 +65,10 @@ final class TrackerCell: UICollectionViewCell {
         return button
     }()
     
+    var backViewFrame: CGRect {
+            return backView.frame
+        }
+    
     weak var delegate: TrackerCellDelegate?
     var trackerID: UUID?
     private var isCompleted: Bool = false {

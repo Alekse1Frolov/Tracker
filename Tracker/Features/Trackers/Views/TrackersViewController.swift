@@ -90,6 +90,8 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
     private let trackerStore = TrackerStore()
     private var categories: [TrackerCategory] = []
     private var completedTrackers: Set<TrackerRecord> = []
+    private var contextMenuManager: ContextMenuManager?
+    private var longTappedCell: TrackerCell?
     private var currentDate: Date = Date() {
         didSet {
             collectionView.reloadData()
@@ -117,6 +119,11 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
         trackerStore.fetchTrackers { [weak self] _ in
             self?.collectionView.reloadData()
         }
+        
+        contextMenuManager = ContextMenuManager(
+                options: ["Закрепить", "Редактировать", "Удалить"]
+            )
+        setupLongPressGesture()
     }
     
     @objc private func datePickerValueChanged(_ sender: UIDatePicker) {
@@ -322,6 +329,43 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
     
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         searchBar.resignFirstResponder()
+    }
+
+    private func setupLongPressGesture() {
+        let longPressGesture = UILongPressGestureRecognizer(
+            target: self,
+            action: #selector(handleLongPress(_:))
+        )
+        collectionView.addGestureRecognizer(longPressGesture)
+    }
+
+    @objc private func handleLongPress(_ gesture: UILongPressGestureRecognizer) {
+        guard gesture.state == .began else { return }
+        
+        let location = gesture.location(in: collectionView)
+        guard let indexPath = collectionView.indexPathForItem(at: location),
+              let cell = collectionView.cellForItem(at: indexPath) as? TrackerCell else { return }
+
+        let backViewFrame = cell.convert(cell.backViewFrame, to: view.window)
+        
+        if contextMenuManager == nil {
+            contextMenuManager = ContextMenuManager(
+                options: ["Закрепить", "Редактировать", "Удалить"]
+            )
+        }
+        
+        contextMenuManager?.showContextMenu(under: backViewFrame) { (selectedIndex: Int) in
+            switch selectedIndex {
+            case 0:
+                print("Закрепить")
+            case 1:
+                print("Редактировать")
+            case 2:
+                print("Удалить")
+            default:
+                break
+            }
+        }
     }
 }
 
