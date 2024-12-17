@@ -116,6 +116,19 @@ final class CategoryViewController: UIViewController {
         navigationController?.pushViewController(editCategoryVC, animated: true)
     }
     
+    private func showDeleteConfirmation(for category: String, at index: Int) {
+        AlertService.showDeleteConfirmationAlert(
+            title: Constants.categoryVcDeleteConfirmationAlertTitle,
+            onDelete: { [weak self] in
+                guard let self = self else { return }
+                self.viewModel.removeCategory(at: index)
+                self.tableView.reloadData()
+                self.updatePaceholderVisibility()
+            },
+            presenter: self
+        )
+    }
+    
     @objc private func longPressOnCategory(_ gesture: UILongPressGestureRecognizer) {
         let location = gesture.location(in: tableView)
         guard let indexPath = tableView.indexPathForRow(at: location) else { return }
@@ -136,7 +149,7 @@ final class CategoryViewController: UIViewController {
                 case 0:
                     self.presentEditCategoryScreen(for: category)
                 case 1:
-                    self.viewModel.removeCategory(named: category)
+                    self.showDeleteConfirmation(for: category, at: indexPath.row)
                 default:
                     break
                 }
@@ -254,34 +267,5 @@ extension CategoryViewController: UITableViewDataSource, UITableViewDelegate {
         heightForRowAt indexPath: IndexPath
     ) -> CGFloat {
         75
-    }
-    
-    private func showDeleteConfirmationAlert(for category: String, at index: Int) {
-        let alert = UIAlertController(
-            title: Constants.categoryVcDeleteConfirmationAlertTitle,
-            message: nil,
-            preferredStyle: .actionSheet
-        )
-        
-        let deleteAction = UIAlertAction(
-            title: Constants.categoryVcDeleteConfirmationAlertDeleteOption,
-            style: .destructive
-        ) {
-            [weak self] _ in
-            guard let self else { return }
-            self.viewModel.removeCategory(at: index)
-            self.tableView.reloadData()
-            self.updatePaceholderVisibility()
-        }
-        
-        let cancelAction = UIAlertAction(
-            title: Constants.categoryVcDeleteConfirmationAlertCancelOption,
-            style: .cancel,
-            handler: nil)
-        
-        alert.addAction(deleteAction)
-        alert.addAction(cancelAction)
-        
-        present(alert, animated: true, completion: nil)
     }
 }

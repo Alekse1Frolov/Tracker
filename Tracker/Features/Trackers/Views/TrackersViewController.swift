@@ -232,6 +232,18 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
         return nil
     }
     
+    private func showDeleteConfirmation(for trackerID: UUID) {
+        AlertService.showDeleteConfirmationAlert(
+            title: Constants.trackersVcDeleteConfirmationAlertTitle,
+            onDelete: { [weak self] in
+                guard let self = self else { return }
+                self.trackerStore.deleteTracker(by: trackerID)
+                self.reloadTrackers()
+            },
+            presenter: self
+        )
+    }
+    
     func loadTrackersFromCoreData() {
         let categoryStore = TrackerCategoryStore(context: CoreDataStack.shared.mainContext)
         let coreDataCategories = categoryStore.fetchCategories()
@@ -368,8 +380,7 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
             case 1:
                 print("Редактировать")
             case 2:
-                self.trackerStore.deleteTracker(by: trackerID)
-                self.reloadTrackers()
+                self.showDeleteConfirmation(for: trackerID)
                 print("Удалить")
             default:
                 break

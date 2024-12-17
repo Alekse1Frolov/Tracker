@@ -34,6 +34,7 @@
 		F796B7152D08E87E00E53884 /* OnboardingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F796B7142D08E87E00E53884 /* OnboardingViewController.swift */; };
 		F796B7172D0B726E00E53884 /* CategoryCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = F796B7162D0B726E00E53884 /* CategoryCell.swift */; };
 		F7A122232D1150A30027CC34 /* ContextMenuManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7A122222D1150A30027CC34 /* ContextMenuManager.swift */; };
+		F7A122252D11C9730027CC34 /* AlertService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7A122242D11C9730027CC34 /* AlertService.swift */; };
 		F7AE2A192CEE590E0099D265 /* Assets+Generated.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7AE2A172CEE590E0099D265 /* Assets+Generated.swift */; };
 		F7AF2C362C595A86003831AC /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7AF2C352C595A86003831AC /* AppDelegate.swift */; };
 		F7AF2C382C595A86003831AC /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7AF2C372C595A86003831AC /* SceneDelegate.swift */; };
@@ -76,6 +77,7 @@
 		F796B7142D08E87E00E53884 /* OnboardingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingViewController.swift; sourceTree = "<group>"; };
 		F796B7162D0B726E00E53884 /* CategoryCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryCell.swift; sourceTree = "<group>"; };
 		F7A122222D1150A30027CC34 /* ContextMenuManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContextMenuManager.swift; sourceTree = "<group>"; };
+		F7A122242D11C9730027CC34 /* AlertService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertService.swift; sourceTree = "<group>"; };
 		F7AE2A172CEE590E0099D265 /* Assets+Generated.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Assets+Generated.swift"; sourceTree = "<group>"; };
 		F7AF2C322C595A86003831AC /* Tracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Tracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F7AF2C352C595A86003831AC /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -297,6 +299,7 @@
 			isa = PBXGroup;
 			children = (
 				F7A122222D1150A30027CC34 /* ContextMenuManager.swift */,
+				F7A122242D11C9730027CC34 /* AlertService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -427,6 +430,7 @@
 				F72274562C677056004C0971 /* TrackersViewController.swift in Sources */,
 				F78DFDB22CFFA24700068AA4 /* CategoryViewController.swift in Sources */,
 				F71CDF432CE8DD8B0021F0D3 /* Weekday.swift in Sources */,
+				F7A122252D11C9730027CC34 /* AlertService.swift in Sources */,
 				F785CD752D0E5B5100F5AD56 /* TrackerModel.xcdatamodeld in Sources */,
 				F7AF2C362C595A86003831AC /* AppDelegate.swift in Sources */,
 				F7D1EBB52CD96D2F00DD2085 /* TrackerCell.swift in Sources */,

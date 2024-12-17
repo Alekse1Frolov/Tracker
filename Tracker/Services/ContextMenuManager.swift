@@ -74,6 +74,11 @@ final class ContextMenuManager: NSObject {
         onSelect: @escaping (Int, T) -> Void
     ) {
         guard let window = window else { return }
+        
+        self.options = []
+        self.onOptionSelected = nil
+        self.options = options
+        
         self.onOptionSelected = { index in
             if let data = data {
                 onSelect(index, data)
@@ -141,9 +146,12 @@ extension ContextMenuManager: UITableViewDelegate, UITableViewDataSource {
         _ tableView: UITableView,
         cellForRowAt indexPath: IndexPath
     ) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "ContextMenuOptionCell", for: indexPath)
+        let cell = tableView.dequeueReusableCell(
+            withIdentifier: "ContextMenuOptionCell",
+            for: indexPath
+        )
         
-        cell.textLabel?.removeFromSuperview()
+        cell.contentView.subviews.forEach { $0.removeFromSuperview() }
         
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
