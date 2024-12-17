@@ -20,7 +20,7 @@ final class ContextMenuManager: NSObject {
     private let contextMenuView: UITableView = {
         let tableView = UITableView()
         tableView.isScrollEnabled = false
-        tableView.layer.cornerRadius = 12
+        tableView.layer.cornerRadius = 13
         tableView.separatorInset = .zero
         tableView.separatorStyle = .singleLine
         tableView.backgroundColor = .systemBackground
@@ -95,7 +95,6 @@ final class ContextMenuManager: NSObject {
         }
     }
     
-    
     func hideContextMenu() {
         UIView.animate(withDuration: 0.2, animations: {
             self.blurView.alpha = 0.0
@@ -131,21 +130,68 @@ final class ContextMenuManager: NSObject {
 
 // MARK: - UITableViewDelegate, UITableViewDataSource
 extension ContextMenuManager: UITableViewDelegate, UITableViewDataSource {
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func tableView(
+        _ tableView: UITableView,
+        numberOfRowsInSection section: Int
+    ) -> Int {
         options.count
     }
     
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    func tableView(
+        _ tableView: UITableView,
+        cellForRowAt indexPath: IndexPath
+    ) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "ContextMenuOptionCell", for: indexPath)
-        cell.textLabel?.text = options[indexPath.row]
-        cell.textLabel?.textAlignment = .left
-        cell.textLabel?.font = UIFont.systemFont(ofSize: 17, weight: .regular)
-        cell.textLabel?.textColor = (indexPath.row == options.count - 1) ? .systemRed : .label
+        
+        cell.textLabel?.removeFromSuperview()
+        
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = options[indexPath.row]
+        label.textAlignment = .left
+        label.font = UIFont.systemFont(ofSize: 17, weight: .regular)
+        label.textColor = (indexPath.row == options.count - 1)
+        ? Asset.ypRed.color
+        : .label
+        
+        cell.contentView.addSubview(label)
+        
+        NSLayoutConstraint.activate([
+            label.leadingAnchor.constraint(equalTo: cell.contentView.leadingAnchor, constant: 16),
+            label.trailingAnchor.constraint(equalTo: cell.contentView.trailingAnchor, constant: -16),
+            label.topAnchor.constraint(equalTo: cell.contentView.topAnchor),
+            label.bottomAnchor.constraint(equalTo: cell.contentView.bottomAnchor)
+        ])
+        
+        cell.backgroundColor = .systemBackground
+        cell.selectionStyle = .none
+        
+        if indexPath.row == options.count - 1 {
+            cell.separatorInset = UIEdgeInsets(
+                top: 0,
+                left: tableView.bounds.width,
+                bottom: 0,
+                right: 0
+            )
+        } else {
+            cell.separatorInset = .zero
+        }
+        
         return cell
     }
     
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+    func tableView(
+        _ tableView: UITableView,
+        didSelectRowAt indexPath: IndexPath
+    ) {
         hideContextMenu()
         onOptionSelected?(indexPath.row)
+    }
+    
+    func tableView(
+        _ tableView: UITableView,
+        heightForRowAt indexPath: IndexPath
+    ) -> CGFloat {
+        48
     }
 }
