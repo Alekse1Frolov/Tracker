@@ -24,7 +24,10 @@ final class ContextMenuManager: NSObject {
         tableView.separatorInset = .zero
         tableView.separatorStyle = .singleLine
         tableView.backgroundColor = .systemBackground
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "ContextMenuOptionCell")
+        tableView.register(
+            UITableViewCell.self,
+            forCellReuseIdentifier: "ContextMenuOptionCell"
+        )
         tableView.alpha = 0.0
         return tableView
     }()
@@ -44,35 +47,54 @@ final class ContextMenuManager: NSObject {
         setupBlurDismissGesture()
     }
     
-    func showContextMenu(under frame: CGRect, onSelect: @escaping (Int) -> Void) {
-        guard let window = window else { return }
-        self.onOptionSelected = onSelect
-        
-        if blurView.superview == nil {
-            window.addSubview(blurView)
-            blurView.frame = window.bounds
-            blurView.layer.mask = createMaskExcludingFrame(frame, in: window)
-            
-            UIView.animate(withDuration: 0.2) {
-                self.blurView.alpha = 4.0
-            }
-        }
-        
+    private func displayOptionsMenu(under frame: CGRect, options: [String]) {
         let menuWidth: CGFloat = 250
         let menuHeight: CGFloat = CGFloat(options.count * 48)
         let adjustedY = frame.maxY + 12
         
+        guard let window = window else { return }
         let menuX = min(frame.minX, window.bounds.width - menuWidth - 16)
         let menuFrame = CGRect(x: menuX, y: adjustedY, width: menuWidth, height: menuHeight)
         
+        contextMenuView.frame = menuFrame
+        contextMenuView.reloadData()
+        
         if contextMenuView.superview == nil {
             window.addSubview(contextMenuView)
-            contextMenuView.frame = menuFrame
             UIView.animate(withDuration: 0.2) {
                 self.contextMenuView.alpha = 1.0
             }
         }
     }
+    
+    func showContextMenu<T>(
+        under frame: CGRect,
+        options: [String],
+        data: T?,
+        onSelect: @escaping (Int, T) -> Void
+    ) {
+        guard let window = window else { return }
+        self.onOptionSelected = { index in
+            if let data = data {
+                onSelect(index, data)
+            }
+        }
+        
+        addBlurEffect(excludingFrame: frame, in: window)
+        displayOptionsMenu(under: frame, options: options)
+    }
+    
+    private func addBlurEffect(excludingFrame frame: CGRect, in window: UIWindow) {
+        if blurView.superview == nil {
+            window.addSubview(blurView)
+            blurView.frame = window.bounds
+            blurView.layer.mask = createMaskExcludingFrame(frame, in: window)
+            UIView.animate(withDuration: 0.2) {
+                self.blurView.alpha = 4.0
+            }
+        }
+    }
+    
     
     func hideContextMenu() {
         UIView.animate(withDuration: 0.2, animations: {

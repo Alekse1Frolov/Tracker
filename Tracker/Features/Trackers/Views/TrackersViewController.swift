@@ -121,8 +121,8 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
         }
         
         contextMenuManager = ContextMenuManager(
-                options: ["Закрепить", "Редактировать", "Удалить"]
-            )
+            options: ["Закрепить", "Редактировать", "Удалить"]
+        )
         setupLongPressGesture()
     }
     
@@ -330,7 +330,7 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         searchBar.resignFirstResponder()
     }
-
+    
     private func setupLongPressGesture() {
         let longPressGesture = UILongPressGestureRecognizer(
             target: self,
@@ -344,7 +344,7 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
         collectionView.reloadData()
         updatePlaceholderVisibility()
     }
-
+    
     @objc private func handleLongPress(_ gesture: UILongPressGestureRecognizer) {
         guard gesture.state == .began else { return }
         
@@ -352,16 +352,16 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
         guard let indexPath = collectionView.indexPathForItem(at: location),
               let cell = collectionView.cellForItem(at: indexPath) as? TrackerCell,
               let trackerID = cell.trackerID else { return }
-
+        
         let backViewFrame = cell.convert(cell.backViewFrame, to: view.window)
         
-        if contextMenuManager == nil {
-            contextMenuManager = ContextMenuManager(
-                options: ["Закрепить", "Редактировать", "Удалить"]
-            )
-        }
-        
-        contextMenuManager?.showContextMenu(under: backViewFrame) { (selectedIndex: Int) in
+        contextMenuManager?.showContextMenu(
+            under: backViewFrame,
+            options: ["Закрепить", "Редактировать", "Удалить"],
+            data: trackerID
+        ) { [weak self] selectedIndex, trackerID in
+            guard let self = self else { return }
+            
             switch selectedIndex {
             case 0:
                 print("Закрепить")

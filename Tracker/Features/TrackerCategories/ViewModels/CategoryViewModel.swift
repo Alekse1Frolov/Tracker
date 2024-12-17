@@ -61,7 +61,13 @@ final class CategoryViewModel {
     
     func removeCategory(at index: Int) {
         let title = categories[index].title
-        categoryStore.deleteCategory(byTitle: title)
+        _ = categoryStore.deleteCategory(byTitle: title)
         loadCategories()
+    }
+    
+    func removeCategory(named name: String) {
+        if let index = indexOfCategory(named: name) {
+            removeCategory(at: index)
+        }
     }
 }
