@@ -10,7 +10,7 @@ import UIKit
 final class ContextMenuManager: NSObject {
     // MARK: - UI Elements
     private let blurView: UIVisualEffectView = {
-        let blurEffect = UIBlurEffect(style: .systemMaterial)
+        let blurEffect = UIBlurEffect(style: .light)
         let view = UIVisualEffectView(effect: blurEffect)
         view.alpha = 0.0
         view.isUserInteractionEnabled = true
@@ -54,11 +54,11 @@ final class ContextMenuManager: NSObject {
             blurView.layer.mask = createMaskExcludingFrame(frame, in: window)
             
             UIView.animate(withDuration: 0.2) {
-                self.blurView.alpha = 1.0
+                self.blurView.alpha = 4.0
             }
         }
         
-        let menuWidth: CGFloat = 200
+        let menuWidth: CGFloat = 250
         let menuHeight: CGFloat = CGFloat(options.count * 48)
         let adjustedY = frame.maxY + 12
         

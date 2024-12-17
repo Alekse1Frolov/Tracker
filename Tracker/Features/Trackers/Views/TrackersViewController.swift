@@ -338,13 +338,20 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
         )
         collectionView.addGestureRecognizer(longPressGesture)
     }
+    
+    private func reloadTrackers() {
+        loadTrackersFromCoreData()
+        collectionView.reloadData()
+        updatePlaceholderVisibility()
+    }
 
     @objc private func handleLongPress(_ gesture: UILongPressGestureRecognizer) {
         guard gesture.state == .began else { return }
         
         let location = gesture.location(in: collectionView)
         guard let indexPath = collectionView.indexPathForItem(at: location),
-              let cell = collectionView.cellForItem(at: indexPath) as? TrackerCell else { return }
+              let cell = collectionView.cellForItem(at: indexPath) as? TrackerCell,
+              let trackerID = cell.trackerID else { return }
 
         let backViewFrame = cell.convert(cell.backViewFrame, to: view.window)
         
@@ -361,6 +368,8 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
             case 1:
                 print("Редактировать")
             case 2:
+                self.trackerStore.deleteTracker(by: trackerID)
+                self.reloadTrackers()
                 print("Удалить")
             default:
                 break
