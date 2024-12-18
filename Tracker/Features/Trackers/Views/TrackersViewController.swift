@@ -357,30 +357,46 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
         updatePlaceholderVisibility()
     }
     
+    private func presentEditEventViewController(for editableTracker: EditableTracker) {
+        let eventVC = EventViewController(
+            trackerType: editableTracker.tracker.schedule.isEmpty ? .irregularEvent : .habit,
+            isEditable: editableTracker.isEditable
+        )
+        eventVC.configure(with: editableTracker.tracker, completionCount: 0)
+        
+        let navigationController = UINavigationController(rootViewController: eventVC)
+        navigationController.modalPresentationStyle = .pageSheet
+        
+        present(navigationController, animated: true, completion: nil)
+    }
+    
     @objc private func handleLongPress(_ gesture: UILongPressGestureRecognizer) {
         guard gesture.state == .began else { return }
         
         let location = gesture.location(in: collectionView)
         guard let indexPath = collectionView.indexPathForItem(at: location),
               let cell = collectionView.cellForItem(at: indexPath) as? TrackerCell,
-              let trackerID = cell.trackerID else { return }
+              let trackerID = cell.trackerID,
+              let tracker = findTracker(by: trackerID) else { return }
         
+        let editableTracker = EditableTracker(tracker: tracker, isEditable: true)
         let backViewFrame = cell.convert(cell.backViewFrame, to: view.window)
         
         contextMenuManager?.showContextMenu(
             under: backViewFrame,
             options: ["Закрепить", "Редактировать", "Удалить"],
-            data: trackerID
-        ) { [weak self] selectedIndex, trackerID in
+            data: editableTracker
+        ) { [weak self] selectedIndex, editableTracker in
             guard let self = self else { return }
             
             switch selectedIndex {
             case 0:
                 print("Закрепить")
             case 1:
+                self.presentEditEventViewController(for: editableTracker)
                 print("Редактировать")
             case 2:
-                self.showDeleteConfirmation(for: trackerID)
+                self.showDeleteConfirmation(for: editableTracker.tracker.id)
                 print("Удалить")
             default:
                 break

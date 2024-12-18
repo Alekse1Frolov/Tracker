@@ -17,7 +17,10 @@ final class TrackerStore: NSObject {
         self.context = context
     }
     
-    func setupFetchedResultsController(predicate: NSPredicate? = nil, sortDescriptors: [NSSortDescriptor]? = nil) {
+    func setupFetchedResultsController(
+        predicate: NSPredicate? = nil,
+        sortDescriptors: [NSSortDescriptor]? = nil
+    ) {
         let fetchRequest: NSFetchRequest<TrackerCoreData> = TrackerCoreData.fetchRequest()
         fetchRequest.predicate = predicate
         fetchRequest.sortDescriptors = sortDescriptors ?? [
@@ -78,6 +81,48 @@ final class TrackerStore: NSObject {
         }
     }
     
+    func updateTracker(
+        _ tracker: Tracker,
+        name: String,
+        color: String,
+        emoji: String,
+        schedule: [Weekday],
+        category: String
+    ) {
+        let fetchRequest: NSFetchRequest<TrackerCoreData> = TrackerCoreData.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "id == %@", tracker.id as CVarArg)
+        
+        do {
+            if let trackerCoreData = try context.fetch(fetchRequest).first {
+                trackerCoreData.name = name
+                trackerCoreData.color = color
+                trackerCoreData.emoji = emoji
+                
+                trackerCoreData.schedule?.forEach { context.delete($0 as! NSManagedObject) }
+                schedule.forEach { weekday in
+                    if let weekdayCoreData = WeekdayStore(context: context).fetchWeekday(for: weekday) {
+                        trackerCoreData.addToSchedule(weekdayCoreData)
+                    } else {
+                        let newWeekday = WeekdayCoreData(context: context)
+                        newWeekday.number = Int16(weekday.rawValue)
+                        newWeekday.name = weekday.displayName
+                        trackerCoreData.addToSchedule(newWeekday)
+                    }
+                }
+                if let categoryCoreData = TrackerCategoryStore(context: context).fetchCategory(byTitle: category) {
+                    trackerCoreData.category = categoryCoreData
+                } else {
+                    let newCategory = TrackerCategoryCoreData(context: context)
+                    newCategory.title = category
+                    trackerCoreData.category = newCategory
+                }
+                try context.save()
+            }
+        } catch {
+            print("Ошибка обновления трекера: \(error)")
+        }
+    }
+    
     func deleteTracker(by id: UUID) {
         let fetchRequest: NSFetchRequest<TrackerCoreData> = TrackerCoreData.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "id == %@", id as CVarArg)
@@ -91,8 +136,6 @@ final class TrackerStore: NSObject {
             print("Ошибка при удалении трекера: \(error)")
         }
     }
-
-    
 }
 
 extension TrackerStore: NSFetchedResultsControllerDelegate {
