@@ -17,10 +17,10 @@ final class EventViewController: UIViewController {
     private var selectedDaysText = ""
     private var errorLabelHeightConstraint: NSLayoutConstraint!
     private var daysContainerViewHeightConstraint: NSLayoutConstraint!
+    private var nameTextFieldTopAnchorConstraint: NSLayoutConstraint!
     private var selectedEmojiIndex: IndexPath?
     private var selectedColorIndex: IndexPath?
     private var isEditable: Bool
-    private var completionCount: Int = 0
     private var currentTracker: Tracker?
     
     // MARK: - UI Elements
@@ -178,6 +178,7 @@ final class EventViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        navigationItem.hidesBackButton = true
         nameTextField.delegate = self
         
         setupLayout()
@@ -191,6 +192,14 @@ final class EventViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         navigationController?.setNavigationBarHidden(true, animated: animated)
+        
+        if isEditable {
+            if trackerType == .habit {
+                titleLabel.text = "Редактирование привычки"
+            } else {
+                titleLabel.text = "Редактирование события"
+            }
+        }
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -300,9 +309,15 @@ final class EventViewController: UIViewController {
         
         errorLabelHeightConstraint = errorLabel.heightAnchor.constraint(equalToConstant: 0)
         
+        if isEditable && trackerType == .habit {
+            nameTextFieldTopAnchorConstraint = nameTextField.topAnchor.constraint(equalTo: daysContainerView.bottomAnchor)
+        } else {
+            nameTextFieldTopAnchorConstraint = nameTextField.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 24)
+        }
+        
         NSLayoutConstraint.activate([
             // nameTextField constraints
-            nameTextField.topAnchor.constraint(equalTo: isEditable && trackerType == .habit ?  daysContainerView.bottomAnchor : contentView.topAnchor, constant: 24),
+            nameTextFieldTopAnchorConstraint,
             nameTextField.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             nameTextField.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
             nameTextField.heightAnchor.constraint(equalToConstant: 75),
@@ -394,7 +409,7 @@ final class EventViewController: UIViewController {
     @objc private func createButtonTapped() {
         guard let trackerName = nameTextField.text, !trackerName.isEmpty else { return }
         guard let selectedCategory = tableView.cellForRow(at: IndexPath(row: 0, section: 0))?.detailTextLabel?.text else { return }
-
+        
         let trackerStore = TrackerStore(context: CoreDataStack.shared.mainContext)
         
         if isEditable, let currentTracker = currentTracker {
@@ -424,7 +439,7 @@ final class EventViewController: UIViewController {
             trackerStore.createTracker(from: newTracker)
             NotificationCenter.default.post(name: .createdTracker, object: newTracker)
         }
-
+        
         dismiss(animated: true, completion: nil)
     }
     
@@ -467,19 +482,11 @@ final class EventViewController: UIViewController {
         }
     }
     
-    func configure(with tracker: Tracker, completionCount: Int) {
-        self.completionCount = completionCount
-        
-        currentTracker = tracker
-        
-        titleLabel.text = isEditable
-        ? (trackerType == .habit ? "Редактирование привычки" : "Редактирование события")
-        : (trackerType == .habit
-           ? Constants.eventVcNewHabitCreationTitle
-           : Constants.eventVcNewIrregularEventCreationTitle)
-        
+    func configure(with tracker: Tracker, daysText: String) {
+        self.currentTracker = tracker
         nameTextField.text = tracker.name
-        daysLabel.text = "\(completionCount) дней"
+        
+        daysLabel.text = daysText
         
         selectedEmojiIndex = emojis.firstIndex(of: tracker.emoji).map { IndexPath(item: $0, section: 0) }
         selectedColorIndex = colors.firstIndex(where: { $0?.hexString == tracker.color }).map { IndexPath(item: $0, section: 0) }

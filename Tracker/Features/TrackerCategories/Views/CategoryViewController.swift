@@ -69,6 +69,8 @@ final class CategoryViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
+        navigationController?.setNavigationBarHidden(true, animated: animated)
+        
         if currentCategory == nil {
             currentCategory = UserDefaults.standard.string(forKey: Constants.categoryVcLastSelectedCategoryKey)
         }

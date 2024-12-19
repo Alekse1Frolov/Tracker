@@ -396,12 +396,16 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
         updatePlaceholderVisibility()
     }
     
-    private func presentEditEventViewController(for editableTracker: EditableTracker) {
+    private func presentEditEventViewController(for editableTracker: EditableTracker, cell: TrackerCell) {
+        let tracker = editableTracker.tracker
+        let counterLabelText = cell.counterLabelText ?? "0 дней"
+        
         let eventVC = EventViewController(
-            trackerType: editableTracker.tracker.schedule.isEmpty ? .irregularEvent : .habit,
-            isEditable: editableTracker.isEditable
+            trackerType: tracker.schedule.isEmpty ? .irregularEvent : .habit,
+            isEditable: true
         )
-        eventVC.configure(with: editableTracker.tracker, completionCount: 0)
+        
+        eventVC.configure(with: tracker, daysText: counterLabelText)
         
         let navigationController = UINavigationController(rootViewController: eventVC)
         navigationController.modalPresentationStyle = .pageSheet
@@ -432,7 +436,7 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
             case 0:
                 print("Закрепить")
             case 1:
-                self.presentEditEventViewController(for: editableTracker)
+                self.presentEditEventViewController(for: editableTracker, cell: cell)
                 print("Редактировать")
             case 2:
                 self.showDeleteConfirmation(for: editableTracker.tracker.id)

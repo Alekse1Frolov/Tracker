@@ -69,6 +69,10 @@ final class TrackerCell: UICollectionViewCell {
             return backView.frame
         }
     
+    var counterLabelText: String? {
+        return counterLabel.text
+    }
+    
     weak var delegate: TrackerCellDelegate?
     var trackerID: UUID?
     private var isCompleted: Bool = false {
