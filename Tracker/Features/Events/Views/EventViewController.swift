@@ -393,45 +393,38 @@ final class EventViewController: UIViewController {
     
     @objc private func createButtonTapped() {
         guard let trackerName = nameTextField.text, !trackerName.isEmpty else { return }
-        guard let selectedEmojiIndex = selectedEmojiIndex else { return }
-        guard let selectedColorIndex = selectedColorIndex else { return }
         guard let selectedCategory = tableView.cellForRow(at: IndexPath(row: 0, section: 0))?.detailTextLabel?.text else { return }
-        
-        let selectedEmoji = emojis[selectedEmojiIndex.item]
-        let selectedColor = colors[selectedColorIndex.item]
-        let schedule = trackerType == .habit ? selectedDays : []
-        
+
         let trackerStore = TrackerStore(context: CoreDataStack.shared.mainContext)
         
         if isEditable, let currentTracker = currentTracker {
             trackerStore.updateTracker(
                 currentTracker,
                 name: trackerName,
-                color: selectedColor?.hexString ?? "",
-                emoji: selectedEmoji,
-                schedule: schedule,
+                color: colors[selectedColorIndex?.item ?? 0]?.hexString ?? "",
+                emoji: emojis[selectedEmojiIndex?.item ?? 0],
+                schedule: trackerType == .habit ? selectedDays : [],
                 category: selectedCategory
             )
-            NotificationCenter.default.post(name: .updatedTracker, object: currentTracker)
-        } else {
             
+            guard let updatedTracker = trackerStore.fetchTracker(byID: currentTracker.id) else { return }
+            NotificationCenter.default.post(name: .updatedTracker, object: updatedTracker)
+        } else {
             let newTracker = Tracker(
                 id: UUID(),
                 name: trackerName,
-                color: selectedColor?.hexString ?? "",
-                emoji: selectedEmoji,
-                schedule: schedule,
+                color: colors[selectedColorIndex?.item ?? 0]?.hexString ?? "",
+                emoji: emojis[selectedEmojiIndex?.item ?? 0],
+                schedule: trackerType == .habit ? selectedDays : [],
                 date: Date(),
                 category: selectedCategory,
                 order: 0
             )
             
-            UserDefaults.standard.set(selectedCategory, forKey: Constants.categoryVcLastSelectedCategoryKey)
             trackerStore.createTracker(from: newTracker)
-            
             NotificationCenter.default.post(name: .createdTracker, object: newTracker)
-            dismiss(animated: true, completion: nil)
         }
+
         dismiss(animated: true, completion: nil)
     }
     

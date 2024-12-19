@@ -72,6 +72,20 @@ final class TrackerStore: NSObject {
         }
     }
     
+    func fetchTracker(byID id: UUID) -> Tracker? {
+        let fetchRequest: NSFetchRequest<TrackerCoreData> = TrackerCoreData.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "id == %@", id as CVarArg)
+        
+        do {
+            if let trackerCoreData = try context.fetch(fetchRequest).first {
+                return Tracker(coreDataTracker: trackerCoreData)
+            }
+        } catch {
+            print("Ошибка при загрузке трекера из Core Data: \(error)")
+        }
+        return nil
+    }
+    
     func fetchTrackers(completion: @escaping (Result<Void, Error>) -> Void) {
         do {
             try fetchedResultsController?.performFetch()
@@ -109,6 +123,7 @@ final class TrackerStore: NSObject {
                         trackerCoreData.addToSchedule(newWeekday)
                     }
                 }
+                
                 if let categoryCoreData = TrackerCategoryStore(context: context).fetchCategory(byTitle: category) {
                     trackerCoreData.category = categoryCoreData
                 } else {
@@ -116,6 +131,7 @@ final class TrackerStore: NSObject {
                     newCategory.title = category
                     trackerCoreData.category = newCategory
                 }
+                
                 try context.save()
             }
         } catch {

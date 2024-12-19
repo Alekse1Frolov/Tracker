@@ -126,6 +126,12 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
         setupLongPressGesture()
     }
     
+    deinit {
+        NotificationCenter.default.removeObserver(self, name: .createdTracker, object: nil)
+        NotificationCenter.default.removeObserver(self, name: .updatedTracker, object: nil)
+    }
+    
+    
     @objc private func datePickerValueChanged(_ sender: UIDatePicker) {
         currentDate = sender.date
     }
@@ -162,6 +168,12 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
             name: .createdTracker,
             object: nil
         )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(updateTracker(_:)),
+            name: .updatedTracker,
+            object: nil
+        )
     }
     
     private func setupCollectionView() {
@@ -179,7 +191,6 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
         placeholderLabel.isHidden = hasTrackersForCurrentDate
         collectionView.isHidden = !hasTrackersForCurrentDate
     }
-    
     
     private func filteredCategories() -> [TrackerCategory] {
         return categories.compactMap { category in
@@ -248,10 +259,11 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
         let categoryStore = TrackerCategoryStore(context: CoreDataStack.shared.mainContext)
         let coreDataCategories = categoryStore.fetchCategories()
         
-        categories = coreDataCategories.map { coreDataCategory in
+        categories = coreDataCategories.compactMap { coreDataCategory in
             let coreDataTrackers = coreDataCategory.trackers as? Set<TrackerCoreData> ?? []
             let trackers = coreDataTrackers.map { Tracker(coreDataTracker: $0) }
             
+            guard !trackers.isEmpty else { return nil } // Исключаем пустые категории
             return TrackerCategory(
                 title: coreDataCategory.title ?? "",
                 trackers: trackers
@@ -264,6 +276,7 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
         collectionView.reloadData()
         updatePlaceholderVisibility()
     }
+    
     
     @objc private func addTracker(_ notification: Notification) {
         guard let tracker = notification.object as? Tracker else { return }
@@ -288,6 +301,32 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
         updatePlaceholderVisibility()
     }
     
+    @objc private func updateTracker(_ notification: Notification) {
+        guard let updatedTracker = notification.object as? Tracker else { return }
+        
+        for (index, category) in categories.enumerated() {
+            if let trackerIndex = category.trackers.firstIndex(where: { $0.id == updatedTracker.id }) {
+                var updatedTrackers = category.trackers
+                updatedTrackers.remove(at: trackerIndex)
+                categories[index] = TrackerCategory(title: category.title, trackers: updatedTrackers)
+                break
+            }
+        }
+        
+        categories.removeAll(where: { $0.trackers.isEmpty })
+        
+        let trackerStore = TrackerStore(context: CoreDataStack.shared.mainContext)
+        trackerStore.updateTracker(
+            updatedTracker,
+            name: updatedTracker.name,
+            color: updatedTracker.color,
+            emoji: updatedTracker.emoji,
+            schedule: updatedTracker.schedule,
+            category: updatedTracker.category
+        )
+        
+        loadTrackersFromCoreData()
+    }
     
     @objc private func addButtonTapped() {
         presentTypeSelection()
