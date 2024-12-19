@@ -139,6 +139,20 @@ final class TrackerStore: NSObject {
         }
     }
     
+    func updatePinStatus(for trackerID: UUID, isPinned: Bool) {
+        let fetchRequest: NSFetchRequest<TrackerCoreData> = TrackerCoreData.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "id == %@", trackerID as CVarArg)
+        
+        do {
+            if let tracker = try context.fetch(fetchRequest).first {
+                tracker.isPinned = isPinned
+                try context.save()
+            }
+        } catch {
+            print("Ошибка при обновлении состояния закрепления: \(error)")
+        }
+    }
+    
     func deleteTracker(by id: UUID) {
         let fetchRequest: NSFetchRequest<TrackerCoreData> = TrackerCoreData.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "id == %@", id as CVarArg)

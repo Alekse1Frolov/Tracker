@@ -436,6 +436,8 @@ final class EventViewController: UIViewController {
                 order: 0
             )
             
+            UserDefaults.standard.set(selectedCategory, forKey: Constants.categoryVcLastSelectedCategoryKey)
+            
             trackerStore.createTracker(from: newTracker)
             NotificationCenter.default.post(name: .createdTracker, object: newTracker)
         }

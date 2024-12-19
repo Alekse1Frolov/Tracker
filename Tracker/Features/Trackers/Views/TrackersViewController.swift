@@ -92,6 +92,7 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
     private var completedTrackers: Set<TrackerRecord> = []
     private var contextMenuManager: ContextMenuManager?
     private var longTappedCell: TrackerCell?
+    private var pinnedTrackers: Set<UUID> = []
     private var currentDate: Date = Date() {
         didSet {
             collectionView.reloadData()
@@ -413,6 +414,18 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
         present(navigationController, animated: true, completion: nil)
     }
     
+    private func togglePin(for trackerID: UUID) {
+        guard let indexPath = findIndexPath(for: trackerID) else { return }
+        
+        if pinnedTrackers.contains(trackerID) {
+            pinnedTrackers.remove(trackerID)
+        } else {
+            pinnedTrackers.insert(trackerID)
+        }
+        
+        collectionView.reloadItems(at: [indexPath])
+    }
+    
     @objc private func handleLongPress(_ gesture: UILongPressGestureRecognizer) {
         guard gesture.state == .began else { return }
         
@@ -434,6 +447,7 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
             
             switch selectedIndex {
             case 0:
+                self.togglePin(for: editableTracker.tracker.id)
                 print("Закрепить")
             case 1:
                 self.presentEditEventViewController(for: editableTracker, cell: cell)
@@ -549,8 +563,14 @@ extension TrackersViewController: UICollectionViewDataSource {
         let completionCount = completedTrackers.filter { $0.trackerId == tracker.id }.count
         let currentDateOnly = Calendar.current.startOfDay(for: currentDate)
         let isCompletedToday = completedTrackers.contains(TrackerRecord(trackerId: tracker.id, date: currentDateOnly))
+        let isPinned = pinnedTrackers.contains(tracker.id)
         
-        cell.configure(with: tracker, completed: isCompletedToday, completionCount: completionCount)
+        cell.configure(
+            with: tracker,
+            completed: isCompletedToday,
+            completionCount: completionCount,
+            isPinned: isPinned
+        )
         cell.delegate = self
         
         return cell

@@ -65,9 +65,16 @@ final class TrackerCell: UICollectionViewCell {
         return button
     }()
     
+    private let pinIcon: UIImageView = {
+        let imageView = UIImageView()
+        imageView.image = UIImage(named: "pinIcon")
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        return imageView
+    }()
+    
     var backViewFrame: CGRect {
-            return backView.frame
-        }
+        return backView.frame
+    }
     
     var counterLabelText: String? {
         return counterLabel.text
@@ -91,10 +98,10 @@ final class TrackerCell: UICollectionViewCell {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     private func setupLayout() {
         
-        [emojiBackgroundView, trackerCellLabel].forEach { element in
+        [emojiBackgroundView, trackerCellLabel, pinIcon].forEach { element in
             element.translatesAutoresizingMaskIntoConstraints = false
             backView.addSubview(element)
         }
@@ -134,7 +141,13 @@ final class TrackerCell: UICollectionViewCell {
             plusButton.centerYAnchor.constraint(equalTo: counterLabel.centerYAnchor),
             plusButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -12),
             plusButton.widthAnchor.constraint(equalToConstant: 34),
-            plusButton.heightAnchor.constraint(equalToConstant: 34)
+            plusButton.heightAnchor.constraint(equalToConstant: 34),
+            
+            // pinView constraint
+            pinIcon.topAnchor.constraint(equalTo: backView.topAnchor, constant: 18),
+            pinIcon.trailingAnchor.constraint(equalTo: backView.trailingAnchor, constant: -12),
+            pinIcon.heightAnchor.constraint(equalToConstant: 12),
+            pinIcon.widthAnchor.constraint(equalToConstant: 8)
         ])
     }
     
@@ -164,15 +177,11 @@ final class TrackerCell: UICollectionViewCell {
         delegate?.toggleCompletion(for: trackerID)
     }
     
-    func configure(with tracker: Tracker) {
-        emojiLabel.text = tracker.emoji
-        trackerCellLabel.text = tracker.name
-    }
-    
     func configure(
         with tracker: Tracker,
         completed: Bool,
-        completionCount: Int
+        completionCount: Int,
+        isPinned: Bool
     ) {
         emojiLabel.text = tracker.emoji
         trackerCellLabel.text = tracker.name
@@ -186,8 +195,11 @@ final class TrackerCell: UICollectionViewCell {
         }
         
         counterLabel.text = "\(formatDay(completionCount))"
+        
         self.trackerID = tracker.id
         self.isCompleted = completed
+        
+        pinIcon.isHidden = !isPinned
     }
     
     private func formatDay(_ count: Int) -> String {
