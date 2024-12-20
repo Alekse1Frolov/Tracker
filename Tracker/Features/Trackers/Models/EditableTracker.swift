@@ -9,5 +9,7 @@ import Foundation
 
 struct EditableTracker {
     let tracker: Tracker
-    var isEditable: Bool
+    let isEditable: Bool
+    let currentCategory: String
+    var isPinned: Bool { currentCategory == "Закреплённые" }
 }

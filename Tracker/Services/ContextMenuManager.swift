@@ -75,10 +75,7 @@ final class ContextMenuManager: NSObject {
     ) {
         guard let window = window else { return }
         
-        self.options = []
-        self.onOptionSelected = nil
         self.options = options
-        
         self.onOptionSelected = { index in
             if let data = data {
                 onSelect(index, data)

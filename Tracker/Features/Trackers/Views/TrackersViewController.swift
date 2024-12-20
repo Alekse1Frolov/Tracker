@@ -115,6 +115,7 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
         
         trackerStore.onDataChange = { [weak self] in
             self?.collectionView.reloadData()
+            self?.loadTrackersFromCoreData()
         }
         
         trackerStore.fetchTrackers { [weak self] _ in
@@ -264,7 +265,7 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
             let coreDataTrackers = coreDataCategory.trackers as? Set<TrackerCoreData> ?? []
             let trackers = coreDataTrackers.map { Tracker(coreDataTracker: $0) }
             
-            guard !trackers.isEmpty else { return nil } // Исключаем пустые категории
+            guard !trackers.isEmpty else { return nil }
             return TrackerCategory(
                 title: coreDataCategory.title ?? "",
                 trackers: trackers
@@ -415,15 +416,15 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
     }
     
     private func togglePin(for trackerID: UUID) {
-        guard let indexPath = findIndexPath(for: trackerID) else { return }
+        guard let tracker = findTracker(by: trackerID) else { return }
+        let currentCategory = trackerStore.fetchCategory(for: trackerID) ?? ""
+        let editableTracker = EditableTracker(tracker: tracker, isEditable: true, currentCategory: currentCategory)
         
-        if pinnedTrackers.contains(trackerID) {
-            pinnedTrackers.remove(trackerID)
+        if editableTracker.isPinned {
+            trackerStore.unpinTracker(by: trackerID)
         } else {
-            pinnedTrackers.insert(trackerID)
+            trackerStore.pinTracker(by: trackerID)
         }
-        
-        collectionView.reloadItems(at: [indexPath])
     }
     
     @objc private func handleLongPress(_ gesture: UILongPressGestureRecognizer) {
@@ -435,12 +436,21 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
               let trackerID = cell.trackerID,
               let tracker = findTracker(by: trackerID) else { return }
         
-        let editableTracker = EditableTracker(tracker: tracker, isEditable: true)
+        let currentCategory = trackerStore.fetchCategory(for: trackerID) ?? ""
+        let editableTracker = EditableTracker(
+            tracker: tracker,
+            isEditable: true,
+            currentCategory: currentCategory
+        )
         let backViewFrame = cell.convert(cell.backViewFrame, to: view.window)
+        
+        let options = editableTracker.isPinned
+            ? ["Открепить", "Редактировать", "Удалить"]
+            : ["Закрепить", "Редактировать", "Удалить"]
         
         contextMenuManager?.showContextMenu(
             under: backViewFrame,
-            options: ["Закрепить", "Редактировать", "Удалить"],
+            options: options,
             data: editableTracker
         ) { [weak self] selectedIndex, editableTracker in
             guard let self = self else { return }
@@ -448,13 +458,10 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
             switch selectedIndex {
             case 0:
                 self.togglePin(for: editableTracker.tracker.id)
-                print("Закрепить")
             case 1:
                 self.presentEditEventViewController(for: editableTracker, cell: cell)
-                print("Редактировать")
             case 2:
                 self.showDeleteConfirmation(for: editableTracker.tracker.id)
-                print("Удалить")
             default:
                 break
             }
