@@ -16,6 +16,7 @@ struct Tracker {
     let date: Date
     let category: String
     let order: Int
+    let isPinned: Bool
     
     init(
         id: UUID,
@@ -25,7 +26,8 @@ struct Tracker {
         schedule: [Weekday],
         date: Date,
         category: String,
-        order: Int
+        order: Int,
+        isPinned: Bool
     ) {
         self.id = id
         self.name = name
@@ -35,6 +37,7 @@ struct Tracker {
         self.date = date
         self.category = category
         self.order = order
+        self.isPinned = isPinned
     }
     
     init(coreDataTracker: TrackerCoreData) {
@@ -45,6 +48,7 @@ struct Tracker {
         self.date = coreDataTracker.date ?? Date()
         self.category = coreDataTracker.category?.title ?? "Без категории"
         self.order = Int(coreDataTracker.order)
+        self.isPinned = coreDataTracker.isPinned
         
         if let coreDataSchedule = coreDataTracker.schedule as? Set<WeekdayCoreData> {
             self.schedule = coreDataSchedule.compactMap { Weekday(rawValue: Int($0.number)) }

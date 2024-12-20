@@ -433,7 +433,8 @@ final class EventViewController: UIViewController {
                 schedule: trackerType == .habit ? selectedDays : [],
                 date: Date(),
                 category: selectedCategory,
-                order: 0
+                order: 0, 
+                isPinned: false
             )
             
             UserDefaults.standard.set(selectedCategory, forKey: Constants.categoryVcLastSelectedCategoryKey)

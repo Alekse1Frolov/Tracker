@@ -570,7 +570,7 @@ extension TrackersViewController: UICollectionViewDataSource {
         let completionCount = completedTrackers.filter { $0.trackerId == tracker.id }.count
         let currentDateOnly = Calendar.current.startOfDay(for: currentDate)
         let isCompletedToday = completedTrackers.contains(TrackerRecord(trackerId: tracker.id, date: currentDateOnly))
-        let isPinned = pinnedTrackers.contains(tracker.id)
+        let isPinned = trackerStore.fetchTracker(byID: tracker.id)?.isPinned ?? false
         
         cell.configure(
             with: tracker,
