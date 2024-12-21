@@ -212,35 +212,13 @@ extension TrackerStore {
         fetchRequest.predicate = NSPredicate(format: "id == %@", id as CVarArg)
         
         do {
-            print("Начало закрепления трекера с ID: \(id)")
             if let tracker = try context.fetch(fetchRequest).first {
-                print("Трекер найден: \(tracker.name ?? "без названия")")
-                
-                if let currentCategory = tracker.category {
-                    tracker.previousCategory = currentCategory.title
-                    print("Предыдущая категория: \(currentCategory.title ?? "Не указана") сохранена")
-                }
-                
-                let pinnedCategory = fetchCategory(for: pinnedCategoryTitle) ?? {
-                    let newCategory = TrackerCategoryCoreData(context: context)
-                    newCategory.title = pinnedCategoryTitle
-                    print("Категория 'Закреплённые' создана")
-                    return newCategory
-                }()
-                
-                tracker.category = pinnedCategory
                 tracker.isPinned = true
-                print("Трекер \(tracker.name ?? "без названия") перемещён в категорию 'Закреплённые'")
-                
                 try context.save()
-                print("Трекер \(tracker.name ?? "без названия") успешно закреплён")
-                
-                self.onDataChange?()
-            } else {
-                print("Ошибка: Трекер с ID \(id) не найден")
+                onDataChange?()
             }
         } catch {
-            print("Ошибка при закреплении трекера с ID \(id): \(error)")
+            print("Ошибка при закреплении трекера: \(error)")
         }
     }
     
@@ -249,37 +227,13 @@ extension TrackerStore {
         fetchRequest.predicate = NSPredicate(format: "id == %@", id as CVarArg)
         
         do {
-            print("Начало открепления трекера с ID: \(id)")
             if let tracker = try context.fetch(fetchRequest).first {
-                print("Трекер найден: \(tracker.name ?? "без названия")")
-                
-                if let previousCategoryTitle = tracker.previousCategory {
-                    print("Предыдущая категория: \(previousCategoryTitle)")
-                    if let previousCategory = fetchCategory(for: previousCategoryTitle) {
-                        tracker.category = previousCategory
-                        print("Трекер перемещён обратно в категорию: \(previousCategory.title ?? "Не указана")")
-                    } else {
-                        print("Ошибка: Предыдущая категория \(previousCategoryTitle) не найдена")
-                    }
-                    tracker.previousCategory = nil
-                } else {
-                    print("Ошибка: У трекера нет сохранённой предыдущей категории")
-                }
-                
                 tracker.isPinned = false
-                print("Флаг закрепления трекера сброшен")
-                
                 try context.save()
-                print("Трекер \(tracker.name ?? "без названия") успешно откреплён")
-                
-                DispatchQueue.main.async { [weak self] in
-                    self?.onDataChange?()
-                }
-            } else {
-                print("Ошибка: Трекер с ID \(id) не найден")
+                onDataChange?()
             }
         } catch {
-            print("Ошибка при откреплении трекера с ID \(id): \(error)")
+            print("Ошибка при откреплении трекера: \(error)")
         }
     }
     

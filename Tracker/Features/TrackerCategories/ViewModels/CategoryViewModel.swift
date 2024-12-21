@@ -56,7 +56,9 @@ final class CategoryViewModel {
     }
     
     func loadCategories() {
-        categories = categoryStore.fetchCategories().map { TrackerCategory(coreDataCategory: $0) }
+        categories = categoryStore.fetchCategories()
+            .filter { $0.title != "Закреплённые" }
+            .map { TrackerCategory(coreDataCategory: $0) }
     }
     
     func removeCategory(at index: Int) {

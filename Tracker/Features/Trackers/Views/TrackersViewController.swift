@@ -93,6 +93,7 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
     private var contextMenuManager: ContextMenuManager?
     private var longTappedCell: TrackerCell?
     private var pinnedTrackers: Set<UUID> = []
+    private let categoryStore = TrackerCategoryStore(context: CoreDataStack.shared.mainContext)
     private var currentDate: Date = Date() {
         didSet {
             collectionView.reloadData()
@@ -195,18 +196,31 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
     }
     
     private func filteredCategories() -> [TrackerCategory] {
-        return categories.compactMap { category in
-            let trackers = category.trackers.filter {
-                $0.schedule.isEmpty
-                ? Calendar.current.isDate($0.date, inSameDayAs: currentDate)
-                : $0.schedule.contains(currentWeekday)
+        let pinnedTrackers = categories
+            .flatMap { $0.trackers }
+            .filter { $0.isPinned && isTrackerVisibleOnCurrentDate($0) }
+        
+        let nonPinnedCategories = categories.compactMap { category -> TrackerCategory? in
+            let filteredTrackers = category.trackers.filter {
+                !$0.isPinned && isTrackerVisibleOnCurrentDate($0)
             }
-            guard !trackers.isEmpty else { return nil }
-            return TrackerCategory(
-                title: category.title,
-                trackers: trackers
-            )
-        }.sorted { $0.title < $1.title }
+            return filteredTrackers.isEmpty ? nil : TrackerCategory(title: category.title, trackers: filteredTrackers)
+        }
+        
+        if !pinnedTrackers.isEmpty {
+            let pinnedCategory = TrackerCategory(title: "Закреплённые", trackers: pinnedTrackers)
+            return [pinnedCategory] + nonPinnedCategories
+        }
+        
+        return nonPinnedCategories
+    }
+    
+    private func isTrackerVisibleOnCurrentDate(_ tracker: Tracker) -> Bool {
+        if tracker.schedule.isEmpty {
+            return Calendar.current.isDate(tracker.date, inSameDayAs: currentDate)
+        } else {
+            return tracker.schedule.contains(currentWeekday)
+        }
     }
     
     private func presentEventViewController(
@@ -258,10 +272,9 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
     }
     
     func loadTrackersFromCoreData() {
-        let categoryStore = TrackerCategoryStore(context: CoreDataStack.shared.mainContext)
         let coreDataCategories = categoryStore.fetchCategories()
         
-        categories = coreDataCategories.compactMap { coreDataCategory in
+        categories = coreDataCategories.compactMap { coreDataCategory -> TrackerCategory? in
             let coreDataTrackers = coreDataCategory.trackers as? Set<TrackerCoreData> ?? []
             let trackers = coreDataTrackers.map { Tracker(coreDataTracker: $0) }
             
@@ -417,14 +430,13 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
     
     private func togglePin(for trackerID: UUID) {
         guard let tracker = findTracker(by: trackerID) else { return }
-        let currentCategory = trackerStore.fetchCategory(for: trackerID) ?? ""
-        let editableTracker = EditableTracker(tracker: tracker, isEditable: true, currentCategory: currentCategory)
         
-        if editableTracker.isPinned {
-            trackerStore.unpinTracker(by: trackerID)
-        } else {
-            trackerStore.pinTracker(by: trackerID)
-        }
+        trackerStore.updatePinStatus(
+            for: trackerID,
+            isPinned: !tracker.isPinned
+        )
+        
+        loadTrackersFromCoreData()
     }
     
     @objc private func handleLongPress(_ gesture: UILongPressGestureRecognizer) {
@@ -436,17 +448,17 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
               let trackerID = cell.trackerID,
               let tracker = findTracker(by: trackerID) else { return }
         
-        let currentCategory = trackerStore.fetchCategory(for: trackerID) ?? ""
+        let isPinned = trackerStore.fetchTracker(byID: tracker.id)?.isPinned ?? false
         let editableTracker = EditableTracker(
             tracker: tracker,
             isEditable: true,
-            currentCategory: currentCategory
+            currentCategory: tracker.category
         )
         let backViewFrame = cell.convert(cell.backViewFrame, to: view.window)
         
-        let options = editableTracker.isPinned
-            ? ["Открепить", "Редактировать", "Удалить"]
-            : ["Закрепить", "Редактировать", "Удалить"]
+        let options = isPinned
+        ? ["Открепить", "Редактировать", "Удалить"]
+        : ["Закрепить", "Редактировать", "Удалить"]
         
         contextMenuManager?.showContextMenu(
             under: backViewFrame,
@@ -563,20 +575,22 @@ extension TrackersViewController: UICollectionViewDataSource {
         
         let tracker = filteredCategories[indexPath.section].trackers[indexPath.item]
         
-        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: TrackerCell.identifier, for: indexPath) as? TrackerCell else {
+        guard let cell = collectionView.dequeueReusableCell(
+            withReuseIdentifier: TrackerCell.identifier,
+            for: indexPath
+        ) as? TrackerCell else {
             return UICollectionViewCell()
         }
         
         let completionCount = completedTrackers.filter { $0.trackerId == tracker.id }.count
         let currentDateOnly = Calendar.current.startOfDay(for: currentDate)
         let isCompletedToday = completedTrackers.contains(TrackerRecord(trackerId: tracker.id, date: currentDateOnly))
-        let isPinned = trackerStore.fetchTracker(byID: tracker.id)?.isPinned ?? false
         
         cell.configure(
             with: tracker,
             completed: isCompletedToday,
             completionCount: completionCount,
-            isPinned: isPinned
+            isPinned: tracker.isPinned
         )
         cell.delegate = self
         
@@ -588,17 +602,28 @@ extension TrackersViewController: UICollectionViewDataSource {
         viewForSupplementaryElementOfKind kind: String,
         at indexPath: IndexPath
     ) -> UICollectionReusableView {
-        if kind == UICollectionView.elementKindSectionHeader {
-            guard let header = collectionView.dequeueReusableSupplementaryView(
-                ofKind: kind,
-                withReuseIdentifier: TrackerCategoryHeader.reuseID,
-                for: indexPath) as? TrackerCategoryHeader else { return UICollectionReusableView() }
-            
-            let category = categories[indexPath.section]
-            header.configure(with: category.title)
-            return header
+        guard kind == UICollectionView.elementKindSectionHeader else {
+            return UICollectionReusableView()
         }
-        return UICollectionReusableView()
+        
+        guard let header = collectionView.dequeueReusableSupplementaryView(
+            ofKind: kind,
+            withReuseIdentifier: TrackerCategoryHeader.reuseID,
+            for: indexPath
+        ) as? TrackerCategoryHeader else {
+            return UICollectionReusableView()
+        }
+        
+        let filteredCategories = self.filteredCategories()
+        
+        guard indexPath.section < filteredCategories.count else {
+            fatalError("Invalid section index: \(indexPath.section)")
+        }
+        
+        let category = filteredCategories[indexPath.section]
+        header.configure(with: category.title)
+        
+        return header
     }
 }
 
