@@ -220,12 +220,23 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
     }
     
     private func updatePlaceholderVisibility() {
+        let isSearchActive = !(searchBar.text?.isEmpty ?? true)
         let hasTrackersForCurrentDate = !categories.flatMap { $0.trackers }.isEmpty
-        placeholderImageView.isHidden = hasTrackersForCurrentDate
-        placeholderLabel.isHidden = hasTrackersForCurrentDate
-        collectionView.isHidden = !hasTrackersForCurrentDate
+        let hasSearchResults = !searchResults.isEmpty
         
-        filterButton.isHidden = !hasTrackersForCurrentDate
+        if isSearchActive {
+            placeholderImageView.image = Asset.emptySearchPlaceholder.image
+            placeholderImageView.isHidden = hasSearchResults
+            placeholderLabel.text = "Ничего не найдено"
+            placeholderLabel.isHidden = hasSearchResults
+        } else {
+            placeholderImageView.isHidden = hasTrackersForCurrentDate
+            placeholderLabel.text = Constants.trackersVcPlaceholderLabel
+            placeholderLabel.isHidden = hasTrackersForCurrentDate
+        }
+        
+        collectionView.isHidden = isSearchActive ? !hasSearchResults : !hasTrackersForCurrentDate
+        filterButton.isHidden = isSearchActive ? true : !hasTrackersForCurrentDate
     }
     
     private func filteredCategories() -> [TrackerCategory] {
