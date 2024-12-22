@@ -86,14 +86,29 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
         return collectionView
     }()
     
+    private let filterButton: UIButton = {
+        let button = UIButton()
+        button.setTitle("Фильтры", for: .normal)
+        button.backgroundColor = .systemBlue
+        button.setTitleColor(.white, for: .normal)
+        button.layer.cornerRadius = 16
+        button.titleLabel?.font = UIFont.systemFont(ofSize: 17, weight: .regular)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
+    
     // MARK: - Properties
     private let trackerStore = TrackerStore()
+    private let categoryStore = TrackerCategoryStore(context: CoreDataStack.shared.mainContext)
     private var categories: [TrackerCategory] = []
     private var completedTrackers: Set<TrackerRecord> = []
     private var contextMenuManager: ContextMenuManager?
     private var longTappedCell: TrackerCell?
     private var pinnedTrackers: Set<UUID> = []
-    private let categoryStore = TrackerCategoryStore(context: CoreDataStack.shared.mainContext)
+    private var selectedFilter: TrackerFilter = .allTrackers
+    private var filteredTrackers: [Tracker] = []
+    private var allTrackers: [Tracker] = []
+    
     private var currentDate: Date = Date() {
         didSet {
             collectionView.reloadData()
@@ -111,6 +126,8 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
         super.viewDidLoad()
         
         setupView()
+        setupFilterButton()
+        applyFilter()
         loadTrackersFromCoreData()
         trackerStore.setupFetchedResultsController()
         
@@ -152,6 +169,19 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
         
         datePicker.addTarget(self, action: #selector(dateChanged(_:)), for: .valueChanged)
         datePicker.addTarget(self, action: #selector(datePickerValueChanged(_:)), for: .valueChanged)
+        
+        view.addSubview(filterButton)
+        setupFilterButtonConstraints()
+        view.bringSubviewToFront(filterButton)
+    }
+    
+    private func setupFilterButtonConstraints() {
+        NSLayoutConstraint.activate([
+            filterButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            filterButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16),
+            filterButton.heightAnchor.constraint(equalToConstant: 50),
+            filterButton.widthAnchor.constraint(equalToConstant: 114)
+        ])
     }
     
     private func setupNavigationBar() {
@@ -193,6 +223,8 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
         placeholderImageView.isHidden = hasTrackersForCurrentDate
         placeholderLabel.isHidden = hasTrackersForCurrentDate
         collectionView.isHidden = !hasTrackersForCurrentDate
+        
+        filterButton.isHidden = !hasTrackersForCurrentDate
     }
     
     private func filteredCategories() -> [TrackerCategory] {
@@ -292,6 +324,42 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
         updatePlaceholderVisibility()
     }
     
+    private func setupFilterButton() {
+            filterButton.addTarget(self, action: #selector(filterButtonTapped), for: .touchUpInside)
+        }
+    
+    private func applyFilter() {
+        switch selectedFilter {
+        case .allTrackers:
+            filteredTrackers = allTrackers
+        case .today:
+            filteredTrackers = allTrackers.filter {
+                Calendar.current.isDate($0.date, inSameDayAs: currentDate)
+            }
+        case .completed:
+            filteredTrackers = allTrackers.filter { tracker in
+                let currentDateOnly = Calendar.current.startOfDay(for: currentDate)
+                return completedTrackers.contains(TrackerRecord(trackerId: tracker.id, date: currentDateOnly))
+            }
+        case .incomplete:
+            filteredTrackers = allTrackers.filter { tracker in
+                let currentDateOnly = Calendar.current.startOfDay(for: currentDate)
+                return !completedTrackers.contains(TrackerRecord(trackerId: tracker.id, date: currentDateOnly))
+            }
+        }
+
+        filterButton.isHidden = filteredTrackers.isEmpty
+        collectionView.reloadData()
+    }
+
+        @objc private func filterButtonTapped() {
+            let filterVC = FilterViewController(selectedFilter: selectedFilter)
+            filterVC.onFilterSelected = { [weak self] filter in
+                self?.selectedFilter = filter
+                self?.applyFilter()
+            }
+            present(filterVC, animated: true)
+        }
     
     @objc private func addTracker(_ notification: Notification) {
         guard let tracker = notification.object as? Tracker else { return }

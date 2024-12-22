@@ -80,9 +80,8 @@ class OnboardingPageViewController: UIViewController {
         UserDefaults.standard.set(true, forKey: Constants.onboardingPageUserDefaultsKey)
         
         if let sceneDelegate = view.window?.windowScene?.delegate as? SceneDelegate {
-            let trackersVC = TrackersViewController()
-            let navigationController = UINavigationController(rootViewController: trackersVC)
-            sceneDelegate.window?.rootViewController = navigationController
-        }
+                let tabBarController = TabBarViewController()
+                sceneDelegate.window?.rootViewController = tabBarController
+            }
     }
 }
