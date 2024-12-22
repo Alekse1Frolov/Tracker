@@ -400,51 +400,52 @@ final class EventViewController: UIViewController {
     
     // MARK: - Actions
     @objc private func cancelButtonTapped() {
-        if let tabBarVC = self.presentingViewController as? UITabBarController {
-            tabBarVC.selectedIndex = 0
+            if isEditable {
+                dismiss(animated: true, completion: nil)
+            } else {
+                navigationController?.popViewController(animated: true)
+            }
         }
-        self.dismiss(animated: true, completion: nil)
-    }
     
     @objc private func createButtonTapped() {
-        guard let trackerName = nameTextField.text, !trackerName.isEmpty else { return }
-        guard let selectedCategory = tableView.cellForRow(at: IndexPath(row: 0, section: 0))?.detailTextLabel?.text else { return }
-        
-        let trackerStore = TrackerStore(context: CoreDataStack.shared.mainContext)
-        
-        if isEditable, let currentTracker = currentTracker {
-            trackerStore.updateTracker(
-                currentTracker,
-                name: trackerName,
-                color: colors[selectedColorIndex?.item ?? 0]?.hexString ?? "",
-                emoji: emojis[selectedEmojiIndex?.item ?? 0],
-                schedule: trackerType == .habit ? selectedDays : [],
-                category: selectedCategory
-            )
+            guard let trackerName = nameTextField.text, !trackerName.isEmpty else { return }
+            guard let selectedCategory = tableView.cellForRow(at: IndexPath(row: 0, section: 0))?.detailTextLabel?.text else { return }
             
-            guard let updatedTracker = trackerStore.fetchTracker(byID: currentTracker.id) else { return }
-            NotificationCenter.default.post(name: .updatedTracker, object: updatedTracker)
-        } else {
-            let newTracker = Tracker(
-                id: UUID(),
-                name: trackerName,
-                color: colors[selectedColorIndex?.item ?? 0]?.hexString ?? "",
-                emoji: emojis[selectedEmojiIndex?.item ?? 0],
-                schedule: trackerType == .habit ? selectedDays : [],
-                date: Date(),
-                category: selectedCategory,
-                order: 0, 
-                isPinned: false
-            )
+            let trackerStore = TrackerStore(context: CoreDataStack.shared.mainContext)
             
-            UserDefaults.standard.set(selectedCategory, forKey: Constants.categoryVcLastSelectedCategoryKey)
+            if isEditable, let currentTracker = currentTracker {
+                trackerStore.updateTracker(
+                    currentTracker,
+                    name: trackerName,
+                    color: colors[selectedColorIndex?.item ?? 0]?.hexString ?? "",
+                    emoji: emojis[selectedEmojiIndex?.item ?? 0],
+                    schedule: trackerType == .habit ? selectedDays : [],
+                    category: selectedCategory
+                )
+                
+                guard let updatedTracker = trackerStore.fetchTracker(byID: currentTracker.id) else { return }
+                NotificationCenter.default.post(name: .updatedTracker, object: updatedTracker)
+            } else {
+                let newTracker = Tracker(
+                    id: UUID(),
+                    name: trackerName,
+                    color: colors[selectedColorIndex?.item ?? 0]?.hexString ?? "",
+                    emoji: emojis[selectedEmojiIndex?.item ?? 0],
+                    schedule: trackerType == .habit ? selectedDays : [],
+                    date: Date(),
+                    category: selectedCategory,
+                    order: 0,
+                    isPinned: false
+                )
+                
+                UserDefaults.standard.set(selectedCategory, forKey: Constants.categoryVcLastSelectedCategoryKey)
+                
+                trackerStore.createTracker(from: newTracker)
+                NotificationCenter.default.post(name: .createdTracker, object: newTracker)
+            }
             
-            trackerStore.createTracker(from: newTracker)
-            NotificationCenter.default.post(name: .createdTracker, object: newTracker)
+            dismiss(animated: true, completion: nil)
         }
-        
-        dismiss(animated: true, completion: nil)
-    }
     
     private func updateCreateButtonState() {
         let isNameValid = !(nameTextField.text?.isEmpty ?? true)
