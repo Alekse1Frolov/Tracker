@@ -34,6 +34,7 @@ internal enum Asset {
   internal static let ypWhite = ColorAsset(name: "YP_white")
   internal static let blueBackground = ImageAsset(name: "BlueBackground")
   internal static let doneImage = ImageAsset(name: "DoneImage")
+  internal static let emptySearchPlaceholder = ImageAsset(name: "EmptySearchPlaceholder")
   internal static let launchScreenLogo = ImageAsset(name: "LaunchScreenLogo")
   internal static let plusButton = ImageAsset(name: "PlusButton")
   internal static let redBackground = ImageAsset(name: "RedBackground")

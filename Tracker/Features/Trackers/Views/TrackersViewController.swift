@@ -108,6 +108,7 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
     private var selectedFilter: TrackerFilter = .allTrackers
     private var filteredTrackers: [Tracker] = []
     private var allTrackers: [Tracker] = []
+    private var searchResults: [Tracker] = []
     
     private var currentDate: Date = Date() {
         didSet {
@@ -303,6 +304,30 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
         )
     }
     
+    private func filterTrackers(by query: String) {
+        searchResults = categories
+            .flatMap { $0.trackers }
+            .filter { $0.name.lowercased().contains(query.lowercased()) }
+    }
+    
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        if searchText.isEmpty {
+            searchResults = []
+        } else {
+            filterTrackers(by: searchText)
+        }
+        collectionView.reloadData()
+        updatePlaceholderVisibility()
+    }
+    
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+        searchBar.text = ""
+        searchResults = []
+        searchBar.resignFirstResponder()
+        collectionView.reloadData()
+        updatePlaceholderVisibility()
+    }
+    
     func loadTrackersFromCoreData() {
         let coreDataCategories = categoryStore.fetchCategories()
         
@@ -325,8 +350,8 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
     }
     
     private func setupFilterButton() {
-            filterButton.addTarget(self, action: #selector(filterButtonTapped), for: .touchUpInside)
-        }
+        filterButton.addTarget(self, action: #selector(filterButtonTapped), for: .touchUpInside)
+    }
     
     private func applyFilter() {
         switch selectedFilter {
@@ -347,19 +372,19 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
                 return !completedTrackers.contains(TrackerRecord(trackerId: tracker.id, date: currentDateOnly))
             }
         }
-
+        
         filterButton.isHidden = filteredTrackers.isEmpty
         collectionView.reloadData()
     }
-
-        @objc private func filterButtonTapped() {
-            let filterVC = FilterViewController(selectedFilter: selectedFilter)
-            filterVC.onFilterSelected = { [weak self] filter in
-                self?.selectedFilter = filter
-                self?.applyFilter()
-            }
-            present(filterVC, animated: true)
+    
+    @objc private func filterButtonTapped() {
+        let filterVC = FilterViewController(selectedFilter: selectedFilter)
+        filterVC.onFilterSelected = { [weak self] filter in
+            self?.selectedFilter = filter
+            self?.applyFilter()
         }
+        present(filterVC, animated: true)
+    }
     
     @objc private func addTracker(_ notification: Notification) {
         guard let tracker = notification.object as? Tracker else { return }
@@ -603,8 +628,15 @@ extension TrackersViewController: TrackerCellDelegate {
     }
     
     private func reloadTrackerCell(for trackerID: UUID) {
-        if let indexPath = findIndexPath(for: trackerID) {
-            collectionView.reloadItems(at: [indexPath])
+        let isSearchActive = !(searchBar.text?.isEmpty ?? true)
+        
+        if isSearchActive {
+            filterTrackers(by: searchBar.text ?? "")
+            collectionView.reloadData()
+        } else {
+            if let indexPath = findIndexPath(for: trackerID) {
+                collectionView.reloadItems(at: [indexPath])
+            }
         }
     }
     
@@ -618,30 +650,41 @@ extension TrackersViewController: TrackerCellDelegate {
 extension TrackersViewController: UICollectionViewDataSource {
     
     func numberOfSections(in collectionView: UICollectionView) -> Int {
-        filteredCategories().count
+        let isSearchActive = !(searchBar.text?.isEmpty ?? true)
+        if isSearchActive {
+            let groupedResults = Dictionary(grouping: searchResults, by: { $0.category })
+            return groupedResults.keys.count
+        } else {
+            return filteredCategories().count
+        }
     }
     
     func collectionView(
         _ collectionView: UICollectionView,
         numberOfItemsInSection section: Int
     ) -> Int {
-        let filteredTrackers = filteredCategories()
-        guard section < filteredCategories().count else { return 0 }
-        return filteredTrackers[section].trackers.count
+        let isSearchActive = !(searchBar.text?.isEmpty ?? true)
+        
+        if isSearchActive {
+            let groupedResults = Dictionary(grouping: searchResults, by: { $0.category })
+            let sortedKeys = groupedResults.keys.sorted()
+            
+            guard section < sortedKeys.count else { return 0 }
+            
+            let categoryKey = sortedKeys[section]
+            return groupedResults[categoryKey]?.count ?? 0
+        } else {
+            return filteredCategories()[section].trackers.count
+        }
     }
     
     func collectionView(
         _ collectionView: UICollectionView,
         cellForItemAt indexPath: IndexPath
     ) -> UICollectionViewCell {
-        let filteredCategories = filteredCategories()
-        
-        guard indexPath.section < filteredCategories.count,
-              indexPath.item < filteredCategories[indexPath.section].trackers.count else {
-            fatalError("Invalid indexPath: \(indexPath)")
+        guard let tracker = getTracker(for: indexPath) else {
+            return UICollectionViewCell()
         }
-        
-        let tracker = filteredCategories[indexPath.section].trackers[indexPath.item]
         
         guard let cell = collectionView.dequeueReusableCell(
             withReuseIdentifier: TrackerCell.identifier,
@@ -650,17 +693,7 @@ extension TrackersViewController: UICollectionViewDataSource {
             return UICollectionViewCell()
         }
         
-        let completionCount = completedTrackers.filter { $0.trackerId == tracker.id }.count
-        let currentDateOnly = Calendar.current.startOfDay(for: currentDate)
-        let isCompletedToday = completedTrackers.contains(TrackerRecord(trackerId: tracker.id, date: currentDateOnly))
-        
-        cell.configure(
-            with: tracker,
-            completed: isCompletedToday,
-            completionCount: completionCount,
-            isPinned: tracker.isPinned
-        )
-        cell.delegate = self
+        configureCell(cell, with: tracker)
         
         return cell
     }
@@ -682,16 +715,58 @@ extension TrackersViewController: UICollectionViewDataSource {
             return UICollectionReusableView()
         }
         
-        let filteredCategories = self.filteredCategories()
-        
-        guard indexPath.section < filteredCategories.count else {
-            fatalError("Invalid section index: \(indexPath.section)")
+        let isSearchActive = !(searchBar.text?.isEmpty ?? true)
+        if isSearchActive {
+            let groupedResults = Dictionary(grouping: searchResults, by: { $0.category })
+            let sortedKeys = groupedResults.keys.sorted()
+            let categoryKey = sortedKeys[indexPath.section]
+            header.configure(with: categoryKey)
+        } else {
+            let categories = filteredCategories()
+            header.configure(with: categories[indexPath.section].title)
         }
         
-        let category = filteredCategories[indexPath.section]
-        header.configure(with: category.title)
-        
         return header
+    }
+    
+    private func getTracker(for indexPath: IndexPath) -> Tracker? {
+        let isSearchActive = !(searchBar.text?.isEmpty ?? true)
+        
+        if isSearchActive {
+            let groupedResults = Dictionary(grouping: searchResults, by: { $0.category })
+            let sortedKeys = groupedResults.keys.sorted()
+            
+            guard indexPath.section < sortedKeys.count else { return nil }
+            let categoryKey = sortedKeys[indexPath.section]
+            
+            guard let trackersInCategory = groupedResults[categoryKey],
+                  indexPath.item < trackersInCategory.count else { return nil }
+            
+            return trackersInCategory[indexPath.item]
+        } else {
+            let categories = filteredCategories()
+            
+            guard indexPath.section < categories.count else { return nil }
+            let trackers = categories[indexPath.section].trackers
+            
+            guard indexPath.item < trackers.count else { return nil }
+            
+            return trackers[indexPath.item]
+        }
+    }
+    
+    private func configureCell(_ cell: TrackerCell, with tracker: Tracker) {
+        let completionCount = completedTrackers.filter { $0.trackerId == tracker.id }.count
+        let currentDateOnly = Calendar.current.startOfDay(for: currentDate)
+        let isCompletedToday = completedTrackers.contains(TrackerRecord(trackerId: tracker.id, date: currentDateOnly))
+        
+        cell.configure(
+            with: tracker,
+            completed: isCompletedToday,
+            completionCount: completionCount,
+            isPinned: tracker.isPinned
+        )
+        cell.delegate = self
     }
 }
 
