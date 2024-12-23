@@ -57,6 +57,7 @@ final class TrackerStore: NSObject {
     }
     
     func createTracker(from tracker: Tracker) {
+        print("Создаём трекер: \(tracker.name), ID: \(tracker.id), Тип: \(tracker.schedule.isEmpty ? ".irregularEvent" : ".habit"), Расписание: \(tracker.schedule), Категория: \(tracker.category)")
         let trackerCoreData = TrackerCoreData(context: context)
         trackerCoreData.id = tracker.id
         trackerCoreData.name = tracker.name
@@ -66,11 +67,13 @@ final class TrackerStore: NSObject {
         
         if let category = TrackerCategoryStore(context: context).fetchCategory(byTitle: tracker.category) {
             trackerCoreData.category = category
+            print("Трекер добавлен в существующую категорию: \(tracker.category)")
             trackerCoreData.order = Int16((category.trackers as? Set<TrackerCoreData>)?.count ?? 0)
         } else {
             let newCategory = TrackerCategoryCoreData(context: context)
             newCategory.title = tracker.category
             trackerCoreData.category = newCategory
+            print("Создана новая категория для трекера: \(tracker.category)")
             trackerCoreData.order = 0
         }
         
@@ -87,8 +90,9 @@ final class TrackerStore: NSObject {
         
         do {
             try context.save()
+            print("Трекер успешно создан!")
         } catch {
-            print("Трекер не сохранен: \(error)")
+            print("Ошибка при создании трекера: \(error)")
         }
     }
     
@@ -135,6 +139,10 @@ final class TrackerStore: NSObject {
         schedule: [Weekday],
         category: String
     ) {
+        print("Редактируем трекер: \(tracker.name), ID: \(tracker.id)")
+        print("До изменений: Тип: \(tracker.schedule.isEmpty ? ".irregularEvent" : ".habit"), Расписание: \(tracker.schedule)")
+        print("Изменения: Название: \(name), Цвет: \(color), Emoji: \(emoji), Расписание: \(schedule), Категория: \(category)")
+        
         let fetchRequest: NSFetchRequest<TrackerCoreData> = TrackerCoreData.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "id == %@", tracker.id as CVarArg)
         
@@ -165,9 +173,10 @@ final class TrackerStore: NSObject {
                 }
                 
                 try context.save()
+                print("Трекер успешно обновлён!")
             }
         } catch {
-            print("Ошибка обновления трекера: \(error)")
+            print("Ошибка при редактировании трекера: \(error)")
         }
     }
     

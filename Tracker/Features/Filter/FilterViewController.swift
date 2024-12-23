@@ -27,7 +27,7 @@ final class FilterViewController: UIViewController {
     
     // MARK: - Properties
     private let filters: [TrackerFilter] = [.allTrackers, .today, .completed, .incomplete]
-    private var selectedFilter: TrackerFilter
+    private var selectedFilter: TrackerFilter = .allTrackers
     var onFilterSelected: ((TrackerFilter) -> Void)?
 
     // MARK: - Initializer
@@ -137,6 +137,7 @@ extension FilterViewController: UITableViewDelegate, UITableViewDataSource {
     ) {
         let selectedFilter = filters[indexPath.row]
         onFilterSelected?(selectedFilter)
-        dismiss(animated: true)
+     //   dismiss(animated: true)
+        navigationController?.dismiss(animated: true)
     }
 }

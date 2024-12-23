@@ -487,10 +487,15 @@ final class EventViewController: UIViewController {
     }
     
     func configure(with tracker: Tracker, daysText: String) {
+        print("Конфигурация EventViewController. Исходные данные:")
+        print("Трекер: \(tracker.name), ID: \(tracker.id), Тип: \(tracker.schedule.isEmpty ? ".irregularEvent" : ".habit"), Расписание: \(tracker.schedule)")
+        
         self.currentTracker = tracker
         nameTextField.text = tracker.name
         
         daysLabel.text = daysText
+        
+        print("Конфигурация EventViewController завершена для трекера: \(tracker.name), Тип: \(tracker.schedule.isEmpty ? ".irregularEvent" : ".habit")")
         
         selectedEmojiIndex = emojis.firstIndex(of: tracker.emoji).map { IndexPath(item: $0, section: 0) }
         selectedColorIndex = colors.firstIndex(where: { $0?.hexString == tracker.color }).map { IndexPath(item: $0, section: 0) }
