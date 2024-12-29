@@ -409,7 +409,11 @@ final class EventViewController: UIViewController {
     
     @objc private func createButtonTapped() {
         guard let trackerName = nameTextField.text, !trackerName.isEmpty else { return }
-        guard let selectedCategory = tableView.cellForRow(at: IndexPath(row: 0, section: 0))?.detailTextLabel?.text else { return }
+        guard let selectedCategory = tableView.cellForRow(at: IndexPath(row: 0, section: 0))?.detailTextLabel?.text,
+              !selectedCategory.isEmpty else {
+            print("Ошибка: Категория не выбрана")
+            return
+        }
         
         let trackerStore = TrackerStore(context: CoreDataStack.shared.mainContext)
         
@@ -431,6 +435,7 @@ final class EventViewController: UIViewController {
                 name: trackerName,
                 color: colors[selectedColorIndex?.item ?? 0]?.hexString ?? "",
                 emoji: emojis[selectedEmojiIndex?.item ?? 0],
+                type: trackerType,
                 schedule: trackerType == .habit ? selectedDays : [],
                 date: Date(),
                 category: selectedCategory,

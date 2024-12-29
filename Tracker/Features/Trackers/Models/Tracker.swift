@@ -12,6 +12,7 @@ struct Tracker {
     let name: String
     let color: String
     let emoji: String
+    let type: TrackerType
     let schedule: [Weekday]
     let date: Date
     let category: String
@@ -23,6 +24,7 @@ struct Tracker {
         name: String,
         color: String,
         emoji: String,
+        type: TrackerType,
         schedule: [Weekday],
         date: Date,
         category: String,
@@ -33,6 +35,7 @@ struct Tracker {
         self.name = name
         self.color = color
         self.emoji = emoji
+        self.type = type
         self.schedule = schedule
         self.date = date
         self.category = category
@@ -52,8 +55,16 @@ struct Tracker {
         
         if let coreDataSchedule = coreDataTracker.schedule as? Set<WeekdayCoreData> {
             self.schedule = coreDataSchedule.compactMap { Weekday(rawValue: Int($0.number)) }
+            print("Загружено расписание для трекера \(self.name): \(self.schedule)")
         } else {
             self.schedule = []
+            print("Расписание для трекера \(self.name) отсутствует")
+        }
+        
+        if let typeString = coreDataTracker.type, let trackerType = TrackerType(rawValue: typeString) {
+            self.type = trackerType
+        } else {
+            self.type = self.schedule.isEmpty ? .irregularEvent : .habit
         }
     }
 }

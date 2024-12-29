@@ -15,6 +15,11 @@ final class TrackerRecordStore {
     }
     
     func addRecord(for trackerId: UUID, on date: Date) {
+        if fetchRecord(for: trackerId, on: date) != nil {
+            print("Запись завершения уже существует для трекера \(trackerId) на дату \(date)")
+            return
+        }
+        
         let record = TrackerRecordCoreData(context: context)
         record.date = date
         record.trackerID = trackerId
@@ -22,33 +27,89 @@ final class TrackerRecordStore {
         if let tracker = fetchTracker(byID: trackerId) {
             record.tracker = tracker
             CoreDataStack.shared.saveContext()
+            print("Добавлена запись завершения для трекера \(trackerId) на дату \(date)")
+        } else {
+            print("Ошибка: не удалось найти трекер с ID \(trackerId)")
         }
     }
     
     func fetchAllRecords() -> [TrackerRecordCoreData] {
         let fetchRequest: NSFetchRequest<TrackerRecordCoreData> = TrackerRecordCoreData.fetchRequest()
-        return (try? context.fetch(fetchRequest)) ?? []
+        do {
+            let records = try context.fetch(fetchRequest)
+            print("Загружены все записи завершений: \(records)")
+            return records
+        } catch {
+            print("Ошибка загрузки всех записей завершений: \(error)")
+            return []
+        }
     }
     
-    func fetchRecords(for trackerId: UUID) -> [Date] {
+    func fetchRecords(for trackerID: UUID) -> [Date] {
         let fetchRequest: NSFetchRequest<TrackerRecordCoreData> = TrackerRecordCoreData.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "trackerID == %@", trackerId as CVarArg)
-        return (try? context.fetch(fetchRequest).compactMap { $0.date }) ?? []
+        fetchRequest.predicate = NSPredicate(format: "trackerID == %@", trackerID as CVarArg)
+        
+        do {
+            let records = try context.fetch(fetchRequest)
+            let dates = records.compactMap { $0.date }
+            print("Завершённые даты для трекера \(trackerID): \(dates)")
+            return dates
+        } catch {
+            print("Ошибка загрузки записей завершений: \(error)")
+            return []
+        }
+    }
+    
+    func fetchCompletedTrackerIDs(for date: Date) -> [UUID] {
+        let fetchRequest: NSFetchRequest<TrackerRecordCoreData> = TrackerRecordCoreData.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "date == %@", date as NSDate)
+        
+        do {
+            let records = try context.fetch(fetchRequest)
+            let trackerIDs = records.compactMap { $0.trackerID }
+            print("Завершённые трекеры на дату \(date): \(trackerIDs)")
+            return trackerIDs
+        } catch {
+            print("Ошибка загрузки завершённых трекеров: \(error)")
+            return []
+        }
     }
     
     func deleteRecord(for trackerId: UUID, on date: Date) {
-            let fetchRequest: NSFetchRequest<TrackerRecordCoreData> = TrackerRecordCoreData.fetchRequest()
-            fetchRequest.predicate = NSPredicate(format: "trackerID == %@ AND date == %@", trackerId as CVarArg, date as CVarArg)
-            
-            if let records = try? context.fetch(fetchRequest) {
-                records.forEach { context.delete($0) }
-                CoreDataStack.shared.saveContext()
-            }
+        if let record = fetchRecord(for: trackerId, on: date) {
+            context.delete(record)
+            CoreDataStack.shared.saveContext()
+            print("Удалена запись завершения для трекера \(trackerId) на дату \(date)")
+        } else {
+            print("Запись завершения для трекера \(trackerId) на дату \(date) не найдена")
         }
+    }
+    
+    private func fetchRecord(for trackerId: UUID, on date: Date) -> TrackerRecordCoreData? {
+        let fetchRequest: NSFetchRequest<TrackerRecordCoreData> = TrackerRecordCoreData.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "trackerID == %@ AND date == %@", trackerId as CVarArg, date as NSDate)
+        
+        do {
+            return try context.fetch(fetchRequest).first
+        } catch {
+            print("Ошибка при поиске записи завершения: \(error)")
+            return nil
+        }
+    }
     
     private func fetchTracker(byID id: UUID) -> TrackerCoreData? {
         let fetchRequest: NSFetchRequest<TrackerCoreData> = TrackerCoreData.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "id == %@", id as CVarArg)
-        return try? context.fetch(fetchRequest).first
+        
+        do {
+            let tracker = try context.fetch(fetchRequest).first
+            if tracker == nil {
+                print("Не найден трекер с ID \(id)")
+            }
+            return tracker
+        } catch {
+            print("Ошибка загрузки трекера с ID \(id): \(error)")
+            return nil
+        }
     }
 }
