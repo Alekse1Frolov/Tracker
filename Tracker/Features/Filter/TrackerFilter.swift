@@ -7,11 +7,11 @@
 
 import Foundation
 
-enum TrackerFilter {
-    case allTrackers
-    case today
-    case completed
-    case incomplete
+enum TrackerFilter: String {
+    case allTrackers = "allTrackers"
+    case today = "today"
+    case completed = "completed"
+    case incomplete = "incompleted"
     
     var displayName: String {
         switch self {

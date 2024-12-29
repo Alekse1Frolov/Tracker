@@ -124,6 +124,7 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
         setupFilterButton()
         trackerStore.setupFetchedResultsController()
         trackerStore.fetchTrackersIfNeeded()
+        selectedFilter = loadSelectedFilter()
         applyCurrentFilter()
         
 //        trackerStore.onDataChange = { [weak self] in
@@ -350,6 +351,18 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
         )
     }
     
+    private func saveSelectedFilter() {
+        UserDefaults.standard.set(selectedFilter.rawValue, forKey: "SelectedFilter")
+    }
+    
+    private func loadSelectedFilter() -> TrackerFilter {
+        if let rawValue = UserDefaults.standard.string(forKey: "SelectedFilter"),
+           let filter = TrackerFilter(rawValue: rawValue) {
+            return filter
+        }
+        return .allTrackers
+    }
+    
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         let predicate = NSPredicate(format: "name CONTAINS[cd] %@", searchText)
         trackerStore.setupFetchedResultsController(predicate: predicate)
@@ -372,9 +385,10 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
             self.selectedFilter = filter
             
             if filter == .today {
-                self.currentDate = Date() // Устанавливаем текущую дату
-                self.datePicker.setDate(self.currentDate, animated: true) // Обновляем UIDatePicker
+                self.currentDate = Date()
+                self.datePicker.setDate(self.currentDate, animated: true)
             }
+            self.saveSelectedFilter()
             self.applyCurrentFilter()
             self.dismiss(animated: true)
         }
