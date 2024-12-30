@@ -222,7 +222,6 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
     }
     
     private func updatePlaceholderVisibility() {
-        // Первый запуск приложения
         if isFirstLaunch {
             placeholderPresenter?.showPlaceholder(
                 image: Asset.starPlaceholder.image,
@@ -230,11 +229,11 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
             )
             collectionView.isHidden = true
             filterButton.isHidden = true
-            isFirstLaunch = false // Устанавливаем флаг в false, чтобы плейсхолдер не показывался снова
-            return // Выходим из метода, чтобы не перезаписать плейсхолдер
+            isFirstLaunch = false
+            return
         }
         
-        // Проверки для остальных случаев
+        let hasTrackersForDate = !trackerStore.fetchTrackersForCurrentDate(currentDate).isEmpty
         let isSearchActive = !(searchBar.text?.isEmpty ?? true)
         let hasTrackers = trackerStore.fetchedResultsController?.fetchedObjects?.isEmpty == false
         let searchResultsEmpty = isSearchActive && !hasTrackers
@@ -242,30 +241,25 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
 
         print("isSearchActive: \(isSearchActive), hasTrackers: \(hasTrackers), searchResultsEmpty: \(searchResultsEmpty), noFilteredResults: \(noFilteredResults)")
 
-        // Пустой результат поиска
         if searchResultsEmpty {
             placeholderPresenter?.showPlaceholder(
                 image: Asset.emptySearchPlaceholder.image,
                 text: Constants.trackersVcEmptySearchPlaceholderText
             )
             collectionView.isHidden = true
-            filterButton.isHidden = true
         }
-        // Пустой результат фильтра
         else if noFilteredResults {
             placeholderPresenter?.showPlaceholder(
                 image: Asset.emptySearchPlaceholder.image,
                 text: Constants.trackersVcEmptySearchPlaceholderText
             )
             collectionView.isHidden = true
-            filterButton.isHidden = true
         }
-        // Данные найдены
         else {
             placeholderPresenter?.hidePlaceholder()
             collectionView.isHidden = false
-            filterButton.isHidden = false
         }
+        filterButton.isHidden = !hasTrackersForDate || isSearchActive
     }
     
     private func applyCurrentFilter() {
@@ -368,14 +362,6 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
             trackers.forEach { tracker in
                 print("- \(tracker.name), Тип: \(tracker.type), Дата: \(String(describing: tracker.date)), Расписание: \(tracker.schedule)")
             }
-            
-            //            let filteredTrackers = trackers.filter { tracker in
-            //                let isHabit = tracker.schedule.contains(currentWeekday) && tracker.type == .habit
-            //                let isIrregularEvent = Calendar.current.isDate(tracker.date, inSameDayAs: currentDate)
-            //                let result = isHabit || isIrregularEvent
-            //                print("Трекер: \(tracker.name), Результат фильтрации: \(result)")
-            //                return result
-            //            }
             
             let filteredTrackers: [Tracker]
             switch selectedFilter {
