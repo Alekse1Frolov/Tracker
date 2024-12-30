@@ -17,6 +17,7 @@ enum Constants {
     static let trackersVcTrackerCellId = "TrakerCell"
     static let trackersVcTrackerCategoryHeaderId = "TrackerCategoryHeader"
     static let trackersVcDeleteConfirmationAlertTitle = "Уверены, что хотите удалить трекер?"
+    static let trackersVcEmptySearchPlaceholderText = "Ничего не найдено"
     
     static let trackerTypeSelectionVcTitle = "Создание трекера"
     static let trackerTypeSelectionVcHabit = "Привычка"

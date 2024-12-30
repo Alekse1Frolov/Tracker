@@ -100,6 +100,7 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
     // MARK: - Properties
     private let trackerStore = TrackerStore()
     private let categoryStore = TrackerCategoryStore(context: CoreDataStack.shared.mainContext)
+    private var placeholderPresenter: PlaceholderPresenter?
     private var contextMenuManager: ContextMenuManager?
     private var longTappedCell: TrackerCell?
     private var selectedFilter: TrackerFilter = .allTrackers
@@ -107,6 +108,15 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
         didSet {
             collectionView.reloadData()
             updatePlaceholderVisibility()
+        }
+    }
+    
+    private var isFirstLaunch: Bool {
+        get {
+            return UserDefaults.standard.bool(forKey: "isFirstLaunch")
+        }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "isFirstLaunch")
         }
     }
     
@@ -127,10 +137,17 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
         selectedFilter = loadSelectedFilter()
         applyCurrentFilter()
         
-//        trackerStore.onDataChange = { [weak self] in
-//            self?.collectionView.reloadData()
-//            self?.updatePlaceholderVisibility()
-//        }
+        placeholderPresenter = PlaceholderPresenter(
+            imageView: placeholderImageView,
+            label: placeholderLabel
+            
+        )
+        updatePlaceholderVisibility()
+        
+        //        trackerStore.onDataChange = { [weak self] in
+        //            self?.collectionView.reloadData()
+        //            self?.updatePlaceholderVisibility()
+        //        }
         
         contextMenuManager = ContextMenuManager(
             options: ["Закрепить", "Редактировать", "Удалить"]
@@ -205,11 +222,50 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
     }
     
     private func updatePlaceholderVisibility() {
+        // Первый запуск приложения
+        if isFirstLaunch {
+            placeholderPresenter?.showPlaceholder(
+                image: Asset.starPlaceholder.image,
+                text: Constants.trackersVcPlaceholderLabel
+            )
+            collectionView.isHidden = true
+            filterButton.isHidden = true
+            isFirstLaunch = false // Устанавливаем флаг в false, чтобы плейсхолдер не показывался снова
+            return // Выходим из метода, чтобы не перезаписать плейсхолдер
+        }
+        
+        // Проверки для остальных случаев
         let isSearchActive = !(searchBar.text?.isEmpty ?? true)
         let hasTrackers = trackerStore.fetchedResultsController?.fetchedObjects?.isEmpty == false
-            placeholderImageView.isHidden = hasTrackers
-            placeholderLabel.isHidden = hasTrackers
-            collectionView.isHidden = !hasTrackers
+        let searchResultsEmpty = isSearchActive && !hasTrackers
+        let noFilteredResults = !hasTrackers && !isSearchActive
+
+        print("isSearchActive: \(isSearchActive), hasTrackers: \(hasTrackers), searchResultsEmpty: \(searchResultsEmpty), noFilteredResults: \(noFilteredResults)")
+
+        // Пустой результат поиска
+        if searchResultsEmpty {
+            placeholderPresenter?.showPlaceholder(
+                image: Asset.emptySearchPlaceholder.image,
+                text: Constants.trackersVcEmptySearchPlaceholderText
+            )
+            collectionView.isHidden = true
+            filterButton.isHidden = true
+        }
+        // Пустой результат фильтра
+        else if noFilteredResults {
+            placeholderPresenter?.showPlaceholder(
+                image: Asset.emptySearchPlaceholder.image,
+                text: Constants.trackersVcEmptySearchPlaceholderText
+            )
+            collectionView.isHidden = true
+            filterButton.isHidden = true
+        }
+        // Данные найдены
+        else {
+            placeholderPresenter?.hidePlaceholder()
+            collectionView.isHidden = false
+            filterButton.isHidden = false
+        }
     }
     
     private func applyCurrentFilter() {
@@ -227,20 +283,20 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
             let categories = trackerStore.fetchIncompleteTrackers(for: currentDate)
             print("Незавершённые трекеры: \(categories.flatMap { $0.trackers.map { $0.name } })")
         }
-
-//        trackerStore.setupFetchedResultsController(predicate: trackerStore.currentPredicate(for: currentDate))
+        
+        //        trackerStore.setupFetchedResultsController(predicate: trackerStore.currentPredicate(for: currentDate))
         
         // Настройка FetchedResultsController
-            let predicate: NSPredicate
-            switch selectedFilter {
-            case .allTrackers, .today:
-                predicate = trackerStore.currentPredicate(for: currentDate)
-            case .completed:
-                predicate = trackerStore.completedTrackersPredicate(for: currentDate)
-            case .incomplete:
-                predicate = trackerStore.incompleteTrackersPredicate(for: currentDate)
-            }
-            trackerStore.setupFetchedResultsController(predicate: predicate)
+        let predicate: NSPredicate
+        switch selectedFilter {
+        case .allTrackers, .today:
+            predicate = trackerStore.currentPredicate(for: currentDate)
+        case .completed:
+            predicate = trackerStore.completedTrackersPredicate(for: currentDate)
+        case .incomplete:
+            predicate = trackerStore.incompleteTrackersPredicate(for: currentDate)
+        }
+        trackerStore.setupFetchedResultsController(predicate: predicate)
         
         collectionView.reloadData()
         updatePlaceholderVisibility()
@@ -307,32 +363,32 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
         return sections.compactMap { section in
             guard let objects = section.objects as? [TrackerCoreData] else { return nil }
             let trackers = objects.compactMap { Tracker(coreDataTracker: $0) }
-
+            
             print("Секция: \(section.name), Все трекеры:")
             trackers.forEach { tracker in
                 print("- \(tracker.name), Тип: \(tracker.type), Дата: \(String(describing: tracker.date)), Расписание: \(tracker.schedule)")
             }
-
-//            let filteredTrackers = trackers.filter { tracker in
-//                let isHabit = tracker.schedule.contains(currentWeekday) && tracker.type == .habit
-//                let isIrregularEvent = Calendar.current.isDate(tracker.date, inSameDayAs: currentDate)
-//                let result = isHabit || isIrregularEvent
-//                print("Трекер: \(tracker.name), Результат фильтрации: \(result)")
-//                return result
-//            }
+            
+            //            let filteredTrackers = trackers.filter { tracker in
+            //                let isHabit = tracker.schedule.contains(currentWeekday) && tracker.type == .habit
+            //                let isIrregularEvent = Calendar.current.isDate(tracker.date, inSameDayAs: currentDate)
+            //                let result = isHabit || isIrregularEvent
+            //                print("Трекер: \(tracker.name), Результат фильтрации: \(result)")
+            //                return result
+            //            }
             
             let filteredTrackers: [Tracker]
-                    switch selectedFilter {
-                    case .allTrackers, .today:
-                        filteredTrackers = trackers
-                    case .completed:
-                        let completedTrackerIDs = trackerStore.fetchCompletedTrackersSet(for: currentDate)
-                        filteredTrackers = trackers.filter { completedTrackerIDs.contains($0.id) }
-                    case .incomplete:
-                        let completedTrackerIDs = trackerStore.fetchCompletedTrackersSet(for: currentDate)
-                        filteredTrackers = trackers.filter { !completedTrackerIDs.contains($0.id) }
-                    }
-
+            switch selectedFilter {
+            case .allTrackers, .today:
+                filteredTrackers = trackers
+            case .completed:
+                let completedTrackerIDs = trackerStore.fetchCompletedTrackersSet(for: currentDate)
+                filteredTrackers = trackers.filter { completedTrackerIDs.contains($0.id) }
+            case .incomplete:
+                let completedTrackerIDs = trackerStore.fetchCompletedTrackersSet(for: currentDate)
+                filteredTrackers = trackers.filter { !completedTrackerIDs.contains($0.id) }
+            }
+            
             guard !filteredTrackers.isEmpty else { return nil }
             print("Фильтрованные трекеры для секции \(section.name): \(filteredTrackers.map { $0.name })")
             return TrackerCategory(title: section.name, trackers: filteredTrackers)
@@ -364,14 +420,46 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
     }
     
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        let predicate = NSPredicate(format: "name CONTAINS[cd] %@", searchText)
-        trackerStore.setupFetchedResultsController(predicate: predicate)
+        if searchText.isEmpty {
+            resetToDefaultFiltering()
+            return
+        }
+        
+        let selectedDate = Calendar.current.startOfDay(for: datePicker.date)
+        let nextDay = Calendar.current.date(byAdding: .day, value: 1, to: selectedDate)!
+        
+        let habitPredicate = NSPredicate(
+            format: "(type == %@ AND ANY schedule.number == %d AND name CONTAINS[cd] %@)",
+            TrackerType.habit.rawValue, currentWeekday.rawValue, searchText
+        )
+        let irregularEventPredicate = NSPredicate(
+            format: "(type == %@ AND date >= %@ AND date < %@ AND name CONTAINS[cd] %@)",
+            TrackerType.irregularEvent.rawValue,
+            selectedDate as NSDate,
+            nextDay as NSDate,
+            searchText
+        )
+        
+        let compoundPredicate = NSCompoundPredicate(
+            orPredicateWithSubpredicates: [habitPredicate, irregularEventPredicate]
+        )
+        
+        trackerStore.setupFetchedResultsController(predicate: compoundPredicate)
         collectionView.reloadData()
+        updatePlaceholderVisibility()
     }
     
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
         searchBar.text = ""
-        applyCurrentFilter()
+        resetToDefaultFiltering()
+    }
+    
+    private func resetToDefaultFiltering() {
+        let defaultPredicate = trackerStore.currentPredicate(for: datePicker.date)
+        trackerStore.setupFetchedResultsController(predicate: defaultPredicate)
+        
+        collectionView.reloadData()
+        updatePlaceholderVisibility()
     }
     
     private func setupFilterButton() {
@@ -402,6 +490,7 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
     @objc private func addTracker(_ notification: Notification) {
         applyCurrentFilter()
         collectionView.reloadData()
+        updatePlaceholderVisibility()
     }
     
     @objc private func updateTracker(_ notification: Notification) {
@@ -570,7 +659,7 @@ extension TrackersViewController: TrackerCellDelegate {
         
         if let indexPath = findIndexPath(for: trackerID) {
             print("Обновление ячейки в секции \(indexPath.section), строка \(indexPath.item)")
-                collectionView.reloadItems(at: [indexPath])
+            collectionView.reloadItems(at: [indexPath])
         } else {
             print("Не удалось найти IndexPath для трекера \(trackerID)")
         }
@@ -690,12 +779,12 @@ extension TrackersViewController: UICollectionViewDataSource {
         let isCompleted: Bool
         
         if tracker.type == .habit {
-                isCompleted = tracker.schedule.contains(currentWeekday) && completedTrackers.contains(tracker.id)
-            } else if tracker.type == .irregularEvent {
-                isCompleted = Calendar.current.isDate(tracker.date, inSameDayAs: currentDate) && completedTrackers.contains(tracker.id)
-            } else {
-                isCompleted = false
-            }
+            isCompleted = tracker.schedule.contains(currentWeekday) && completedTrackers.contains(tracker.id)
+        } else if tracker.type == .irregularEvent {
+            isCompleted = Calendar.current.isDate(tracker.date, inSameDayAs: currentDate) && completedTrackers.contains(tracker.id)
+        } else {
+            isCompleted = false
+        }
         
         print("Трекер: \(tracker.name), isCompleted: \(isCompleted)")
         

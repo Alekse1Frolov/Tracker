@@ -39,6 +39,7 @@ final class StatisticViewController: UIViewController {
     }()
     
     private var statistics: [Statistic] = []
+    private var placeholderPresenter: PlaceholderPresenter?
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
@@ -46,6 +47,12 @@ final class StatisticViewController: UIViewController {
         
         setupLayout()
         setupTableView()
+        
+        placeholderPresenter = PlaceholderPresenter(
+            imageView: placeholderImageView,
+            label: placeholderLabel
+        )
+        
         calculateStatistics()
     }
     
@@ -55,41 +62,41 @@ final class StatisticViewController: UIViewController {
     }
     
     private func calculateStatistics() {
-            let bestPeriod = calculateBestPeriod()
-            let perfectDays = calculatePerfectDays()
-            let completedTrackers = calculateCompletedTrackers()
-            let averageValue = calculateAverageValue()
-
-            statistics = [
-                Statistic(title: "Лучший период", value: bestPeriod),
-                Statistic(title: "Идеальные дни", value: perfectDays),
-                Statistic(title: "Трекеров завершено", value: completedTrackers),
-                Statistic(title: "Среднее значение", value: averageValue)
-            ]
-
-            updatePlaceholderVisibility()
-            tableView.reloadData()
-        }
+        let bestPeriod = calculateBestPeriod()
+        let perfectDays = calculatePerfectDays()
+        let completedTrackers = calculateCompletedTrackers()
+        let averageValue = calculateAverageValue()
+        
+        statistics = [
+            Statistic(title: "Лучший период", value: bestPeriod),
+            Statistic(title: "Идеальные дни", value: perfectDays),
+            Statistic(title: "Трекеров завершено", value: completedTrackers),
+            Statistic(title: "Среднее значение", value: averageValue)
+        ]
+        
+        updatePlaceholderVisibility()
+        tableView.reloadData()
+    }
     
     private func calculateBestPeriod() -> Int {
-            // TO DO: Подсчёт лучшего периода
-            return 0
-        }
-
-        private func calculatePerfectDays() -> Int {
-            // TO DO: подсчёта идеальных дней
-            return 0
-        }
-
-        private func calculateCompletedTrackers() -> Int {
-            // TO DO: подсчёт завершённых трекеров
-            return 0
-        }
-
-        private func calculateAverageValue() -> Int {
-            // TO DO: подсчёт среднего значения
-            return 0
-        }
+        // TO DO: Подсчёт лучшего периода
+        return 0
+    }
+    
+    private func calculatePerfectDays() -> Int {
+        // TO DO: подсчёта идеальных дней
+        return 0
+    }
+    
+    private func calculateCompletedTrackers() -> Int {
+        // TO DO: подсчёт завершённых трекеров
+        return 0
+    }
+    
+    private func calculateAverageValue() -> Int {
+        // TO DO: подсчёт среднего значения
+        return 0
+    }
     
     private func setupTableView() {
         tableView.dataSource = self
@@ -98,11 +105,18 @@ final class StatisticViewController: UIViewController {
     }
     
     private func updatePlaceholderVisibility() {
-            let hasData = statistics.contains { $0.value > 0 }
-            placeholderImageView.isHidden = hasData
-            placeholderLabel.isHidden = hasData
-            tableView.isHidden = !hasData
+        let hasData = statistics.contains { $0.value > 0 }
+        
+        if hasData {
+            placeholderPresenter?.hidePlaceholder()
+        } else {
+            tableView.isHidden = true
+            placeholderPresenter?.showPlaceholder(
+                image: Asset.statisticPlaceholder.image,
+                text: "Анализировать пока нечего"
+            )
         }
+    }
     
     private func setupLayout() {
         view.backgroundColor = Asset.ypWhite.color
@@ -137,13 +151,17 @@ final class StatisticViewController: UIViewController {
 }
 
 extension StatisticViewController: UITableViewDataSource {
+    func numberOfSections(in tableView: UITableView) -> Int {
+        return statistics.count
+    }
+    
     func tableView(
         _ tableView: UITableView,
         numberOfRowsInSection section: Int
     ) -> Int {
-        statistics.count
+        1
     }
-
+    
     func tableView(
         _ tableView: UITableView,
         cellForRowAt indexPath: IndexPath
@@ -154,8 +172,8 @@ extension StatisticViewController: UITableViewDataSource {
         ) as? StatisticTableViewCell else {
             return UITableViewCell()
         }
-
-        let statistic = statistics[indexPath.row]
+        
+        let statistic = statistics[indexPath.section]
         cell.setTitle(text: statistic.title)
         cell.setCount(count: statistic.value)
         return cell
@@ -168,5 +186,21 @@ extension StatisticViewController: UITableViewDelegate {
         heightForRowAt indexPath: IndexPath
     ) -> CGFloat {
         90
+    }
+    
+    func tableView(
+        _ tableView: UITableView,
+        viewForFooterInSection section: Int
+    ) -> UIView? {
+        let spacer = UIView()
+        spacer.backgroundColor = .clear
+        return spacer
+    }
+    
+    func tableView(
+        _ tableView: UITableView,
+        heightForFooterInSection section: Int
+    ) -> CGFloat {
+        12
     }
 }
