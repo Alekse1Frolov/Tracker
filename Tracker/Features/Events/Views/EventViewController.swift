@@ -512,10 +512,10 @@ final class EventViewController: UIViewController {
         daysContainerView.isHidden = trackerType != .habit || !isEditable
         daysContainerViewHeightConstraint?.constant = trackerType == .habit && isEditable ? 78 : 0
         
-        updateCreateButtonState()
         tableView.reloadData()
         emojiCollectionView.reloadData()
         colorCollectionView.reloadData()
+        updateCreateButtonState()
     }
 }
 
