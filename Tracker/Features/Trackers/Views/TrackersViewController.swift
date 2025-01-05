@@ -142,7 +142,6 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
             label: placeholderLabel
             
         )
-        //updatePlaceholderVisibility()
         handleFirstLaunch()
         
         contextMenuManager = ContextMenuManager(
@@ -165,7 +164,6 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
         setupNavigationBar()
         setupCollectionView()
         setupNotificationObserver()
-//        updatePlaceholderVisibility()
         
         datePicker.addTarget(self, action: #selector(dateChanged(_:)), for: .valueChanged)
         
@@ -218,15 +216,22 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
     }
     
     private func updatePlaceholderVisibility() {
-        let hasTrackers = trackerStore.fetchedResultsController?.fetchedObjects?.isEmpty == false
         let isSearchActive = !(searchBar.text?.isEmpty ?? true)
-        let hasTrackersForDate = !trackerStore.fetchTrackersForCurrentDate(currentDate).isEmpty
+        let hasTrackersForDate = !(trackerStore.fetchedResultsController?.fetchedObjects?.isEmpty ?? true)
         let searchResultsEmpty = isSearchActive && !hasTrackersForDate
-        let noFilteredResults = !hasTrackers && !isSearchActive
+        let noFilteredResults = !hasTrackersForDate && !isSearchActive
         
-        print("isFirstLaunch: \(isFirstLaunch), isSearchActive: \(isSearchActive), hasAnyTrackers: \(hasTrackers), searchResultsEmpty: \(searchResultsEmpty), hasTrackersForDate: \(hasTrackersForDate)")
+        print("isSearchActive: \(isSearchActive), searchResultsEmpty: \(searchResultsEmpty), hasTrackersForDate: \(hasTrackersForDate)")
+        print("Трекеры для текущей даты: \(trackerStore.fetchTrackersForCurrentDate(currentDate))")
+        print("Содержимое поискового запроса: \(searchBar.text ?? "nil")")
         
-        if searchResultsEmpty || noFilteredResults {
+        if searchResultsEmpty {
+            placeholderPresenter?.showPlaceholder(
+                image: Asset.emptySearchPlaceholder.image,
+                text: Constants.trackersVcEmptySearchPlaceholderText
+            )
+            collectionView.isHidden = true
+        } else if noFilteredResults {
             placeholderPresenter?.showPlaceholder(
                 image: Asset.emptySearchPlaceholder.image,
                 text: Constants.trackersVcEmptySearchPlaceholderText
