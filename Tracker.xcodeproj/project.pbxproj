@@ -18,6 +18,8 @@
 		F72274562C677056004C0971 /* TrackersViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F72274552C677056004C0971 /* TrackersViewController.swift */; };
 		F737414C2D1F229800CB69FC /* TrackerModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = F737414A2D1F229800CB69FC /* TrackerModel.xcdatamodeld */; };
 		F737414E2D23165800CB69FC /* PlaceholderPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = F737414D2D23165800CB69FC /* PlaceholderPresenter.swift */; };
+		F73741522D2AA97800CB69FC /* Date+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F73741512D2AA97800CB69FC /* Date+Extensions.swift */; };
+		F73741542D2AB79B00CB69FC /* Array+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F73741532D2AB79B00CB69FC /* Array+Extensions.swift */; };
 		F756F7842CF5EF4F0082EE33 /* CoreDataStack.swift in Sources */ = {isa = PBXBuildFile; fileRef = F756F7832CF5EF4F0082EE33 /* CoreDataStack.swift */; };
 		F756F7862CF5F0D60082EE33 /* TrackerStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F756F7852CF5F0D60082EE33 /* TrackerStore.swift */; };
 		F756F7882CF5F10C0082EE33 /* TrackerCategoryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F756F7872CF5F10C0082EE33 /* TrackerCategoryStore.swift */; };
@@ -67,6 +69,8 @@
 		F72274552C677056004C0971 /* TrackersViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackersViewController.swift; sourceTree = "<group>"; };
 		F737414B2D1F229800CB69FC /* TrackerModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = TrackerModel.xcdatamodel; sourceTree = "<group>"; };
 		F737414D2D23165800CB69FC /* PlaceholderPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceholderPresenter.swift; sourceTree = "<group>"; };
+		F73741512D2AA97800CB69FC /* Date+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+Extensions.swift"; sourceTree = "<group>"; };
+		F73741532D2AB79B00CB69FC /* Array+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Array+Extensions.swift"; sourceTree = "<group>"; };
 		F756F7832CF5EF4F0082EE33 /* CoreDataStack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataStack.swift; sourceTree = "<group>"; };
 		F756F7852CF5F0D60082EE33 /* TrackerStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerStore.swift; sourceTree = "<group>"; };
 		F756F7872CF5F10C0082EE33 /* TrackerCategoryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerCategoryStore.swift; sourceTree = "<group>"; };
@@ -125,6 +129,8 @@
 				F71CDF492CE8E1340021F0D3 /* Constants.swift */,
 				F71CDF4B2CE8E14B0021F0D3 /* MockData.swift */,
 				F737414D2D23165800CB69FC /* PlaceholderPresenter.swift */,
+				F73741512D2AA97800CB69FC /* Date+Extensions.swift */,
+				F73741532D2AB79B00CB69FC /* Array+Extensions.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -466,6 +472,7 @@
 				F72274562C677056004C0971 /* TrackersViewController.swift in Sources */,
 				F7D0056B2D134F260030E05B /* EditableTracker.swift in Sources */,
 				F78DFDB22CFFA24700068AA4 /* CategoryViewController.swift in Sources */,
+				F73741542D2AB79B00CB69FC /* Array+Extensions.swift in Sources */,
 				F71CDF432CE8DD8B0021F0D3 /* Weekday.swift in Sources */,
 				F7A122252D11C9730027CC34 /* AlertService.swift in Sources */,
 				F7AF2C362C595A86003831AC /* AppDelegate.swift in Sources */,
@@ -487,6 +494,7 @@
 				F7AF2C382C595A86003831AC /* SceneDelegate.swift in Sources */,
 				F71236772CD1A9B50041A336 /* Tracker.swift in Sources */,
 				F7D005782D1702330030E05B /* FilterViewController.swift in Sources */,
+				F73741522D2AA97800CB69FC /* Date+Extensions.swift in Sources */,
 				F796B7152D08E87E00E53884 /* OnboardingViewController.swift in Sources */,
 				F756F7862CF5F0D60082EE33 /* TrackerStore.swift in Sources */,
 				F737414E2D23165800CB69FC /* PlaceholderPresenter.swift in Sources */,

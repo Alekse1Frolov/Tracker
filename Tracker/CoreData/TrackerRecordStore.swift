@@ -21,7 +21,7 @@ final class TrackerRecordStore {
         }
         
         let record = TrackerRecordCoreData(context: context)
-        record.date = date
+        record.date = date.strippedTime()
         record.trackerID = trackerId
         
         if let tracker = fetchTracker(byID: trackerId) {
@@ -61,8 +61,9 @@ final class TrackerRecordStore {
     }
     
     func fetchCompletedTrackerIDs(for date: Date) -> [UUID] {
+        let strippedDate = date.strippedTime() ?? date
         let fetchRequest: NSFetchRequest<TrackerRecordCoreData> = TrackerRecordCoreData.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "date == %@", date as NSDate)
+        fetchRequest.predicate = NSPredicate(format: "date == %@", strippedDate as NSDate)
         
         do {
             let records = try context.fetch(fetchRequest)
@@ -76,12 +77,13 @@ final class TrackerRecordStore {
     }
     
     func deleteRecord(for trackerId: UUID, on date: Date) {
-        if let record = fetchRecord(for: trackerId, on: date) {
+        let strippedDate = date.strippedTime() ?? date
+        if let record = fetchRecord(for: trackerId, on: strippedDate) {
             context.delete(record)
             CoreDataStack.shared.saveContext()
-            print("Удалена запись завершения для трекера \(trackerId) на дату \(date)")
+            print("Удалена запись завершения для трекера \(trackerId) на дату \(strippedDate)")
         } else {
-            print("Запись завершения для трекера \(trackerId) на дату \(date) не найдена")
+            print("Запись завершения для трекера \(trackerId) на дату \(strippedDate) не найдена")
         }
     }
     

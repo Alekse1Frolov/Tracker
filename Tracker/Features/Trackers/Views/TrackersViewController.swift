@@ -144,11 +144,6 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
         )
         updatePlaceholderVisibility()
         
-        //        trackerStore.onDataChange = { [weak self] in
-        //            self?.collectionView.reloadData()
-        //            self?.updatePlaceholderVisibility()
-        //        }
-        
         contextMenuManager = ContextMenuManager(
             options: ["Закрепить", "Редактировать", "Удалить"]
         )
@@ -278,9 +273,6 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
             print("Незавершённые трекеры: \(categories.flatMap { $0.trackers.map { $0.name } })")
         }
         
-        //        trackerStore.setupFetchedResultsController(predicate: trackerStore.currentPredicate(for: currentDate))
-        
-        // Настройка FetchedResultsController
         let predicate: NSPredicate
         switch selectedFilter {
         case .allTrackers, .today:
@@ -295,7 +287,6 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
         collectionView.reloadData()
         updatePlaceholderVisibility()
         
-        // Debug output
         if let trackers = trackerStore.fetchedResultsController?.fetchedObjects {
             print("Фильтр: \(selectedFilter), Найдено трекеров: \(trackers.count)")
         } else {
@@ -354,8 +345,11 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
             return []
         }
         
-        return sections.compactMap { section in
-            guard let objects = section.objects as? [TrackerCoreData] else { return nil }
+        var pinnedTrackers: [Tracker] = []
+        var categorizedTrackers: [TrackerCategory] = []
+        
+        for section in sections {
+            guard let objects = section.objects as? [TrackerCoreData] else { continue }
             let trackers = objects.compactMap { Tracker(coreDataTracker: $0) }
             
             print("Секция: \(section.name), Все трекеры:")
@@ -375,10 +369,24 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
                 filteredTrackers = trackers.filter { !completedTrackerIDs.contains($0.id) }
             }
             
-            guard !filteredTrackers.isEmpty else { return nil }
-            print("Фильтрованные трекеры для секции \(section.name): \(filteredTrackers.map { $0.name })")
-            return TrackerCategory(title: section.name, trackers: filteredTrackers)
+            let (pinned, regular) = filteredTrackers.partitioned(by: { $0.isPinned })
+            pinnedTrackers.append(contentsOf: pinned)
+            
+            if !regular.isEmpty {
+                categorizedTrackers.append(TrackerCategory(title: section.name, trackers: regular))
+            }
         }
+        
+        if !pinnedTrackers.isEmpty {
+            categorizedTrackers.insert(TrackerCategory(title: "Закреплённые", trackers: pinnedTrackers), at: 0)
+        }
+        
+        print("Категории после фильтрации:")
+        categorizedTrackers.forEach { category in
+            print("- \(category.title): \(category.trackers.map { $0.name })")
+        }
+        
+        return categorizedTrackers
     }
     
     private func showDeleteConfirmation(for trackerID: UUID) {
@@ -411,7 +419,7 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
             return
         }
         
-        let selectedDate = Calendar.current.startOfDay(for: datePicker.date)
+        let selectedDate = datePicker.date.strippedTime() ?? datePicker.date
         let nextDay = Calendar.current.date(byAdding: .day, value: 1, to: selectedDate)!
         
         let habitPredicate = NSPredicate(
@@ -485,7 +493,7 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
     }
     
     @objc private func dateChanged(_ sender: UIDatePicker) {
-        currentDate = Calendar.current.startOfDay(for: sender.date)
+        currentDate = sender.date.strippedTime() ?? sender.date
         
         let currentWeekday = Calendar.current.component(.weekday, from: currentDate)
         print("Дата изменена на: \(currentDate), День недели: \(currentWeekday)")
@@ -642,6 +650,8 @@ extension TrackersViewController: TrackerCellDelegate {
             print("Отмечаем трекер с ID \(trackerID) как завершённый на дату \(currentDateOnly)")
             addCompletion(for: trackerID, on: currentDateOnly, using: recordStore)
         }
+        
+        applyCurrentFilter()
         
         if let indexPath = findIndexPath(for: trackerID) {
             print("Обновление ячейки в секции \(indexPath.section), строка \(indexPath.item)")

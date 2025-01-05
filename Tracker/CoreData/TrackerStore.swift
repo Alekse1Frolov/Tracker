@@ -56,7 +56,7 @@ final class TrackerStore: NSObject {
         trackerCoreData.name = tracker.name
         trackerCoreData.color = tracker.color
         trackerCoreData.emoji = tracker.emoji
-        trackerCoreData.date = tracker.date
+        trackerCoreData.date = tracker.date.strippedTime()
         trackerCoreData.isPinned = tracker.isPinned
         
         if let category = fetchCategory(byTitle: tracker.category) {
@@ -120,7 +120,7 @@ final class TrackerStore: NSObject {
     }
     
     func fetchCompletedTrackersSet(for date: Date) -> Set<UUID> {
-        let currentDateOnly = Calendar.current.startOfDay(for: date)
+        let currentDateOnly = date.strippedTime() ?? date
         let fetchRequest: NSFetchRequest<TrackerRecordCoreData> = TrackerRecordCoreData.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "date == %@", currentDateOnly as NSDate)
         
@@ -192,13 +192,14 @@ final class TrackerStore: NSObject {
     
     // MARK: - Filtering Methods
     func fetchTrackersForCurrentDate(_ date: Date) -> [TrackerCategory] {
+        let strippedDate = date.strippedTime() ?? date
         let weekday = Calendar.current.component(.weekday, from: date)
         let correctedWeekday = (weekday + 5) % 7 + 1 // Преобразование в формат enum Weekday
         
         print("Фильтрация трекеров на дату: \(date), День недели: \(correctedWeekday)")
         
         let predicateHabit = NSPredicate(format: "ANY schedule.number == %d", correctedWeekday)
-        let predicateIrregular = NSPredicate(format: "date == %@", date as NSDate)
+        let predicateIrregular = NSPredicate(format: "date == %@", strippedDate as NSDate)
         
         let compoundPredicate = NSCompoundPredicate(orPredicateWithSubpredicates: [predicateHabit, predicateIrregular])
         
@@ -258,13 +259,24 @@ final class TrackerStore: NSObject {
     // MARK: - Helpers
     private func categorizeTrackers(_ trackers: [Tracker]) -> [TrackerCategory] {
         var categories: [String: [Tracker]] = [:]
+        var pinnedTrackers: [Tracker] = []
         
         for tracker in trackers {
-            let categoryTitle = tracker.category
-            categories[categoryTitle, default: []].append(tracker)
+            if tracker.isPinned {
+                pinnedTrackers.append(tracker)
+            } else {
+                let categoryTitle = tracker.category
+                categories[categoryTitle, default: []].append(tracker)
+            }
         }
         
-        return categories.map { TrackerCategory(title: $0.key, trackers: $0.value) }
+        var result = categories.map { TrackerCategory(title: $0.key, trackers: $0.value) }
+        
+        if !pinnedTrackers.isEmpty {
+            result.insert(TrackerCategory(title: pinnedCategoryTitle, trackers: pinnedTrackers), at: 0)
+        }
+        
+        return result
     }
     
     private func fetchCategory(byTitle title: String) -> TrackerCategoryCoreData? {
@@ -336,15 +348,16 @@ extension TrackerStore {
         }
     }
     
-    private func fetchPinnedCategory() -> TrackerCategoryCoreData? {
-        let fetchRequest: NSFetchRequest<TrackerCategoryCoreData> = TrackerCategoryCoreData.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "title == %@", pinnedCategoryTitle)
+    func fetchPinnedTrackers() -> [Tracker] {
+        let fetchRequest: NSFetchRequest<TrackerCoreData> = TrackerCoreData.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "isPinned == true")
         
         do {
-            return try context.fetch(fetchRequest).first
+            let trackers = try context.fetch(fetchRequest)
+            return trackers.map { Tracker(coreDataTracker: $0) }
         } catch {
-            print("Ошибка при получении категории \"Закреплённые\": \(error)")
-            return nil
+            print("Ошибка загрузки закреплённых трекеров: \(error)")
+            return []
         }
     }
     
@@ -363,7 +376,7 @@ extension TrackerStore {
     }
     
     func currentPredicate(for date: Date) -> NSPredicate {
-        let selectedDate = Calendar.current.startOfDay(for: date)
+        let selectedDate = date.strippedTime() ?? date
         print("Фильтрация трекеров на дату: \(selectedDate) (обнулённая дата)")
         let nextDay = Calendar.current.date(byAdding: .day, value: 1, to: selectedDate)!
         
