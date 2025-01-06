@@ -558,6 +558,8 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
     }
     
     private func presentEditEventViewController(for editableTracker: EditableTracker, cell: TrackerCell) {
+        searchBar.resignFirstResponder()
+        
         let tracker = editableTracker.tracker
         let counterLabelText = cell.counterLabelText ?? "0 дней"
         
