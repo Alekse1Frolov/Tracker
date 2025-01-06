@@ -83,6 +83,7 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
         layout.minimumInteritemSpacing = 16
         layout.scrollDirection = .vertical
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        collectionView.backgroundColor = Asset.ypWhite.color
         return collectionView
     }()
     

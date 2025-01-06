@@ -10,10 +10,25 @@ import UIKit
 final class ContextMenuManager: NSObject {
     // MARK: - UI Elements
     private let blurView: UIVisualEffectView = {
-        let blurEffect = UIBlurEffect(style: .light)
+        let blurEffect = UIBlurEffect(style: .systemThinMaterial)
         let view = UIVisualEffectView(effect: blurEffect)
-        view.alpha = 0.0
+        view.alpha = 54.37
         view.isUserInteractionEnabled = true
+        
+        let colorOverlay = UIView()
+        colorOverlay.backgroundColor = Asset.ypBackground.color
+        colorOverlay.isUserInteractionEnabled = false
+        colorOverlay.translatesAutoresizingMaskIntoConstraints = false
+        
+        view.contentView.addSubview(colorOverlay)
+        
+        NSLayoutConstraint.activate([
+            colorOverlay.topAnchor.constraint(equalTo: view.contentView.topAnchor),
+            colorOverlay.bottomAnchor.constraint(equalTo: view.contentView.bottomAnchor),
+            colorOverlay.leadingAnchor.constraint(equalTo: view.contentView.leadingAnchor),
+            colorOverlay.trailingAnchor.constraint(equalTo: view.contentView.trailingAnchor)
+        ])
+        
         return view
     }()
     
@@ -23,7 +38,7 @@ final class ContextMenuManager: NSObject {
         tableView.layer.cornerRadius = 13
         tableView.separatorInset = .zero
         tableView.separatorStyle = .singleLine
-        tableView.backgroundColor = .systemBackground
+        tableView.separatorColor = Asset.ypLightGray.color
         tableView.register(
             UITableViewCell.self,
             forCellReuseIdentifier: "ContextMenuOptionCell"
@@ -168,7 +183,7 @@ extension ContextMenuManager: UITableViewDelegate, UITableViewDataSource {
             label.bottomAnchor.constraint(equalTo: cell.contentView.bottomAnchor)
         ])
         
-        cell.backgroundColor = .systemBackground
+        cell.backgroundColor = Asset.ypBackground.color
         cell.selectionStyle = .none
         
         if indexPath.row == options.count - 1 {

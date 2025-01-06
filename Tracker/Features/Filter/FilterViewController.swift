@@ -52,6 +52,7 @@ final class FilterViewController: UIViewController {
         tableView.delegate = self
         tableView.dataSource = self
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "FilterCell")
+        tableView.separatorColor = Asset.ypGray.color
     }
     
     private func setupView() {
@@ -137,7 +138,6 @@ extension FilterViewController: UITableViewDelegate, UITableViewDataSource {
     ) {
         let selectedFilter = filters[indexPath.row]
         onFilterSelected?(selectedFilter)
-     //   dismiss(animated: true)
         navigationController?.dismiss(animated: true)
     }
 }
