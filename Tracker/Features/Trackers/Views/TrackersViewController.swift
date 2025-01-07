@@ -671,6 +671,7 @@ extension TrackersViewController: TrackerCellDelegate {
             addCompletion(for: trackerID, on: currentDateOnly, using: recordStore)
         }
         
+        NotificationCenter.default.post(name: .completedTrackersDidUpdate, object: nil)
         applyCurrentFilter()
         
         if let indexPath = findIndexPath(for: trackerID) {

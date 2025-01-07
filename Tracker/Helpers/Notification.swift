@@ -10,4 +10,5 @@ import Foundation
 extension Notification.Name {
     static let createdTracker = Notification.Name("createdTracker")
     static let updatedTracker = Notification.Name("updatedTracker")
+    static let completedTrackersDidUpdate = Notification.Name("completedTrackersDidUpdate")
 }

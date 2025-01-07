@@ -38,8 +38,18 @@ final class StatisticViewController: UIViewController {
         return tableView
     }()
     
+    private let trackerStore: TrackerStore
     private var statistics: [Statistic] = []
     private var placeholderPresenter: PlaceholderPresenter?
+    
+    init(trackerStore: TrackerStore) {
+        self.trackerStore = trackerStore
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
@@ -54,6 +64,17 @@ final class StatisticViewController: UIViewController {
         )
         
         calculateStatistics()
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleCompletedTrackersDidUpdate),
+            name: .completedTrackersDidUpdate,
+            object: nil
+        )
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self, name: .completedTrackersDidUpdate, object: nil)
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -62,40 +83,24 @@ final class StatisticViewController: UIViewController {
     }
     
     private func calculateStatistics() {
-        let bestPeriod = calculateBestPeriod()
-        let perfectDays = calculatePerfectDays()
         let completedTrackers = calculateCompletedTrackers()
-        let averageValue = calculateAverageValue()
         
         statistics = [
-            Statistic(title: "Лучший период", value: bestPeriod),
-            Statistic(title: "Идеальные дни", value: perfectDays),
-            Statistic(title: "Трекеров завершено", value: completedTrackers),
-            Statistic(title: "Среднее значение", value: averageValue)
+            Statistic(title: "Трекеров завершено", value: completedTrackers)
         ]
         
         updatePlaceholderVisibility()
         tableView.reloadData()
     }
     
-    private func calculateBestPeriod() -> Int {
-        // TO DO: Подсчёт лучшего периода
-        return 0
-    }
-    
-    private func calculatePerfectDays() -> Int {
-        // TO DO: подсчёта идеальных дней
-        return 0
-    }
-    
     private func calculateCompletedTrackers() -> Int {
-        // TO DO: подсчёт завершённых трекеров
-        return 0
-    }
-    
-    private func calculateAverageValue() -> Int {
-        // TO DO: подсчёт среднего значения
-        return 0
+        let recordStore = TrackerRecordStore(context: trackerStore.managedContext)
+        let completedRecords = recordStore.fetchAllRecords()
+        
+        let habitTrackerIDs = trackerStore.fetchTrackers(predicate: NSPredicate(format: "type == %@", TrackerType.habit.rawValue)).map { $0.id }
+        let completedHabitRecords = completedRecords.filter { habitTrackerIDs.contains($0.trackerID ?? UUID()) }
+        
+        return completedHabitRecords.count
     }
     
     private func setupTableView() {
@@ -147,6 +152,10 @@ final class StatisticViewController: UIViewController {
             placeholderLabel.topAnchor.constraint(equalTo: placeholderImageView.bottomAnchor, constant: 8),
             placeholderLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor)
         ])
+    }
+    
+    @objc private func handleCompletedTrackersDidUpdate() {
+        calculateStatistics()
     }
 }
 

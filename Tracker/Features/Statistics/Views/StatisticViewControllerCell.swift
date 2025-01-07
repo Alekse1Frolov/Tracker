@@ -67,8 +67,8 @@ final class StatisticTableViewCell: UITableViewCell {
             UIColor(rgb: 0xFD4C49).cgColor
         ]
         
-        gradientLayer.startPoint = CGPoint(x: 0, y: 0)
-        gradientLayer.endPoint = CGPoint(x: 1, y: 1)
+        gradientLayer.startPoint = CGPoint(x: 0, y: 0.5)
+        gradientLayer.endPoint = CGPoint(x: 1, y: 0.5)
         gradientLayer.frame = bounds
         gradientLayer.cornerRadius = 16
         

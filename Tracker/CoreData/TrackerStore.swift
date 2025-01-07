@@ -14,6 +14,9 @@ final class TrackerStore: NSObject {
     public private(set) var fetchedResultsController: NSFetchedResultsController<TrackerCoreData>?
     
     var onDataChange: (() -> Void)?
+    var managedContext: NSManagedObjectContext {
+        return context
+    }
     
     init(context: NSManagedObjectContext = CoreDataStack.shared.mainContext) {
         self.context = context

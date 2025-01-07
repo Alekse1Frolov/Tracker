@@ -25,7 +25,8 @@ final class TabBarViewController: UITabBarController {
             selectedImage: nil
         )
         
-        let statisticVC = UINavigationController(rootViewController: StatisticViewController())
+        let trackerStore = TrackerStore(context: CoreDataStack.shared.mainContext)
+        let statisticVC = UINavigationController(rootViewController: StatisticViewController(trackerStore: trackerStore))
         statisticVC.tabBarItem = UITabBarItem(
             title: Constants.tabBarItemStatistic,
             image: Asset.statTabImage.image,
