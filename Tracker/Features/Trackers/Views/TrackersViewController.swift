@@ -103,6 +103,7 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
     private let categoryStore = TrackerCategoryStore(context: CoreDataStack.shared.mainContext)
     private var placeholderPresenter: PlaceholderPresenter?
     private var contextMenuManager: ContextMenuManager?
+    private let analyticsService = AnalyticsService()
     private var longTappedCell: TrackerCell?
     private var selectedFilter: TrackerFilter = .allTrackers
     private var currentDate: Date = Date() {
@@ -149,6 +150,16 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
             options: ["Закрепить", "Редактировать", "Удалить"]
         )
         setupLongPressGesture()
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        analyticsService.logEvent(event: "open", screen: "Main")
+    }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        analyticsService.logEvent(event: "close", screen: "Main")
     }
     
     deinit {
@@ -462,6 +473,7 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
     }
     
     @objc private func filterButtonTapped() {
+        analyticsService.logEvent(event: "click", screen: "Main", item: "filter")
         let filterVC = FilterViewController(selectedFilter: selectedFilter)
         filterVC.onFilterSelected = { [weak self] filter in
             guard let self = self else { return }
@@ -479,6 +491,7 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
     }
     
     @objc private func addButtonTapped() {
+        analyticsService.logEvent(event: "click", screen: "Main", item: "add_track")
         presentTypeSelection()
     }
     
@@ -597,6 +610,8 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
               let trackerID = cell.trackerID,
               let tracker = findTracker(by: trackerID) else { return }
         
+        analyticsService.logEvent(event: "click", screen: "Main", item: "track")
+        
         let isPinned = trackerStore.fetchTracker(byID: tracker.id)?.isPinned ?? false
         let editableTracker = EditableTracker(
             tracker: tracker,
@@ -620,8 +635,10 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
             case 0:
                 self.togglePin(for: editableTracker.tracker.id)
             case 1:
+                analyticsService.logEvent(event: "click", screen: "Main", item: "edit")
                 self.presentEditEventViewController(for: editableTracker, cell: cell)
             case 2:
+                analyticsService.logEvent(event: "click", screen: "Main", item: "delete")
                 self.showDeleteConfirmation(for: editableTracker.tracker.id)
             default:
                 break
