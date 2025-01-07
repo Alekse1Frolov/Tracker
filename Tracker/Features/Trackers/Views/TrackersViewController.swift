@@ -12,7 +12,7 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
     // MARK: - UI Elements
     private let titleLabel: UILabel = {
         let label = UILabel()
-        label.text = Constants.trackersVcTitleLabel
+        label.text = NSLocalizedString("trackers", comment: "TrackersVC")
         label.font = UIFont.boldSystemFont(ofSize: 34)
         return label
     }()
@@ -89,7 +89,7 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
     
     private let filterButton: UIButton = {
         let button = UIButton()
-        button.setTitle("Фильтры", for: .normal)
+        button.setTitle(NSLocalizedString("filters", comment: ""), for: .normal)
         button.backgroundColor = .systemBlue
         button.setTitleColor(.white, for: .normal)
         button.layer.cornerRadius = 16

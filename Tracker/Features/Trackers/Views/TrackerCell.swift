@@ -204,16 +204,7 @@ final class TrackerCell: UICollectionViewCell {
     }
     
     private func formatDay(_ count: Int) -> String {
-        let remainderAfterDivisionBy10 = count % 10
-        let remainderAfterDivisionBy100 = count % 100
-        
-        switch (remainderAfterDivisionBy10, remainderAfterDivisionBy100) {
-        case (1, _) where remainderAfterDivisionBy100 != 11:
-            return "\(count) день"
-        case (2...4, _) where (remainderAfterDivisionBy100 < 10 || remainderAfterDivisionBy100 >= 20):
-            return "\(count) дня"
-        default:
-            return "\(count) дней"
-        }
+        let localizedString = NSLocalizedString("daysAmount", comment: "Количество дней")
+        return String.localizedStringWithFormat(localizedString, count)
     }
 }

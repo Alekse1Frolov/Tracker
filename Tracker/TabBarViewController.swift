@@ -20,7 +20,7 @@ final class TabBarViewController: UITabBarController {
         
         let trackersVC = UINavigationController(rootViewController: TrackersViewController())
         trackersVC.tabBarItem = UITabBarItem(
-            title: Constants.tabBarItemTrackers,
+            title: NSLocalizedString("trackers", comment: "TabBar"),
             image: Asset.trackerTabImage.image,
             selectedImage: nil
         )
@@ -28,7 +28,7 @@ final class TabBarViewController: UITabBarController {
         let trackerStore = TrackerStore(context: CoreDataStack.shared.mainContext)
         let statisticVC = UINavigationController(rootViewController: StatisticViewController(trackerStore: trackerStore))
         statisticVC.tabBarItem = UITabBarItem(
-            title: Constants.tabBarItemStatistic,
+            title: NSLocalizedString("statistic", comment: "TabBar"),
             image: Asset.statTabImage.image,
             selectedImage: nil
         )
