@@ -19,7 +19,6 @@
 		F71CDF4C2CE8E14B0021F0D3 /* MockData.swift in Sources */ = {isa = PBXBuildFile; fileRef = F71CDF4B2CE8E14B0021F0D3 /* MockData.swift */; };
 		F72274562C677056004C0971 /* TrackersViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F72274552C677056004C0971 /* TrackersViewController.swift */; };
 		F724BE182D2B18EB0019E4CB /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F7E228222D2B0A7F00B54766 /* XCTest.framework */; };
-		F737414C2D1F229800CB69FC /* TrackerModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = F737414A2D1F229800CB69FC /* TrackerModel.xcdatamodeld */; };
 		F737414E2D23165800CB69FC /* PlaceholderPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = F737414D2D23165800CB69FC /* PlaceholderPresenter.swift */; };
 		F73741522D2AA97800CB69FC /* Date+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F73741512D2AA97800CB69FC /* Date+Extensions.swift */; };
 		F73741542D2AB79B00CB69FC /* Array+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F73741532D2AB79B00CB69FC /* Array+Extensions.swift */; };
@@ -64,6 +63,7 @@
 		F7EB95392CE12158007F0D08 /* ScheduleCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7EB95382CE12158007F0D08 /* ScheduleCell.swift */; };
 		F7EB953B2CE145FB007F0D08 /* TrackerCategoryHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7EB953A2CE145FB007F0D08 /* TrackerCategoryHeader.swift */; };
 		F7EB95412CE4DC7F007F0D08 /* Notification.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7EB95402CE4DC7F007F0D08 /* Notification.swift */; };
+		F7EE60DB2D2E0F1800FC1B65 /* TrackerModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = F7EE60D92D2E0F1800FC1B65 /* TrackerModel.xcdatamodeld */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -91,7 +91,6 @@
 		F71CDF492CE8E1340021F0D3 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		F71CDF4B2CE8E14B0021F0D3 /* MockData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockData.swift; sourceTree = "<group>"; };
 		F72274552C677056004C0971 /* TrackersViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackersViewController.swift; sourceTree = "<group>"; };
-		F737414B2D1F229800CB69FC /* TrackerModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = TrackerModel.xcdatamodel; sourceTree = "<group>"; };
 		F737414D2D23165800CB69FC /* PlaceholderPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceholderPresenter.swift; sourceTree = "<group>"; };
 		F73741512D2AA97800CB69FC /* Date+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+Extensions.swift"; sourceTree = "<group>"; };
 		F73741532D2AB79B00CB69FC /* Array+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Array+Extensions.swift"; sourceTree = "<group>"; };
@@ -140,6 +139,7 @@
 		F7EB95382CE12158007F0D08 /* ScheduleCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleCell.swift; sourceTree = "<group>"; };
 		F7EB953A2CE145FB007F0D08 /* TrackerCategoryHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerCategoryHeader.swift; sourceTree = "<group>"; };
 		F7EB95402CE4DC7F007F0D08 /* Notification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Notification.swift; sourceTree = "<group>"; };
+		F7EE60DA2D2E0F1800FC1B65 /* TrackerModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = TrackerModel.xcdatamodel; sourceTree = "<group>"; };
 		FE87E3E9F89B8A3BD11197F1 /* Pods-TrackerTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TrackerTests.release.xcconfig"; path = "Target Support Files/Pods-TrackerTests/Pods-TrackerTests.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -205,7 +205,7 @@
 		F785CD602D0E548800F5AD56 /* CoreData */ = {
 			isa = PBXGroup;
 			children = (
-				F737414A2D1F229800CB69FC /* TrackerModel.xcdatamodeld */,
+				F7EE60D92D2E0F1800FC1B65 /* TrackerModel.xcdatamodeld */,
 				F756F78B2CF5F16D0082EE33 /* WeekdayStore.swift */,
 				F756F7832CF5EF4F0082EE33 /* CoreDataStack.swift */,
 				F756F7852CF5F0D60082EE33 /* TrackerStore.swift */,
@@ -540,7 +540,7 @@
 			};
 			buildConfigurationList = F7AF2C2D2C595A86003831AC /* Build configuration list for PBXProject "Tracker" */;
 			compatibilityVersion = "Xcode 14.0";
-			developmentRegion = en;
+			developmentRegion = ru;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
@@ -656,7 +656,6 @@
 				F7EB95372CDFE15F007F0D08 /* ScheduleViewController.swift in Sources */,
 				F71CDF4A2CE8E1340021F0D3 /* Constants.swift in Sources */,
 				F71CDF4C2CE8E14B0021F0D3 /* MockData.swift in Sources */,
-				F737414C2D1F229800CB69FC /* TrackerModel.xcdatamodeld in Sources */,
 				F7C261BC2D2C999C00209FB9 /* AnalyticsService.swift in Sources */,
 				F7A122232D1150A30027CC34 /* ContextMenuManager.swift in Sources */,
 				F77F916D2C68042100E14393 /* StatisticViewController.swift in Sources */,
@@ -695,6 +694,7 @@
 				F796B7152D08E87E00E53884 /* OnboardingViewController.swift in Sources */,
 				F756F7862CF5F0D60082EE33 /* TrackerStore.swift in Sources */,
 				F737414E2D23165800CB69FC /* PlaceholderPresenter.swift in Sources */,
+				F7EE60DB2D2E0F1800FC1B65 /* TrackerModel.xcdatamodeld in Sources */,
 				F7AE2A192CEE590E0099D265 /* Assets+Generated.swift in Sources */,
 				F78DFDB82CFFC5B200068AA4 /* NewCategoryViewController.swift in Sources */,
 				F796B7112D08D50900E53884 /* OnboardingPageViewController.swift in Sources */,
@@ -1037,12 +1037,12 @@
 /* End XCSwiftPackageProductDependency section */
 
 /* Begin XCVersionGroup section */
-		F737414A2D1F229800CB69FC /* TrackerModel.xcdatamodeld */ = {
+		F7EE60D92D2E0F1800FC1B65 /* TrackerModel.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
-				F737414B2D1F229800CB69FC /* TrackerModel.xcdatamodel */,
+				F7EE60DA2D2E0F1800FC1B65 /* TrackerModel.xcdatamodel */,
 			);
-			currentVersion = F737414B2D1F229800CB69FC /* TrackerModel.xcdatamodel */;
+			currentVersion = F7EE60DA2D2E0F1800FC1B65 /* TrackerModel.xcdatamodel */;
 			name = TrackerModel.xcdatamodeld;
 			path = /Users/aleksei_frolov/Documents/YandexIOS/Tracker/Tracker/CoreData/TrackerModel.xcdatamodeld;
 			sourceTree = "<group>";
