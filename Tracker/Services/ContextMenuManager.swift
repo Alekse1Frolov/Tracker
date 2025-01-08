@@ -41,7 +41,7 @@ final class ContextMenuManager: NSObject {
         tableView.separatorColor = Asset.ypLightGray.color
         tableView.register(
             UITableViewCell.self,
-            forCellReuseIdentifier: "ContextMenuOptionCell"
+            forCellReuseIdentifier: Constants.contextMenuViewCell
         )
         tableView.alpha = 0.0
         return tableView
@@ -159,7 +159,7 @@ extension ContextMenuManager: UITableViewDelegate, UITableViewDataSource {
         cellForRowAt indexPath: IndexPath
     ) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(
-            withIdentifier: "ContextMenuOptionCell",
+            withIdentifier: Constants.contextMenuViewCell,
             for: indexPath
         )
         

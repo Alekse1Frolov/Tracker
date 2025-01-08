@@ -11,7 +11,7 @@ final class StatisticViewController: UIViewController {
     
     private let titleLabel: UILabel = {
         let label = UILabel()
-        label.text = "Статистика"
+        label.text = Constants.statisticViewControllerTitle
         label.font = UIFont.boldSystemFont(ofSize: 34)
         return label
     }()
@@ -25,7 +25,7 @@ final class StatisticViewController: UIViewController {
     
     private let placeholderLabel: UILabel = {
         let label = UILabel()
-        label.text = "Анализировать пока нечего"
+        label.text = Constants.statisticVCPlaceholderText
         label.font = UIFont.systemFont(ofSize: 12, weight: .medium)
         label.textColor = Asset.ypBlack.color
         return label
@@ -86,7 +86,10 @@ final class StatisticViewController: UIViewController {
         let completedTrackers = calculateCompletedTrackers()
         
         statistics = [
-            Statistic(title: "Трекеров завершено", value: completedTrackers)
+            Statistic(
+                title: Constants.statisticVCCompletedHabitsOption,
+                value: completedTrackers
+            )
         ]
         
         updatePlaceholderVisibility()
@@ -106,7 +109,10 @@ final class StatisticViewController: UIViewController {
     private func setupTableView() {
         tableView.dataSource = self
         tableView.delegate = self
-        tableView.register(StatisticTableViewCell.self, forCellReuseIdentifier: "StatisticTableViewCell")
+        tableView.register(
+            StatisticTableViewCell.self,
+            forCellReuseIdentifier: Constants.statisticViewCell
+        )
     }
     
     private func updatePlaceholderVisibility() {
@@ -118,7 +124,7 @@ final class StatisticViewController: UIViewController {
             tableView.isHidden = true
             placeholderPresenter?.showPlaceholder(
                 image: Asset.statisticPlaceholder.image,
-                text: "Анализировать пока нечего"
+                text: Constants.statisticVCPlaceholderText
             )
         }
     }

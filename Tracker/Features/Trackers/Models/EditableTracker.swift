@@ -11,5 +11,5 @@ struct EditableTracker {
     let tracker: Tracker
     let isEditable: Bool
     let currentCategory: String
-    var isPinned: Bool { currentCategory == "Закреплённые" }
+    var isPinned: Bool { currentCategory == Constants.categoryVcPinnedCategoryTitle }
 }

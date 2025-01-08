@@ -12,7 +12,7 @@ final class FilterViewController: UIViewController {
     // MARK: - UI Elements
     private let titleLabel: UILabel = {
         let label = UILabel()
-        label.text = "Фильтры"
+        label.text = Constants.filterViewControllerTitle
         label.font = .systemFont(ofSize: 16, weight: .medium)
         label.textAlignment = .center
         label.tintColor = Asset.ypBlack.color
@@ -51,7 +51,10 @@ final class FilterViewController: UIViewController {
     private func setupTableView() {
         tableView.delegate = self
         tableView.dataSource = self
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "FilterCell")
+        tableView.register(
+            UITableViewCell.self, 
+            forCellReuseIdentifier: Constants.filterViewControllerCell
+        )
         tableView.separatorColor = Asset.ypGray.color
     }
     
@@ -122,7 +125,10 @@ extension FilterViewController: UITableViewDelegate, UITableViewDataSource {
         _ tableView: UITableView,
         cellForRowAt indexPath: IndexPath
     ) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "FilterCell", for: indexPath)
+        let cell = tableView.dequeueReusableCell(
+            withIdentifier: Constants.filterViewControllerCell,
+            for: indexPath
+        )
 
         let filter = filters[indexPath.row]
         cell.textLabel?.text = filter.displayName

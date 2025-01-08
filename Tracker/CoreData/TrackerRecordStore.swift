@@ -15,10 +15,7 @@ final class TrackerRecordStore {
     }
     
     func addRecord(for trackerId: UUID, on date: Date) {
-        if fetchRecord(for: trackerId, on: date) != nil {
-            print("Запись завершения уже существует для трекера \(trackerId) на дату \(date)")
-            return
-        }
+        if fetchRecord(for: trackerId, on: date) != nil { return }
         
         let record = TrackerRecordCoreData(context: context)
         record.date = date.strippedTime()
@@ -27,7 +24,6 @@ final class TrackerRecordStore {
         if let tracker = fetchTracker(byID: trackerId) {
             record.tracker = tracker
             CoreDataStack.shared.saveContext()
-            print("Добавлена запись завершения для трекера \(trackerId) на дату \(date)")
         } else {
             print("Ошибка: не удалось найти трекер с ID \(trackerId)")
         }
@@ -37,7 +33,6 @@ final class TrackerRecordStore {
         let fetchRequest: NSFetchRequest<TrackerRecordCoreData> = TrackerRecordCoreData.fetchRequest()
         do {
             let records = try context.fetch(fetchRequest)
-            print("Загружены все записи завершений: \(records)")
             return records
         } catch {
             print("Ошибка загрузки всех записей завершений: \(error)")
@@ -52,7 +47,6 @@ final class TrackerRecordStore {
         do {
             let records = try context.fetch(fetchRequest)
             let dates = records.compactMap { $0.date }
-            print("Завершённые даты для трекера \(trackerID): \(dates)")
             return dates
         } catch {
             print("Ошибка загрузки записей завершений: \(error)")
@@ -68,7 +62,6 @@ final class TrackerRecordStore {
         do {
             let records = try context.fetch(fetchRequest)
             let trackerIDs = records.compactMap { $0.trackerID }
-            print("Завершённые трекеры на дату \(date): \(trackerIDs)")
             return trackerIDs
         } catch {
             print("Ошибка загрузки завершённых трекеров: \(error)")
@@ -81,7 +74,6 @@ final class TrackerRecordStore {
         if let record = fetchRecord(for: trackerId, on: strippedDate) {
             context.delete(record)
             CoreDataStack.shared.saveContext()
-            print("Удалена запись завершения для трекера \(trackerId) на дату \(strippedDate)")
         } else {
             print("Запись завершения для трекера \(trackerId) на дату \(strippedDate) не найдена")
         }
@@ -105,9 +97,6 @@ final class TrackerRecordStore {
         
         do {
             let tracker = try context.fetch(fetchRequest).first
-            if tracker == nil {
-                print("Не найден трекер с ID \(id)")
-            }
             return tracker
         } catch {
             print("Ошибка загрузки трекера с ID \(id): \(error)")

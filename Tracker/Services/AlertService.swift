@@ -11,18 +11,29 @@ final class AlertService {
     
     static func showDeleteConfirmationAlert(
         title: String,
-        deleteOptionTitle: String = "Удалить",
+        deleteOptionTitle: String = Constants.alertServiceDeleteOption,
         onDelete: @escaping () -> Void,
         onCancel: (() -> Void)? = nil,
         presenter: UIViewController
     ) {
-        let alert = UIAlertController(title: title, message: nil, preferredStyle: .actionSheet)
+        let alert = UIAlertController(
+            title: title,
+            message: nil,
+            preferredStyle: .actionSheet
+        )
         
-        let deleteAction = UIAlertAction(title: deleteOptionTitle, style: .destructive) { _ in
+        let deleteAction = UIAlertAction(
+            title: deleteOptionTitle,
+            style: .destructive
+        ) { _ in
             onDelete()
         }
         
-        let cancelAction = UIAlertAction(title: "Отмена", style: .cancel, handler: nil)
+        let cancelAction = UIAlertAction(
+            title: Constants.alertServiceCancelOption,
+            style: .cancel,
+            handler: nil
+        )
         
         alert.addAction(deleteAction)
         alert.addAction(cancelAction)

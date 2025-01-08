@@ -57,7 +57,7 @@ final class CategoryViewModel {
     
     func loadCategories() {
         categories = categoryStore.fetchCategories()
-            .filter { $0.title != "Закреплённые" }
+            .filter { $0.title != Constants.categoryVcPinnedCategoryTitle }
             .map { TrackerCategory(coreDataCategory: $0) }
     }
     

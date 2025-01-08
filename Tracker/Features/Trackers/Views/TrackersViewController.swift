@@ -115,10 +115,14 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
     
     private var isFirstLaunch: Bool {
         get {
-            return UserDefaults.standard.bool(forKey: "isFirstLaunch") == false
+            return UserDefaults.standard.bool(
+                forKey: Constants.trackersVcUserDefaultsKeyIsFirstLaunch) == false
         }
         set {
-            UserDefaults.standard.set(!newValue, forKey: "isFirstLaunch")
+            UserDefaults.standard.set(
+                !newValue,
+                forKey: Constants.trackersVcUserDefaultsKeyIsFirstLaunch
+            )
         }
     }
     
@@ -147,7 +151,11 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
         handleFirstLaunch()
         
         contextMenuManager = ContextMenuManager(
-            options: ["Закрепить", "Редактировать", "Удалить"]
+            options: [
+                Constants.trackersVcContextMenuPinOption,
+                Constants.trackersVcContextMenuEditOption,
+                Constants.trackersVcContextMenuDeleteOption
+            ]
         )
         setupLongPressGesture()
     }
@@ -233,10 +241,6 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
         let searchResultsEmpty = isSearchActive && !hasTrackersForDate
         let noFilteredResults = !hasTrackersForDate && !isSearchActive
         
-        print("isSearchActive: \(isSearchActive), searchResultsEmpty: \(searchResultsEmpty), hasTrackersForDate: \(hasTrackersForDate)")
-        print("Трекеры для текущей даты: \(trackerStore.fetchTrackersForCurrentDate(currentDate))")
-        print("Содержимое поискового запроса: \(searchBar.text ?? "nil")")
-        
         if searchResultsEmpty {
             placeholderPresenter?.showPlaceholder(
                 image: Asset.emptySearchPlaceholder.image,
@@ -258,7 +262,6 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
     
     private func handleFirstLaunch() {
         if isFirstLaunch {
-            print("Первый запуск приложения. Показываем стартовый плейсхолдер.")
             placeholderPresenter?.showPlaceholder(
                 image: Asset.starPlaceholder.image,
                 text: Constants.trackersVcPlaceholderLabel
@@ -273,16 +276,12 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
         switch selectedFilter {
         case .allTrackers:
             let categories = trackerStore.fetchTrackersForCurrentDate(currentDate)
-            print("Все трекеры на дату \(currentDate): \(categories.flatMap { $0.trackers.map { $0.name } })")
         case .today:
             let categories = trackerStore.fetchTrackersForCurrentDate(currentDate)
-            print("Трекеры на сегодня: \(categories.flatMap { $0.trackers.map { $0.name } })")
         case .completed:
             let categories = trackerStore.fetchCompletedTrackers(for: currentDate)
-            print("Завершённые трекеры: \(categories.flatMap { $0.trackers.map { $0.name } })")
         case .incomplete:
             let categories = trackerStore.fetchIncompleteTrackers(for: currentDate)
-            print("Незавершённые трекеры: \(categories.flatMap { $0.trackers.map { $0.name } })")
         }
         
         let predicate: NSPredicate
@@ -298,21 +297,6 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
         
         collectionView.reloadData()
         updatePlaceholderVisibility()
-        
-        if let trackers = trackerStore.fetchedResultsController?.fetchedObjects {
-            print("Фильтр: \(selectedFilter), Найдено трекеров: \(trackers.count)")
-        } else {
-            print("Фильтр: \(selectedFilter), Найдено трекеров: 0")
-        }
-        
-        if let sections = trackerStore.fetchedResultsController?.sections {
-            print("Применён фильтр: \(selectedFilter)")
-            for section in sections {
-                print("Категория: \(section.name), Количество трекеров: \(section.numberOfObjects)")
-            }
-        } else {
-            print("Применён фильтр: \(selectedFilter), Секций нет")
-        }
     }
     
     private func presentEventViewController(
@@ -353,7 +337,6 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
     
     private func filteredCategories() -> [TrackerCategory] {
         guard let sections = trackerStore.fetchedResultsController?.sections else {
-            print("Нет секций для фильтрации.")
             return []
         }
         
@@ -363,11 +346,6 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
         for section in sections {
             guard let objects = section.objects as? [TrackerCoreData] else { continue }
             let trackers = objects.compactMap { Tracker(coreDataTracker: $0) }
-            
-            print("Секция: \(section.name), Все трекеры:")
-            trackers.forEach { tracker in
-                print("- \(tracker.name), Тип: \(tracker.type), Дата: \(String(describing: tracker.date)), Расписание: \(tracker.schedule)")
-            }
             
             let filteredTrackers: [Tracker]
             switch selectedFilter {
@@ -390,12 +368,10 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
         }
         
         if !pinnedTrackers.isEmpty {
-            categorizedTrackers.insert(TrackerCategory(title: "Закреплённые", trackers: pinnedTrackers), at: 0)
-        }
-        
-        print("Категории после фильтрации:")
-        categorizedTrackers.forEach { category in
-            print("- \(category.title): \(category.trackers.map { $0.name })")
+            categorizedTrackers.insert(
+                TrackerCategory(title: Constants.trackersVcPinnedCategoryTitle, trackers: pinnedTrackers),
+                at: 0
+            )
         }
         
         return categorizedTrackers
@@ -414,11 +390,16 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
     }
     
     private func saveSelectedFilter() {
-        UserDefaults.standard.set(selectedFilter.rawValue, forKey: "SelectedFilter")
+        UserDefaults.standard.set(
+            selectedFilter.rawValue,
+            forKey: Constants.trackersVcUserDefaultsKeySelectedFilter
+        )
     }
     
     private func loadSelectedFilter() -> TrackerFilter {
-        if let rawValue = UserDefaults.standard.string(forKey: "SelectedFilter"),
+        if let rawValue = UserDefaults.standard.string(
+            forKey: Constants.trackersVcUserDefaultsKeySelectedFilter
+        ),
            let filter = TrackerFilter(rawValue: rawValue) {
             return filter
         }
@@ -510,7 +491,6 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
         currentDate = sender.date.strippedTime() ?? sender.date
         
         let currentWeekday = Calendar.current.component(.weekday, from: currentDate)
-        print("Дата изменена на: \(currentDate), День недели: \(currentWeekday)")
         
         applyCurrentFilter()
         collectionView.reloadData()
@@ -581,7 +561,6 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
             isEditable: true
         )
         
-        print("Конфигурация EventViewController для трекера: \(tracker.name), Тип: \(tracker.schedule.isEmpty ? ".irregularEvent" : ".habit")")
         eventVC.configure(with: tracker, daysText: counterLabelText)
         
         let navigationController = UINavigationController(rootViewController: eventVC)
@@ -621,8 +600,8 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
         let backViewFrame = cell.convert(cell.backViewFrame, to: view.window)
         
         let options = isPinned
-        ? ["Открепить", "Редактировать", "Удалить"]
-        : ["Закрепить", "Редактировать", "Удалить"]
+        ? [Constants.trackersVcContextMenuUnpinOption, Constants.trackersVcContextMenuEditOption, Constants.trackersVcContextMenuDeleteOption]
+        : [Constants.trackersVcContextMenuPinOption, Constants.trackersVcContextMenuEditOption, Constants.trackersVcContextMenuDeleteOption]
         
         contextMenuManager?.showContextMenu(
             under: backViewFrame,
@@ -649,25 +628,17 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
 
 extension TrackersViewController: TrackerCellDelegate {
     func toggleCompletion(for trackerID: UUID) {
-        guard findTracker(by: trackerID) != nil else {
-            print("Трекер с ID \(trackerID) не найден.")
-            return
-        }
+        guard findTracker(by: trackerID) != nil else { return }
         
-        if isFutureDate(currentDate) {
-            print("Невозможно завершить трекер на будущую дату: \(currentDate)")
-            return
-        }
+        if isFutureDate(currentDate) { return }
         
         let recordStore = TrackerRecordStore(context: CoreDataStack.shared.mainContext)
         let currentDateOnly = Calendar.current.startOfDay(for: currentDate)
         let isAlreadyCompleted = isTrackerCompleted(trackerID: trackerID, on: currentDateOnly, using: recordStore)
         
         if isAlreadyCompleted {
-            print("Отменяем завершение трекера с ID \(trackerID) на дату \(currentDateOnly)")
             removeCompletion(for: trackerID, on: currentDateOnly, using: recordStore)
         } else {
-            print("Отмечаем трекер с ID \(trackerID) как завершённый на дату \(currentDateOnly)")
             addCompletion(for: trackerID, on: currentDateOnly, using: recordStore)
         }
         
@@ -675,10 +646,7 @@ extension TrackersViewController: TrackerCellDelegate {
         applyCurrentFilter()
         
         if let indexPath = findIndexPath(for: trackerID) {
-            print("Обновление ячейки в секции \(indexPath.section), строка \(indexPath.item)")
             collectionView.reloadItems(at: [indexPath])
-        } else {
-            print("Не удалось найти IndexPath для трекера \(trackerID)")
         }
     }
     
@@ -721,7 +689,6 @@ extension TrackersViewController: UICollectionViewDataSource {
     
     func numberOfSections(in collectionView: UICollectionView) -> Int {
         let categories = filteredCategories()
-        print("Количество секций: \(categories.count)")
         return categories.isEmpty ? 0 : categories.count
     }
     
@@ -731,11 +698,9 @@ extension TrackersViewController: UICollectionViewDataSource {
     ) -> Int {
         let categories = filteredCategories()
         guard section < categories.count else {
-            print("Секция \(section) пуста или выходит за пределы массива")
             return 0
         }
         let trackersCount = categories[section].trackers.count
-        print("Секция: \(categories[section].title), Количество трекеров: \(trackersCount)")
         return trackersCount
     }
     
@@ -791,8 +756,6 @@ extension TrackersViewController: UICollectionViewDataSource {
     
     private func configureCell(_ cell: TrackerCell, with tracker: Tracker) {
         let completedTrackers = trackerStore.fetchCompletedTrackersSet(for: currentDate)
-        print("Конфигурация ячейки для трекера: \(tracker.name), Тип: \(tracker.type), Расписание: \(tracker.schedule), Дата: \(String(describing: tracker.date))")
-        print("Завершённые трекеры на \(currentDate): \(completedTrackers)")
         let isCompleted: Bool
         
         if tracker.type == .habit {
@@ -802,8 +765,6 @@ extension TrackersViewController: UICollectionViewDataSource {
         } else {
             isCompleted = false
         }
-        
-        print("Трекер: \(tracker.name), isCompleted: \(isCompleted)")
         
         cell.configure(
             with: tracker,

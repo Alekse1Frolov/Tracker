@@ -10,7 +10,7 @@ import UIKit
 
 final class TrackerStore: NSObject {
     private let context: NSManagedObjectContext
-    private let pinnedCategoryTitle = "Закреплённые"
+    private let pinnedCategoryTitle = Constants.trackersVcPinnedCategoryTitle
     public private(set) var fetchedResultsController: NSFetchedResultsController<TrackerCoreData>?
     
     var onDataChange: (() -> Void)?
@@ -53,7 +53,6 @@ final class TrackerStore: NSObject {
     }
     
     func createTracker(from tracker: Tracker) {
-        print("Создаём трекер: \(tracker.name), ID: \(tracker.id), Тип: \(tracker.schedule.isEmpty ? ".irregularEvent" : ".habit"), Расписание: \(tracker.schedule), Категория: \(tracker.category)")
         let trackerCoreData = TrackerCoreData(context: context)
         trackerCoreData.id = tracker.id
         trackerCoreData.name = tracker.name
@@ -81,7 +80,6 @@ final class TrackerStore: NSObject {
         ? TrackerType.irregularEvent.rawValue
         : TrackerType.habit.rawValue
         
-        print("Создан трекер: \(tracker.name), ID: \(tracker.id), Тип: \(tracker.type), Расписание: \(tracker.schedule), Дата: \(tracker.date) Категория: \(tracker.category)")
         saveContext()
     }
     
@@ -110,11 +108,6 @@ final class TrackerStore: NSObject {
             let fetchedResults = try context.fetch(request)
             let trackers = fetchedResults.compactMap { Tracker(coreDataTracker: $0) }
             
-            print("Загруженные трекеры с предикатом \(String(describing: predicate)):")
-            trackers.forEach { tracker in
-                print("- \(tracker.name), Тип: \(tracker.type), Расписание: \(tracker.schedule), Дата: \(String(describing: tracker.date))")
-            }
-            
             return trackers
         } catch {
             print("Ошибка загрузки трекеров: \(error)")
@@ -130,10 +123,8 @@ final class TrackerStore: NSObject {
         do {
             let records = try context.fetch(fetchRequest)
             let trackerIDs = records.compactMap { $0.trackerID }
-            print("Завершённые трекеры на дату \(currentDateOnly): \(trackerIDs)")
             return Set(trackerIDs)
         } catch {
-            print("Ошибка загрузки завершённых трекеров: \(error)")
             return []
         }
     }
@@ -146,7 +137,6 @@ final class TrackerStore: NSObject {
         schedule: [Weekday],
         category: String
     ) {
-        print("Обновляем трекер \(tracker.name): Новое расписание \(schedule), Новая дата \(tracker.date)")
         let fetchRequest: NSFetchRequest<TrackerCoreData> = TrackerCoreData.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "id == %@", tracker.id as CVarArg)
         
@@ -197,16 +187,12 @@ final class TrackerStore: NSObject {
     func fetchTrackersForCurrentDate(_ date: Date) -> [TrackerCategory] {
         let strippedDate = date.strippedTime() ?? date
         let weekday = Calendar.current.component(.weekday, from: date)
-        let correctedWeekday = (weekday + 5) % 7 + 1 // Преобразование в формат enum Weekday
-        
-        print("Фильтрация трекеров на дату: \(date), День недели: \(correctedWeekday)")
+        let correctedWeekday = (weekday + 5) % 7 + 1
         
         let predicateHabit = NSPredicate(format: "ANY schedule.number == %d", correctedWeekday)
         let predicateIrregular = NSPredicate(format: "date == %@", strippedDate as NSDate)
         
         let compoundPredicate = NSCompoundPredicate(orPredicateWithSubpredicates: [predicateHabit, predicateIrregular])
-        
-        print("Сформированный предикат: \(compoundPredicate)")
         
         return fetchTrackers(with: compoundPredicate)
     }
@@ -218,7 +204,6 @@ final class TrackerStore: NSObject {
         let completedTrackersPredicate = NSPredicate(format: "id IN %@", completedTrackerIDs)
         let completedTrackers = fetchTrackers(with: completedTrackersPredicate).flatMap { $0.trackers }
         
-        print("Завершённые трекеры: \(completedTrackers.map { $0.name })")
         return categorizeTrackers(completedTrackers)
     }
     
@@ -237,7 +222,6 @@ final class TrackerStore: NSObject {
         
         let incompleteTrackers = allTrackers.filter { !completedTrackerIDs.contains($0.id) }
         
-        print("Незавершённые трекеры: \(incompleteTrackers.map { $0.name })")
         return categorizeTrackers(incompleteTrackers)
     }
     
@@ -247,10 +231,8 @@ final class TrackerStore: NSObject {
         
         do {
             let trackers = try context.fetch(fetchRequest)
-            print("Трекеры, загруженные с предикатом \(predicate):")
             trackers.forEach { tracker in
                 let schedule = (tracker.schedule as? Set<WeekdayCoreData>)?.compactMap { $0.number }
-                print("- \(tracker.name ?? "Без названия"), Дни недели: \(schedule ?? []), Дата: \(tracker.date ?? Date.distantPast)")
             }
             return categorizeTrackers(trackers.map { Tracker(coreDataTracker: $0) })
         } catch {
@@ -315,7 +297,6 @@ final class TrackerStore: NSObject {
 // MARK: - NSFetchedResultsControllerDelegate
 extension TrackerStore: NSFetchedResultsControllerDelegate {
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        print("Данные изменены. Обновляем UI.")
         onDataChange?()
     }
 }
@@ -380,7 +361,6 @@ extension TrackerStore {
     
     func currentPredicate(for date: Date) -> NSPredicate {
         let selectedDate = date.strippedTime() ?? date
-        print("Фильтрация трекеров на дату: \(selectedDate) (обнулённая дата)")
         let nextDay = Calendar.current.date(byAdding: .day, value: 1, to: selectedDate)!
         
         let weekdayIndex = Calendar.current.component(.weekday, from: date)
@@ -400,7 +380,6 @@ extension TrackerStore {
         let compoundPredicate = NSCompoundPredicate(
             orPredicateWithSubpredicates: [habitPredicate, irregularEventPredicate]
         )
-        print("Формируем предикат: \(compoundPredicate)")
         
         return compoundPredicate
     }

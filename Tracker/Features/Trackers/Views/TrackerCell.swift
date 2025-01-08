@@ -167,7 +167,6 @@ final class TrackerCell: UICollectionViewCell {
         let image = isCompleted ? Asset.doneImage.image : UIImage(systemName: Constants.trackerCellPlusButtonSystemName)
         plusButton.setImage(image, for: .normal)
         plusButton.alpha = isCompleted ? 0.5 : 1.0
-        print("Кнопка обновлена: isCompleted = \(isCompleted)")
     }
     
     @objc private func plusButtonTapped() {

@@ -55,10 +55,8 @@ struct Tracker {
         
         if let coreDataSchedule = coreDataTracker.schedule as? Set<WeekdayCoreData> {
             self.schedule = coreDataSchedule.compactMap { Weekday(rawValue: Int($0.number)) }
-            print("Загружено расписание для трекера \(self.name): \(self.schedule)")
         } else {
             self.schedule = []
-            print("Расписание для трекера \(self.name) отсутствует")
         }
         
         if let typeString = coreDataTracker.type, let trackerType = TrackerType(rawValue: typeString) {

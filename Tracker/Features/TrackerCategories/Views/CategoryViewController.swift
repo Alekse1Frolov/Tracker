@@ -63,7 +63,10 @@ final class CategoryViewController: UIViewController {
         setupView()
         setupBindings()
         viewModel.loadCategories()
-        contextMenuManager = ContextMenuManager(options: ["Редактировать", "Удалить"])
+        contextMenuManager = ContextMenuManager(
+            options:
+                [Constants.categoryVcContextMenuEditOption,
+                 Constants.categoryVcContextMenuDeleteOption])
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -138,7 +141,7 @@ final class CategoryViewController: UIViewController {
         if gesture.state == .began {
             let cell = tableView.cellForRow(at: indexPath)
             let cellFrame = tableView.convert(cell?.frame ?? .zero, to: view.window)
-            let options = ["Редактировать", "Удалить"]
+            let options = [Constants.categoryVcContextMenuEditOption, Constants.categoryVcContextMenuDeleteOption]
             let categoryName = viewModel.category(at: indexPath.row)
             
             contextMenuManager?.showContextMenu(

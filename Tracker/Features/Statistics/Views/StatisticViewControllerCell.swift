@@ -12,7 +12,7 @@ final class StatisticTableViewCell: UITableViewCell {
     private let borderLayer = CAShapeLayer()
     private let gradientLayer = CAGradientLayer()
     
-    static let reuseIdentifier = "StatisticTableViewCell"
+    static let reuseIdentifier = Constants.statisticViewCell
     
     private let countLabel: UILabel = {
         let label = UILabel()
