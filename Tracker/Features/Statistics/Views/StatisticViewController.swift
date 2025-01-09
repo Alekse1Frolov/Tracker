@@ -120,6 +120,7 @@ final class StatisticViewController: UIViewController {
         
         if hasData {
             placeholderPresenter?.hidePlaceholder()
+            tableView.isHidden = false
         } else {
             tableView.isHidden = true
             placeholderPresenter?.showPlaceholder(

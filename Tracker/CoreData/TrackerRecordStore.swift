@@ -79,6 +79,21 @@ final class TrackerRecordStore {
         }
     }
     
+    func deleteRecords(for trackerID: UUID) {
+        let fetchRequest: NSFetchRequest<TrackerRecordCoreData> = TrackerRecordCoreData.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "trackerID == %@", trackerID as CVarArg)
+        
+        do {
+            let records = try context.fetch(fetchRequest)
+            for record in records {
+                context.delete(record)
+            }
+            try context.save()
+        } catch {
+            print("Ошибка при удалении записей для трекера \(trackerID): \(error)")
+        }
+    }
+    
     private func fetchRecord(for trackerId: UUID, on date: Date) -> TrackerRecordCoreData? {
         let fetchRequest: NSFetchRequest<TrackerRecordCoreData> = TrackerRecordCoreData.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "trackerID == %@ AND date == %@", trackerId as CVarArg, date as NSDate)

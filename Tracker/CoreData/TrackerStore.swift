@@ -175,8 +175,14 @@ final class TrackerStore: NSObject {
         
         do {
             if let tracker = try context.fetch(fetchRequest).first {
+                
+                let recordStore = TrackerRecordStore(context: context)
+                recordStore.deleteRecords(for: id)
+                
                 context.delete(tracker)
                 saveContext()
+                
+                NotificationCenter.default.post(name: .completedTrackersDidUpdate, object: nil)
             }
         } catch {
             print("Ошибка удаления трекера: \(error)")
