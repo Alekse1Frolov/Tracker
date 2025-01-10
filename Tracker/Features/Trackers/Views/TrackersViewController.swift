@@ -247,17 +247,19 @@ final class TrackersViewController: UIViewController, UISearchBarDelegate {
                 text: Constants.trackersVcEmptySearchPlaceholderText
             )
             collectionView.isHidden = true
+            filterButton.isHidden = true
         } else if noFilteredResults {
             placeholderPresenter?.showPlaceholder(
                 image: Asset.emptySearchPlaceholder.image,
                 text: Constants.trackersVcEmptySearchPlaceholderText
             )
             collectionView.isHidden = true
+            filterButton.isHidden = false
         } else {
             placeholderPresenter?.hidePlaceholder()
             collectionView.isHidden = false
+            filterButton.isHidden = false
         }
-        filterButton.isHidden = !hasTrackersForDate || isSearchActive
     }
     
     private func handleFirstLaunch() {
