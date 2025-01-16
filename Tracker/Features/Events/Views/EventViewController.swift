@@ -16,8 +16,12 @@ final class EventViewController: UIViewController {
     private var selectedDays: [Weekday] = []
     private var selectedDaysText = ""
     private var errorLabelHeightConstraint: NSLayoutConstraint!
+    private var daysContainerViewHeightConstraint: NSLayoutConstraint!
+    private var nameTextFieldTopAnchorConstraint: NSLayoutConstraint!
     private var selectedEmojiIndex: IndexPath?
     private var selectedColorIndex: IndexPath?
+    private var isEditable: Bool
+    private var currentTracker: Tracker?
     
     // MARK: - UI Elements
     private let scrollView = UIScrollView()
@@ -28,6 +32,22 @@ final class EventViewController: UIViewController {
         label.font = .systemFont(ofSize: 16, weight: .medium)
         label.textAlignment = .center
         label.textColor = Asset.ypBlack.color
+        return label
+    }()
+    
+    private let daysContainerView: UIView = {
+        let view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.isHidden = true
+        return view
+    }()
+    
+    private let daysLabel: UILabel = {
+        let label = UILabel()
+        label.font = UIFont.systemFont(ofSize: 32, weight: .bold)
+        label.textColor = Asset.ypBlack.color
+        label.textAlignment = .center
+        label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
@@ -142,8 +162,9 @@ final class EventViewController: UIViewController {
     }()
     
     // MARK: - Initializer
-    init(trackerType: TrackerType) {
+    init(trackerType: TrackerType, isEditable: Bool = false) {
         self.trackerType = trackerType
+        self.isEditable = isEditable
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -157,6 +178,7 @@ final class EventViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        navigationItem.hidesBackButton = true
         nameTextField.delegate = self
         
         setupLayout()
@@ -165,6 +187,24 @@ final class EventViewController: UIViewController {
         setupCollectionView()
         setupScrollViewContent()
         setupClearButton()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationController?.setNavigationBarHidden(true, animated: animated)
+        
+        if isEditable {
+            if trackerType == .habit {
+                titleLabel.text = Constants.eventVcEditingHabitTitle
+            } else {
+                titleLabel.text = Constants.eventVcEditingIrregularEventTitle
+            }
+        }
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        navigationController?.setNavigationBarHidden(false, animated: animated)
     }
     
     private func setupTableView() {
@@ -240,20 +280,46 @@ final class EventViewController: UIViewController {
     }
     
     private func setupScrollViewContent() {
+        if isEditable && trackerType == .habit {
+            contentView.addSubview(daysContainerView)
+            daysContainerView.addSubview(daysLabel)
+            
+            daysContainerViewHeightConstraint = daysContainerView.heightAnchor.constraint(equalToConstant: 78)
+            
+            NSLayoutConstraint.activate([
+                // daysContainerView constraints
+                daysContainerView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 24),
+                daysContainerView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+                daysContainerView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+                daysContainerViewHeightConstraint,
+                
+                // daysLabel constraints
+                daysLabel.topAnchor.constraint(equalTo: daysContainerView.topAnchor),
+                daysLabel.leadingAnchor.constraint(equalTo: daysContainerView.leadingAnchor),
+                daysLabel.trailingAnchor.constraint(equalTo: daysContainerView.trailingAnchor),
+                daysLabel.heightAnchor.constraint(equalToConstant: 38)
+            ])
+        }
         
-        [nameTextField, errorLabel, tableView, emojiLabel, emojiCollectionView,
-         colorLabel, colorCollectionView].forEach { element in
+        [nameTextField, errorLabel, tableView, emojiLabel,
+         emojiCollectionView, colorLabel, colorCollectionView].forEach { element in
             element.translatesAutoresizingMaskIntoConstraints = false
             contentView.addSubview(element)
         }
         
         errorLabelHeightConstraint = errorLabel.heightAnchor.constraint(equalToConstant: 0)
         
+        if isEditable && trackerType == .habit {
+            nameTextFieldTopAnchorConstraint = nameTextField.topAnchor.constraint(equalTo: daysContainerView.bottomAnchor)
+        } else {
+            nameTextFieldTopAnchorConstraint = nameTextField.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 24)
+        }
+        
         NSLayoutConstraint.activate([
             // nameTextField constraints
-            nameTextField.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 24),
-            nameTextField.leadingAnchor.constraint(equalTo: contentView.safeAreaLayoutGuide.leadingAnchor, constant: 16),
-            nameTextField.trailingAnchor.constraint(equalTo: contentView.safeAreaLayoutGuide.trailingAnchor, constant: -16),
+            nameTextFieldTopAnchorConstraint,
+            nameTextField.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            nameTextField.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
             nameTextField.heightAnchor.constraint(equalToConstant: 75),
             
             // tableView constraints
@@ -271,12 +337,12 @@ final class EventViewController: UIViewController {
             
             // emojiLabel constraints
             emojiLabel.topAnchor.constraint(equalTo: tableView.bottomAnchor, constant: 32),
-            emojiLabel.leadingAnchor.constraint(equalTo: contentView.safeAreaLayoutGuide.leadingAnchor, constant: 28),
+            emojiLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 28),
             
             // emojiCollectionView constraints
             emojiCollectionView.topAnchor.constraint(equalTo: emojiLabel.bottomAnchor),
-            emojiCollectionView.leadingAnchor.constraint(equalTo: contentView.safeAreaLayoutGuide.leadingAnchor),
-            emojiCollectionView.trailingAnchor.constraint(equalTo: contentView.safeAreaLayoutGuide.trailingAnchor),
+            emojiCollectionView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            emojiCollectionView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             emojiCollectionView.heightAnchor.constraint(equalToConstant: 204),
             
             // colorLabel constraints
@@ -334,38 +400,52 @@ final class EventViewController: UIViewController {
     
     // MARK: - Actions
     @objc private func cancelButtonTapped() {
-        if let tabBarVC = self.presentingViewController as? UITabBarController {
-            tabBarVC.selectedIndex = 0
+        if isEditable {
+            dismiss(animated: true, completion: nil)
+        } else {
+            navigationController?.popViewController(animated: true)
         }
-        self.dismiss(animated: true, completion: nil)
     }
     
     @objc private func createButtonTapped() {
         guard let trackerName = nameTextField.text, !trackerName.isEmpty else { return }
-        guard let selectedEmojiIndex = selectedEmojiIndex else { return }
-        guard let selectedColorIndex = selectedColorIndex else { return }
-        guard let selectedCategory = tableView.cellForRow(at: IndexPath(row: 0, section: 0))?.detailTextLabel?.text else { return }
-        
-        let selectedEmoji = emojis[selectedEmojiIndex.item]
-        let selectedColor = colors[selectedColorIndex.item]
-        let schedule = trackerType == .habit ? selectedDays : []
+        guard let selectedCategory = tableView.cellForRow(at: IndexPath(row: 0, section: 0))?.detailTextLabel?.text,
+              !selectedCategory.isEmpty else { return }
         
         let trackerStore = TrackerStore(context: CoreDataStack.shared.mainContext)
-        let newTracker = Tracker(
-            id: UUID(),
-            name: trackerName,
-            color: selectedColor?.hexString ?? "",
-            emoji: selectedEmoji,
-            schedule: schedule,
-            date: Date(),
-            category: selectedCategory,
-            order: 0
-        )
         
-        UserDefaults.standard.set(selectedCategory, forKey: Constants.categoryVcLastSelectedCategoryKey)
-        trackerStore.createTracker(from: newTracker)
+        if isEditable, let currentTracker = currentTracker {
+            trackerStore.updateTracker(
+                currentTracker,
+                name: trackerName,
+                color: colors[selectedColorIndex?.item ?? 0]?.hexString ?? "",
+                emoji: emojis[selectedEmojiIndex?.item ?? 0],
+                schedule: trackerType == .habit ? selectedDays : [],
+                category: selectedCategory
+            )
+            
+            guard let updatedTracker = trackerStore.fetchTracker(byID: currentTracker.id) else { return }
+            NotificationCenter.default.post(name: .updatedTracker, object: updatedTracker)
+        } else {
+            let newTracker = Tracker(
+                id: UUID(),
+                name: trackerName,
+                color: colors[selectedColorIndex?.item ?? 0]?.hexString ?? "",
+                emoji: emojis[selectedEmojiIndex?.item ?? 0],
+                type: trackerType,
+                schedule: trackerType == .habit ? selectedDays : [],
+                date: Date(),
+                category: selectedCategory,
+                order: 0,
+                isPinned: false
+            )
+            
+            UserDefaults.standard.set(selectedCategory, forKey: Constants.categoryVcLastSelectedCategoryKey)
+            
+            trackerStore.createTracker(from: newTracker)
+            NotificationCenter.default.post(name: .createdTracker, object: newTracker)
+        }
         
-        NotificationCenter.default.post(name: .createdTracker, object: newTracker)
         dismiss(animated: true, completion: nil)
     }
     
@@ -374,7 +454,7 @@ final class EventViewController: UIViewController {
         let isEmojiSelected = selectedEmojiIndex != nil
         let isColorSelected = selectedColorIndex != nil
         let isScheduleValid = trackerType == .irregularEvent || !selectedDays.isEmpty
-        let isCategorySelected = tableView.cellForRow(at: IndexPath(row: 0, section: 0))?.detailTextLabel?.text?.isEmpty == false
+        let isCategorySelected = isEditable || tableView.cellForRow(at: IndexPath(row: 0, section: 0))?.detailTextLabel?.text?.isEmpty == false
         
         createButton.isEnabled = isNameValid && isEmojiSelected && isColorSelected && isScheduleValid && isCategorySelected
         createButton.backgroundColor = createButton.isEnabled ? Asset.ypBlack.color : Asset.ypLightGray.color
@@ -407,6 +487,30 @@ final class EventViewController: UIViewController {
             self.contentView.layoutIfNeeded()
         }
     }
+    
+    func configure(with tracker: Tracker, daysText: String) {
+        self.currentTracker = tracker
+        nameTextField.text = tracker.name
+        
+        daysLabel.text = daysText
+        
+        selectedEmojiIndex = emojis.firstIndex(of: tracker.emoji).map { IndexPath(item: $0, section: 0) }
+        selectedColorIndex = colors.firstIndex(where: { $0?.hexString == tracker.color }).map { IndexPath(item: $0, section: 0) }
+        selectedDays = tracker.schedule
+        selectedDaysText = tracker.schedule.sorted(by: { $0.rawValue < $1.rawValue }).map { $0.abbreviation }.joined(separator: ", ")
+        
+        createButton.setTitle(
+            isEditable ? Constants.eventVcEditingResultButton : Constants.eventVcCreateButtonTitle, 
+            for: .normal)
+        
+        daysContainerView.isHidden = trackerType != .habit || !isEditable
+        daysContainerViewHeightConstraint?.constant = trackerType == .habit && isEditable ? 78 : 0
+        
+        tableView.reloadData()
+        emojiCollectionView.reloadData()
+        colorCollectionView.reloadData()
+        updateCreateButtonState()
+    }
 }
 
 // MARK: - UITableViewDataSource
@@ -433,9 +537,18 @@ extension EventViewController: UITableViewDataSource {
         configureCellAppearence(cell)
         
         if trackerType == .habit {
-            configureHabitCell(cell, at: indexPath)
-        } else if trackerType == . irregularEvent {
-            configureIrregularEventCell(cell)
+            if isEditable {
+                guard let tracker = currentTracker else { return cell }
+                configureHabitCell(cell, at: indexPath, tracker: tracker)
+            } else {
+                configureHabitCellForCreation(cell, at: indexPath)
+            }
+        } else if trackerType == .irregularEvent {
+            if isEditable {
+                configureIrregularEventCell(cell)
+            } else {
+                configureCategoryCell(cell, tracker: nil)
+            }
         }
         
         return cell
@@ -450,6 +563,28 @@ extension EventViewController: UITableViewDataSource {
             cell.separatorInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: .greatestFiniteMagnitude)
         } else {
             cell.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
+        }
+    }
+    
+    private func configureHabitCellForCreation(_ cell: UITableViewCell, at indexPath: IndexPath) {
+        switch indexPath.row {
+        case 0:
+            configureCellText(
+                cell,
+                mainText: Constants.eventVcCategoryTitle,
+                mainTextColor: Asset.ypBlack.color,
+                detailTextColor: Asset.ypGray.color
+            )
+        case 1:
+            configureCellText(
+                cell,
+                mainText: Constants.scheduleVcTitle,
+                detailText: selectedDaysText.isEmpty ? nil : selectedDaysText,
+                mainTextColor: Asset.ypBlack.color,
+                detailTextColor: Asset.ypGray.color
+            )
+        default:
+            break
         }
     }
     
@@ -493,20 +628,26 @@ extension EventViewController: UITableViewDataSource {
         }
     }
     
-    private func configureCategoryCell(_ cell: UITableViewCell) {
+    private func configureCategoryCell(_ cell: UITableViewCell, tracker: Tracker?) {
+        let categoryText = isEditable ? tracker?.category : nil
         configureCellText(
             cell,
             mainText: Constants.eventVcCategoryTitle,
+            detailText: categoryText,
             mainTextColor: Asset.ypBlack.color,
             detailTextColor: Asset.ypGray.color,
             alignment: .left
         )
     }
     
-    private func configureHabitCell(_ cell: UITableViewCell, at indexPath: IndexPath) {
+    private func configureHabitCell(
+        _ cell: UITableViewCell,
+        at indexPath: IndexPath,
+        tracker: Tracker
+    ) {
         switch indexPath.row {
         case 0:
-            configureCategoryCell(cell)
+            configureCategoryCell(cell, tracker: tracker)
         case 1:
             configureCellText(
                 cell,
@@ -521,7 +662,8 @@ extension EventViewController: UITableViewDataSource {
     }
     
     private func configureIrregularEventCell(_ cell: UITableViewCell) {
-        configureCategoryCell(cell)
+        guard let tracker = currentTracker else { return }
+        configureCategoryCell(cell, tracker: tracker)
     }
 }
 // MARK: - UITableViewDelegate

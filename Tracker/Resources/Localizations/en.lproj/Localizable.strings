@@ -1,0 +1,12 @@
+/* 
+  Localizable.strings
+  Tracker
+
+  Created by Aleksei Frolov on 07.01.2025.
+  
+*/
+
+// TrackersViewController
+"trackers" = "Trackers";
+"statistic" = "Statistics";
+"filters" = "Filters";

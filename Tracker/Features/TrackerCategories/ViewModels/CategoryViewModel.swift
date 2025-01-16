@@ -56,12 +56,20 @@ final class CategoryViewModel {
     }
     
     func loadCategories() {
-        categories = categoryStore.fetchCategories().map { TrackerCategory(coreDataCategory: $0) }
+        categories = categoryStore.fetchCategories()
+            .filter { $0.title != Constants.categoryVcPinnedCategoryTitle }
+            .map { TrackerCategory(coreDataCategory: $0) }
     }
     
     func removeCategory(at index: Int) {
         let title = categories[index].title
-        categoryStore.deleteCategory(byTitle: title)
+        _ = categoryStore.deleteCategory(byTitle: title)
         loadCategories()
+    }
+    
+    func removeCategory(named name: String) {
+        if let index = indexOfCategory(named: name) {
+            removeCategory(at: index)
+        }
     }
 }

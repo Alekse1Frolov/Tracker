@@ -16,6 +16,16 @@ enum Constants {
     static let trackersVcPlaceholderLabel = "Что будем отслеживать?"
     static let trackersVcTrackerCellId = "TrakerCell"
     static let trackersVcTrackerCategoryHeaderId = "TrackerCategoryHeader"
+    static let trackersVcDeleteConfirmationAlertTitle = "Уверены, что хотите удалить трекер?"
+    static let trackersVcEmptySearchPlaceholderText = "Ничего не найдено"
+    static let trackersVcUserDefaultsKeyIsFirstLaunch = "isFirstLaunch"
+    static let trackersVcContextMenuPinOption = "Закрепить"
+    static let trackersVcContextMenuUnpinOption = "Открепить"
+    static let trackersVcContextMenuEditOption = "Редактировать"
+    static let trackersVcContextMenuDeleteOption = "Удалить"
+    static let trackersVcPinnedCategoryTitle = "Закреплённые"
+    static let trackersVcUserDefaultsKeySelectedFilter = "SelectedFilter"
+    
     
     static let trackerTypeSelectionVcTitle = "Создание трекера"
     static let trackerTypeSelectionVcHabit = "Привычка"
@@ -40,6 +50,9 @@ enum Constants {
     static let eventVcMaxNameLength = 38
     static let eventVcMaxNameLengthErrorText = "Ограничение 38 символов"
     static let eventVcClearButtonSystemName = "xmark.circle.fill"
+    static let eventVcEditingHabitTitle = "Редактирование привычки"
+    static let eventVcEditingIrregularEventTitle = "Редактирование события"
+    static let eventVcEditingResultButton = "Сохранить"
     
     static let categoryVcPlaceholderLabel = "Привычки и события можно \nобъединить по смыслу"
     static let categoryVcAddButtonTitle = "Добавить категорию"
@@ -50,6 +63,10 @@ enum Constants {
     static let categoryVcDeleteConfirmationAlertDeleteOption = "Удалить"
     static let categoryVcDeleteConfirmationAlertCancelOption = "Отмена"
     static let categoryVcLastSelectedCategoryKey = "lastSelectedCategory"
+    static let categoryVcPinnedCategoryTitle = "Закреплённые"
+    static let categoryVcContextMenuEditOption = "Редактировать"
+    static let categoryVcContextMenuDeleteOption = "Удалить"
+    
     
     static let newCategoryVcTitle = "Новая категория"
     static let newCategoryVcPlaceholder = "Введите название категории"
@@ -64,6 +81,16 @@ enum Constants {
     static let onboardingPageRedScreenTitle = "Даже если это не литры воды и йога"
     static let onboardingPageUserDefaultsKey = "hasSeenOnboarding"
     
-    // Перечисление дополняется
+    static let contextMenuViewCell = "ContextMenuOptionCell"
     
+    static let alertServiceDeleteOption = "Удалить"
+    static let alertServiceCancelOption = "Отмена"
+    
+    static let filterViewControllerTitle = "Фильтры"
+    static let filterViewControllerCell = "FilterCell"
+    
+    static let statisticViewControllerTitle = "Статистика"
+    static let statisticVCPlaceholderText = "Анализировать пока нечего"
+    static let statisticVCCompletedHabitsOption = "Трекеров завершено"
+    static let statisticViewCell = "StatisticTableViewCell"    
 }

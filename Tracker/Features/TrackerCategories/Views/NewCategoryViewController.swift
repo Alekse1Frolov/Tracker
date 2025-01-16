@@ -14,6 +14,7 @@ final class NewCategoryViewController: UIViewController {
     private var errorLabelHeightConstraint: NSLayoutConstraint!
     private var originalCategoryName: String?
     var onCategoryCreated: (() -> Void)?
+    var onCategoryEdited: ((String) -> Void)?
     
     // MARK: - UI Elements
     private let titleLabel: UILabel = {
@@ -195,7 +196,12 @@ final class NewCategoryViewController: UIViewController {
         guard let newCategoryName = nameTextField.text, !newCategoryName.isEmpty else { return }
         viewModel.saveCategory(title: newCategoryName, originalTitle: originalCategoryName)
         
-        onCategoryCreated?()
+        if originalCategoryName != nil {
+            onCategoryEdited?(newCategoryName)
+        } else {
+            onCategoryCreated?()
+        }
+        
         navigationController?.popViewController(animated: true)
     }
 }

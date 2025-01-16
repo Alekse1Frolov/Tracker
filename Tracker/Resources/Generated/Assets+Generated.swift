@@ -34,12 +34,15 @@ internal enum Asset {
   internal static let ypWhite = ColorAsset(name: "YP_white")
   internal static let blueBackground = ImageAsset(name: "BlueBackground")
   internal static let doneImage = ImageAsset(name: "DoneImage")
+  internal static let emptySearchPlaceholder = ImageAsset(name: "EmptySearchPlaceholder")
   internal static let launchScreenLogo = ImageAsset(name: "LaunchScreenLogo")
   internal static let plusButton = ImageAsset(name: "PlusButton")
   internal static let redBackground = ImageAsset(name: "RedBackground")
   internal static let starPlaceholder = ImageAsset(name: "StarPlaceholder")
   internal static let statTabImage = ImageAsset(name: "StatTabImage")
+  internal static let statisticPlaceholder = ImageAsset(name: "StatisticPlaceholder")
   internal static let trackerTabImage = ImageAsset(name: "TrackerTabImage")
+  internal static let pinIcon = ImageAsset(name: "pinIcon")
 }
 // swiftlint:enable identifier_name line_length nesting type_body_length type_name
 

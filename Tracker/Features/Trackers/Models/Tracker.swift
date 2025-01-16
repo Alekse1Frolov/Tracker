@@ -12,29 +12,35 @@ struct Tracker {
     let name: String
     let color: String
     let emoji: String
+    let type: TrackerType
     let schedule: [Weekday]
     let date: Date
     let category: String
     let order: Int
+    let isPinned: Bool
     
     init(
         id: UUID,
         name: String,
         color: String,
         emoji: String,
+        type: TrackerType,
         schedule: [Weekday],
         date: Date,
         category: String,
-        order: Int
+        order: Int,
+        isPinned: Bool
     ) {
         self.id = id
         self.name = name
         self.color = color
         self.emoji = emoji
+        self.type = type
         self.schedule = schedule
         self.date = date
         self.category = category
         self.order = order
+        self.isPinned = isPinned
     }
     
     init(coreDataTracker: TrackerCoreData) {
@@ -45,11 +51,18 @@ struct Tracker {
         self.date = coreDataTracker.date ?? Date()
         self.category = coreDataTracker.category?.title ?? "Без категории"
         self.order = Int(coreDataTracker.order)
+        self.isPinned = coreDataTracker.isPinned
         
         if let coreDataSchedule = coreDataTracker.schedule as? Set<WeekdayCoreData> {
             self.schedule = coreDataSchedule.compactMap { Weekday(rawValue: Int($0.number)) }
         } else {
             self.schedule = []
+        }
+        
+        if let typeString = coreDataTracker.type, let trackerType = TrackerType(rawValue: typeString) {
+            self.type = trackerType
+        } else {
+            self.type = self.schedule.isEmpty ? .irregularEvent : .habit
         }
     }
 }
